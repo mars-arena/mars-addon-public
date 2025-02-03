@@ -1,4 +1,4 @@
-library Chakram requires SpellGetters, BJHooked {
+library Chakram requires SpellGetters, Filters {
 
 	//Чакрам\\
 	struct Chakram {

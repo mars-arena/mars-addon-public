@@ -1,4 +1,4 @@
-library ChainHeal requires SpellGetters, BJHooked {
+library ChainHeal requires SpellGetters, Filters {
 
 	struct ChainHeal {
 		unit caster;

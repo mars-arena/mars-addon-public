@@ -1,4 +1,4 @@
-library SetUnitMaxState uses BJHooked
+library SetUnitMaxState uses Filters
 
 	constant function MaxStateModifierId takes unitstate u returns integer
 		if u == UNIT_STATE_MAX_LIFE then

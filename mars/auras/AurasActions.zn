@@ -1,4 +1,4 @@
-library AurasActions requires Auras, BJHooked, StaticProjectiles {
+library AurasActions requires Auras, Filters, StaticProjectiles {
 
 	group GroupEnums = CreateGroup();
 	timer TimerEnums = CreateTimer();

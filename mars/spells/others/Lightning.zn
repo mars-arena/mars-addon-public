@@ -1,4 +1,4 @@
-library Lightning requires SpellGetters, BJHooked {
+library Lightning requires SpellGetters, Filters {
 
 	//Разветленная молния
 	public function CastLightning(

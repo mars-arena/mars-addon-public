@@ -1,4 +1,4 @@
-library ChainLightning requires SpellGetters, BJHooked {
+library ChainLightning requires SpellGetters, Filters {
 
 	//Цепная молния\\
 	struct ChainLightning {

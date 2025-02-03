@@ -1,4 +1,4 @@
-library RectangleSplash requires SpellGetters, BJHooked {
+library RectangleSplash requires SpellGetters, Filters {
 
 	public function RectangleSplash(
 		unit owner,             //владелец

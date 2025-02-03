@@ -1,4 +1,4 @@
-library Hammer requires SpellGetters, BJHooked {
+library Hammer requires SpellGetters, Filters {
 
 	struct Hammer {
 		unit owner;
