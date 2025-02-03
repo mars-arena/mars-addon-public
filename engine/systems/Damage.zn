@@ -1,0 +1,973 @@
+library Damage requires Buffs {
+	
+	public boolean DebugDmg = false;
+
+	trigger DamageTrigger = CreateTrigger();
+
+	integer Index = 0;
+	real Amplifier = 0;
+
+	// @const максимальное количество типов cтакающегося урона
+	public constant integer MAX_COUNT_TYPE_AMPLIFIERS = 5;
+
+	// @const типы мультипликаторов текста
+	public constant integer ATTACK_AMPLIFIER = 1;
+	public constant integer SIMPLE_AMPLIFIER = 2;
+	public constant integer DAMAGE_MULTIPLIER = 3;
+	public constant integer AMPLIFIER_4 = 4;
+	public constant integer AMPLIFIER_5 = 5;
+
+	real DMGAmplifier[MAX_COUNT_TYPE_AMPLIFIERS];
+
+	boolean IgnoreBlock = false;
+	boolean IgnoreMiss = false;
+	boolean IgnorePierce = false;
+	boolean IsAttack = false;
+	boolean IsBlocked = false;
+	boolean IsCritical = false;
+	boolean IsDodge = false;
+	boolean IsHide = false;
+	boolean IsMagical = false;
+	boolean IsManual = false;
+	boolean IsNoRepeat = false;
+	boolean IsPhys = false;
+	boolean IsPure = false;
+	boolean IsReflection = false;
+	boolean IsRun = false;
+	boolean IsSimulate = false;
+	boolean IsSpecAttack = false;
+	boolean IsTrueStrike = false;
+	boolean WithArmor = false;
+	boolean WithOrigin = false;
+	integer BashType = 0;
+	integer CriticalType = 0;
+	integer PierceType = 0;
+	real ArmorReduction = 0.00;
+	real BashDamage = 0.00;
+	real BashDuration = 0.00;
+	real CritDmg = 0.00;
+	real CritRate = 0.00;
+	real DMGAdd = 0.00;
+	real DMGCaptured = 0;
+	real DMGMax = 0;
+	real DMGGiven = 0.;
+	real DMGBlocked = 0.;
+	real DMGOrigin = 0;
+	real DMGTaken = 0;
+	real DodgeChance = 0;
+	real LifeAttackedUnit = 0;
+	real MissChance = 0;
+	real PierceRate = 0;
+	real TrueStrikeChance = 0;
+	real UniquePower = 0;
+	unit AttackedUnit = null;
+	unit AttackingUnit = null;
+
+	function ClearDamageEngineGlobals() {
+		if (IsRun) {
+			dbgT("Error D1: Очистка дамаг системы во время работы.");
+			dbgT("-- " + GetUnitName(AttackingUnit) + "|r -> " + GetUnitName(AttackedUnit) + "|r --");
+		}
+		ArmorReduction = 0.00;
+		AttackedUnit = null;
+		AttackingUnit = null;
+		BashDamage = 0.00;
+		BashDuration = 0.00;
+		BashType = 0;
+		CritRate = 0.00;
+		CritDmg = 0.00;
+		CriticalType = 0;
+		DMGAdd = 0.00;
+		DMGCaptured = 0;
+		DMGMax = 0;
+		DMGGiven = 0.;
+		for (1 <= Index <= MAX_COUNT_TYPE_AMPLIFIERS)
+			DMGAmplifier[Index] = 1.0;
+		DMGBlocked = 0;
+		DMGOrigin = 0;
+		DMGTaken = 0;
+		DodgeChance = 0;
+		IgnoreBlock = false;
+		IgnoreMiss = false;
+		IgnorePierce = false;
+		IsAttack = false;
+		IsBlocked = false;
+		IsCritical = false;
+		IsDodge = false;
+		IsHide = false;
+		IsMagical = false;
+		IsManual = false;
+		IsNoRepeat = false;
+		IsPhys = false;
+		IsPure = false;
+		IsReflection = false;
+		IsSimulate = false;
+		IsSpecAttack = false;
+		IsTrueStrike = false;
+		LifeAttackedUnit = 0;
+		MissChance = 0;
+		PierceRate = 0;
+		PierceType = 0;
+		TrueStrikeChance = 0;
+		UniquePower = 0;
+		WithArmor = false;
+		WithOrigin = false;
+		SetIsEvalDamage(false);
+	}
+
+	boolean IsRunPass = false;
+	boolean IGNORE_BLOCK = false;
+	boolean IS_ATTACK = false;
+	boolean IS_BLOCKED = false;
+	boolean IS_CRITICAL = false;
+	boolean IS_DODGE = false;
+	boolean IS_MAGICAL = false;
+	boolean IS_NO_REPEAT = false;
+	boolean IS_PHYS = false;
+	boolean IS_PURE = false;
+	boolean IS_REFLECTION = false;
+	boolean IS_SIMULATE = false;
+	boolean IS_SPEC_ATTACK = false;
+	real BUSH_DAMAGE = 0;
+	real BUSH_DURATION = 0;
+	real DMG_GIVEN_GET = 0;
+	real DMG_BLOCKED_GET = 0;
+	real LIFE_ATTACKED_UNIT = 0;
+	unit ATTACKED_UNIT_GET = null;
+	unit ATTACKING_UNIT_GET = null;
+
+	function ClearDamagePassGlobals() {
+		if (IsRunPass) {
+			dbgT("Error D2: Очистка дамаг системы во время работы.");
+			dbgT("-- " + GetUnitName(ATTACKING_UNIT_GET) + "|r -> " + GetUnitName(ATTACKED_UNIT_GET) + "|r --");
+		}
+		IsRunPass = false;
+		IGNORE_BLOCK = false;
+		IS_ATTACK = false;
+		IS_BLOCKED = false;
+		IS_CRITICAL = false;
+		IS_DODGE = false;
+		IS_MAGICAL = false;
+		IS_NO_REPEAT = false;
+		IS_PHYS = false;
+		IS_PURE = false;
+		IS_REFLECTION = false;
+		IS_SIMULATE = false;
+		IS_SPEC_ATTACK = false;
+		BUSH_DAMAGE = 0;
+		BUSH_DURATION = 0;
+		DMG_GIVEN_GET = 0;
+		DMG_BLOCKED_GET = 0;
+		LIFE_ATTACKED_UNIT = 0;
+		ATTACKED_UNIT_GET = null;
+		ATTACKING_UNIT_GET = null;
+	}
+
+	// Симуляция атаки
+	public function UnitAttackToTarget(
+		unit whichUnit,
+		unit target,
+		real value,
+		attacktype attackType,
+		damagetype damageType,
+		boolean isSpecAttack,
+		boolean ignoreBlock,
+		boolean ignoreMiss,
+		boolean ignorePierce,
+		boolean isNoRepeat
+	) {
+		DamageEvent this = DamageEvent.create();
+		this.whichUnit = whichUnit;
+		this.target = target;
+		this.value = value; 
+		this.attackType = attackType; 
+		this.damageType = damageType; 
+		this.ignoreBlock = ignoreBlock; 
+		this.ignoreMiss = ignoreMiss; 
+		this.ignorePierce = false; // deprecated 
+		this.isAttack = true;
+		//this.isHide = false;
+		this.isNoRepeat = isNoRepeat;
+		//this.isReflection = false;
+		this.isSimulate = true;
+		this.isSpecAttack = isSpecAttack;
+		this.withOrigin = true;
+		this.onTrigger = true;
+		this.wantDelay = WantDelay;
+		WantDelay = false;
+
+		this.run();
+	}
+
+	// Урон
+	public function UnitDamageToTarget(
+		unit whichUnit,
+		unit target,
+		real value,
+		attacktype attackType,
+		damagetype damageType,
+		boolean onTrigger,
+		boolean isNoRepeat,
+		boolean isReflection,
+		boolean ignoreBlock,
+		boolean isHide
+	) {
+		DamageEvent this = DamageEvent.create();
+		this.whichUnit = whichUnit;
+		this.target = target;
+		this.value = value; 
+		this.attackType = attackType; 
+		this.damageType = damageType; 
+		this.ignoreBlock = ignoreBlock; 
+		//this.ignoreMiss = false; 
+		//this.ignorePierce = false; 
+		//this.isAttack = false;
+		this.isHide = isHide;
+		this.isNoRepeat = isNoRepeat;
+		this.isReflection = isReflection;
+		//this.isSimulate = false;
+		//this.isSpecAttack = false;
+		this.withOrigin = true;
+		this.onTrigger = onTrigger;
+		this.wantDelay = WantDelay;
+		WantDelay = false;
+
+		this.run();
+	}
+
+	// Магический урон
+	public function UnitDamageMagicToTarget(
+		unit whichUnit,
+		unit target,
+		real value
+	) {
+		DamageEvent this = DamageEvent.create();
+		this.whichUnit = whichUnit;
+		this.target = target;
+		this.value = value; 
+		this.attackType = ATTACK_TYPE_NORMAL; 
+		this.damageType = DAMAGE_TYPE_MAGIC; 
+		this.isHide = false;
+		this.onTrigger = true;
+		this.withOrigin = true;
+		this.wantDelay = WantDelay;
+		WantDelay = false;
+
+		this.run();
+	}
+
+	// Чистый урон
+	public function UnitDamagePureToTarget(
+		unit whichUnit,
+		unit target,
+		real value
+	) {
+		DamageEvent this = DamageEvent.create();
+		this.whichUnit = whichUnit;
+		this.target = target;
+		this.value = value; 
+		this.attackType = ATTACK_TYPE_CHAOS; 
+		this.damageType = DAMAGE_TYPE_UNIVERSAL; 
+		this.isHide = false;
+		this.onTrigger = true;
+		this.withOrigin = true;
+		this.wantDelay = WantDelay;
+		WantDelay = false;
+
+		this.run();
+	}
+
+	public function DisableDetectDamage() {
+		DisableTrigger(DamageTrigger);
+	}
+
+	public function EnableDetectDamage() {
+		EnableTrigger(DamageTrigger);
+	}
+
+	public function GetModifierAttackedUnit() -> unit {return AttackedUnit;}
+	public function GetModifierAttackingUnit() -> unit {return AttackingUnit;}
+
+	//public function GetModifierGiven() -> real {return DMG_GIVEN_GET;}
+	public function IsModifierIgnoreBlock() -> boolean {return IgnoreBlock;}
+	public function IsModifierAttack() -> boolean {return IsAttack;}
+	public function IsModifierCritical() -> boolean {return IsCritical;}
+	public function IsModifierDodge() -> boolean {return IsDodge;}
+	public function IsModifierMagical() -> boolean {return IsMagical;}
+	public function IsModifierNoRepeat() -> boolean  {return IsNoRepeat;}
+	public function IsModifierPhysical() -> boolean {return IsPhys;}
+	public function IsModifierPure() -> boolean {return IsPure;}
+	public function IsModifierReflection() -> boolean {return IsReflection;}
+	public function IsModifierSimulate() -> boolean {return IsSimulate;}
+	public function IsModifierSpecAttack() -> boolean {return IsSpecAttack;}
+
+	public function IsModifierIgnorePierce() -> boolean {return IgnorePierce;} // deprecated
+
+	public function AddModifierDodgeChance(real dodgeChance) {DodgeChance = RMinBJ((1 - (1 - DodgeChance) * (1 - dodgeChance)), 1.00);}
+	public function GetModifierDodgeChance() -> real {return DodgeChance;}
+	public function SetModifierDodgeChance(real dodgeChance) {DodgeChance = dodgeChance;}
+	
+	public function AddModifierMissChance(real missChance) {MissChance = RMinBJ((1 - (1 - MissChance) * (1 - missChance)), 1.00);}
+	public function GetModifierMissChance() -> real {return MissChance;}
+	public function SetModifierMissChance(real missChance) {MissChance = missChance;}
+	
+	public function AddModifierTrueStrikeChance(real trueStrikeChance) {TrueStrikeChance = RMinBJ((1 - (1 - TrueStrikeChance) * (1 - trueStrikeChance)), 1.00);}
+	public function GetModifierTrueStrikeChance() -> real {return TrueStrikeChance;}
+	public function SetModifierTrueStrikeChance(real trueStrikeChance) {TrueStrikeChance = trueStrikeChance;}
+
+	public function AddModifierPierceRate(real pierceRate) {PierceRate = RMinBJ((1 - (1 - PierceRate) * (1 - pierceRate)), 1.00);}
+	public function GetModifierPierceRate() -> real {return PierceRate;}
+	public function SetModifierPierceRate(real pierceRate) {PierceRate = pierceRate;}
+	public function SetModifierPierceType(integer pierceType) {PierceType = pierceType;}
+
+	public function AddModifierDMGAdd(real dmgAdd) {DMGAdd = DMGAdd + dmgAdd;}
+	public function GetModifierDMGAdd() -> real {return DMGAdd;}
+	public function SetModifierDMGAdd(real dmgAdd) {DMGAdd = dmgAdd;}
+	
+	public function AddModifierDMGAmplifier(integer typeAmplifier, real dmgAmplifier) {DMGAmplifier[typeAmplifier] = DMGAmplifier[typeAmplifier] + dmgAmplifier;}
+	public function GetModifierDMGAmplifier(integer typeAmplifier) -> real {return DMGAmplifier[typeAmplifier];}
+	public function SetModifierDMGAmplifier(integer typeAmplifier, real dmgAmplifier) {DMGAmplifier[typeAmplifier] = dmgAmplifier;}
+
+	public function GetModifierCriticalType() -> integer {return CriticalType;}
+
+	public function AddModifierCriticalRate(integer typeId, real criticalRate) {
+		if (UniquePower < DMGMax * criticalRate &&
+			GetUnitAbilityLevel(GetModifierAttackedUnit(), FORG_IMMUNE_ID) <= 0
+		) {
+			BashDamage = 0;
+			BashDuration = 0;
+			BashType = 0;
+			CritRate = criticalRate;
+			CriticalType = typeId;
+			CritDmg = DMGMax * criticalRate;
+			UniquePower = DMGMax * criticalRate;
+		}
+	}
+
+	public function PlusModifierCriticalRate(real criticalRate) {
+		if (CritRate > 0.) {
+			BashDamage = 0;
+			BashDuration = 0;
+			BashType = 0;
+			CritDmg = DMGMax * (criticalRate + CritRate);
+			UniquePower = DMGMax * (criticalRate + CritRate);
+		}
+	}
+
+	public function AddModifierCriticalDamage(integer typeId, real criticalDamage) {
+		if (UniquePower < DMGMax + criticalDamage &&
+			GetUnitAbilityLevel(GetModifierAttackedUnit(), FORG_IMMUNE_ID) <= 0
+		) {
+			BashDamage = 0;
+			BashDuration = 0;
+			BashType = 0;
+			CritRate = 0;
+			CriticalType = typeId;
+			CritDmg = DMGMax + criticalDamage;
+			UniquePower = DMGMax + criticalDamage;
+		}
+	}
+
+	public function AddModifierBash(integer typeId, real bashDamage, real duration) {
+		if (UniquePower < DMGMax + bashDamage * 2 + duration * 200 &&
+			!IsUnitIllusion(GetModifierAttackingUnit())
+		) {
+			BashDamage = bashDamage;
+			BashDuration = duration;
+			BashType = typeId;
+			CritRate = 0;
+			CriticalType = 0;
+			CritDmg = 0;
+			UniquePower = DMGMax + bashDamage * 2 + duration * 200;
+		}
+	}
+
+	public function GetBlockedFromAmount(real amount) -> real {
+		return amount * (1 - PierceRate);
+	}
+	
+	public function GetModifierDamageGiven() -> real {return DMGGiven;}
+	public function SetModifierDamageGiven(real dmgGiven) {DMGGiven = dmgGiven;}
+
+	public function GetModifierDamageTaken() -> real {return DMGTaken;}
+	public function SetModifierDamageTaken(real dmgTaken) {DMGTaken = dmgTaken;}
+
+	public function GetModifierDamageMax() -> real {return DMGMax;}
+	public function SetModifierDamageMax(real dmgMax) {DMGMax = dmgMax;}
+
+	public function GetModifierArmorReduction() -> real {return ArmorReduction;}
+
+	public function GetDamageAttackedUnit() -> unit {return ATTACKED_UNIT_GET;}
+	public function GetDamageAttackingUnit() -> unit {return ATTACKING_UNIT_GET;}
+	public function GetDamageBash() -> real {return BUSH_DAMAGE;}
+	public function GetDamageBashDuration() -> real {return BUSH_DURATION;}
+	public function GetDamageBlocked() -> real {return DMG_BLOCKED_GET;}
+	public function GetDamageGiven() -> real {return DMG_GIVEN_GET;}
+	public function GetDamageIgnoreBlock() -> boolean {return IGNORE_BLOCK;}
+	public function GetDamageIsAttack() -> boolean {return IS_ATTACK;}
+	public function GetDamageIsBlocked() -> boolean {return IS_BLOCKED;}
+	public function GetDamageIsCritical() -> boolean {return IS_CRITICAL;}
+	public function GetDamageIsDodge() -> boolean {return IS_DODGE;}
+	public function GetDamageIsMagical() -> boolean {return IS_MAGICAL;}
+	public function GetDamageIsNoRepeat() -> boolean  {return IS_NO_REPEAT;}
+	public function GetDamageIsPhysical() -> boolean {return IS_PHYS;}
+	public function GetDamageIsPure() -> boolean {return IS_PURE;}
+	public function GetDamageIsReflection() -> boolean {return IS_REFLECTION;}
+	public function GetDamageIsSimulate() -> boolean {return IS_SIMULATE;}
+	public function GetDamageIsSpecAttack() -> boolean {return IS_SPEC_ATTACK;}
+	public function GetDamageLifeAttackedUnit() -> real {return LIFE_ATTACKED_UNIT;}
+
+	struct DamageEvent {
+		unit whichUnit;
+		unit target;
+		real value;
+		attacktype attackType;
+		damagetype damageType;
+		boolean ignoreBlock;
+		boolean ignoreMiss;
+		boolean ignorePierce;
+		boolean isAttack;
+		boolean isHide;
+		boolean isNoRepeat;
+		boolean isReflection;
+		boolean isSimulate;
+		boolean isSpecAttack;
+		boolean onTrigger;
+		boolean wantDelay;
+		boolean withOrigin;
+
+		static method create() -> DamageEvent {
+			DamageEvent this = DamageEvent.allocate();
+			this.target = null;
+			this.value = 0;
+			this.attackType = null;
+			this.damageType = null;
+			this.ignoreBlock = false;
+			this.ignoreMiss = false;
+			this.ignorePierce = false;
+			this.isAttack = false;
+			this.isHide = false;
+			this.isNoRepeat = false;
+			this.isReflection = false;
+			this.isSimulate = false;
+			this.isSpecAttack = false;
+			this.onTrigger = false;
+			this.wantDelay = false;
+			this.withOrigin = false;
+			return DamageEvent.allocate();
+		}
+
+		method run() {
+			if (!IsUnitInvulnerable(target) && whichUnit != null && target != null) {
+				if (!onTrigger) {
+					DisableTrigger(DamageTrigger);
+					UnitDamageTarget(whichUnit, target, value, true, false, attackType, damageType, WEAPON_TYPE_WHOKNOWS);
+					EnableTrigger(DamageTrigger);
+					this.destroy();
+				} else {
+					if (wantDelay) {
+						TempTimer = CreateTimer();
+						SaveHandleDataInt(TempTimer, this);
+						TimerStart(TempTimer, 0, false, function() {
+							DamageEvent this = LoadHandleDataInt(GetExpiredTimer());
+							FlushTimer(GetExpiredTimer());
+							this.execute();
+						});
+					} else {
+						this.execute();
+					}
+				}
+			} else {
+				this.destroy();
+			}
+		}
+
+		method execute() {
+			ClearDamageEngineGlobals();
+
+			if (attackType == ATTACK_TYPE_CHAOS && damageType == DAMAGE_TYPE_UNIVERSAL) {
+				IsPure = true;
+			} else if (damageType == DAMAGE_TYPE_ENHANCED || damageType == DAMAGE_TYPE_MAGIC) {
+				IsMagical = true;
+			} else if (damageType == DAMAGE_TYPE_NORMAL || damageType == DAMAGE_TYPE_UNIVERSAL) {
+				IsPhys = true;
+			}
+
+			IsManual = true;
+			DMGOrigin = value;
+			IgnoreBlock = ignoreBlock;
+			IgnoreMiss = ignoreMiss;
+			IgnorePierce = ignorePierce;
+			IsAttack = isAttack;
+			IsHide = isHide;
+			IsNoRepeat = isNoRepeat;
+			IsReflection = isReflection;
+			IsSimulate = isSimulate;
+			IsSpecAttack = isSpecAttack;
+			WithOrigin = withOrigin;
+			UnitDamageTarget(whichUnit, target, value, true, false, attackType, damageType, WEAPON_TYPE_WHOKNOWS);
+
+			ClearDamageEngineGlobals();
+
+			this.destroy();
+		}
+
+		method destroy() {
+			whichUnit = null;
+			target = null;
+			attackType = null;
+			damageType = null;
+			this.deallocate();
+		}
+	}
+
+	struct DamagePass {
+		boolean ignoreBlock;
+		boolean isAttack;
+		boolean isBlocked;
+		boolean isCritical;
+		boolean isDodge;
+		boolean isMagical;
+		boolean isNoRepeat;
+		boolean isPhys;
+		boolean isPure;
+		boolean isReflection;
+		boolean isSimulate;
+		boolean isSpecAttack;
+		real bashDamage;
+		real bashDuration;
+		real dmgBlocked;
+		real dmgGiven;
+		real lifeAttackedUnit;
+		unit attackedUnit;
+		unit attackingUnit;
+
+		static method create() -> DamagePass {
+			DamagePass this = DamagePass.allocate();
+			attackedUnit = null;
+			attackingUnit = null;
+			bashDamage = 0.0;
+			bashDuration = 0.0;
+			dmgBlocked = 0.0;
+			dmgGiven = 0.0;
+			ignoreBlock = false;
+			isAttack = false;
+			isBlocked = false;
+			isCritical = false;
+			isDodge = false;
+			isMagical = false;
+			isNoRepeat = false;
+			isPhys = false;
+			isPure = false;
+			isReflection = false;
+			isSimulate = false;
+			isSpecAttack = false;
+			lifeAttackedUnit = 0.0;
+			return DamagePass.allocate();
+		}
+
+		method run() {
+			TempTimer = CreateTimer();
+			SaveHandleDataInt(TempTimer, this);
+			TimerStart(TempTimer, 0, false, function() {
+				DamagePass this = LoadHandleDataInt(GetExpiredTimer());
+				FlushTimer(GetExpiredTimer());
+
+				ClearDamagePassGlobals();
+
+				IsRunPass = true;
+
+				IGNORE_BLOCK = ignoreBlock;
+				IS_ATTACK = isAttack;
+				IS_BLOCKED = isBlocked;
+				IS_CRITICAL = isCritical;
+				IS_DODGE = isDodge;
+				IS_MAGICAL = isMagical;
+				IS_NO_REPEAT = isNoRepeat;
+				IS_PHYS = isPhys;
+				IS_PURE = isPure;
+				IS_REFLECTION = isReflection;
+				IS_SIMULATE = isSimulate;
+				IS_SPEC_ATTACK = isSpecAttack;
+				BUSH_DAMAGE = bashDamage;
+				BUSH_DURATION = bashDuration;
+				DMG_GIVEN_GET = dmgGiven;
+				DMG_BLOCKED_GET = dmgBlocked;
+				LIFE_ATTACKED_UNIT = lifeAttackedUnit;
+				ATTACKED_UNIT_GET = attackedUnit;
+				ATTACKING_UNIT_GET = attackingUnit;
+
+				TriggerExecute(DamageTrg);
+
+				IsRunPass = false;
+
+				this.destroy();
+			});
+		}
+
+		method destroy() {
+			ClearDamagePassGlobals();
+			attackedUnit = null;
+			attackingUnit = null;
+			this.deallocate();
+		}
+	}
+
+	function IsUnitPhysicallyAttacked(unit AttackedUnit) -> boolean {
+		return
+			(GetUnitAbilityLevel(AttackedUnit, BUFF_1_ID) > 0) ||
+			(GetUnitAbilityLevel(AttackedUnit, BUFF_2_ID) > 0) ||
+			(GetUnitAbilityLevel(AttackedUnit, BUFF_S1_ID) > 0) ||
+			(GetUnitAbilityLevel(AttackedUnit, BUFF_S2_ID) > 0);
+	}
+	
+	function IsUnitSpecAttacked(unit AttackedUnit) -> boolean {
+		return
+			(GetUnitAbilityLevel(AttackedUnit, BUFF_S1_ID) > 0) ||
+			(GetUnitAbilityLevel(AttackedUnit, BUFF_S2_ID) > 0);
+	}
+
+	function DetectArmorReduction() {
+		if (!WithArmor) {
+			if (WithOrigin) {
+				ArmorReduction = 1 - (DMGCaptured / DMGOrigin);
+			} else if (IsAttack && !IsPure) {
+				if (IsMagical) {
+					ArmorReduction = GetUnitSpellReduction(AttackedUnit, AttackingUnit);
+				} else {
+					ArmorReduction = GetUnitArmorReduction(AttackedUnit, AttackingUnit);
+					IsPhys = true;
+				}
+			} else {
+				ArmorReduction = 0;
+			}
+			WithArmor = true;
+		}
+	}
+
+	function DetectDMGOrigin() {
+		if (!WithOrigin) {
+			if (IsAttack && !IsPure) {
+				DetectArmorReduction();
+				DMGOrigin = DMGCaptured/(1 - ArmorReduction);
+			} else {
+				DMGOrigin = DMGCaptured;
+			}
+			WithOrigin = true;
+		}
+	}
+	
+	function Actions() {
+		DamagePass this;
+
+		if (IsEvalDamage()) {
+			EvalArmor();
+			SetIsEvalDamage(false);
+			
+		} else if (GetUnitTypeId(GetEventDamageSource()) == DUMMY_ATC_ID) {
+		
+			KillUnit(GetEventDamageSource());
+			NegateDamage(GetTriggerUnit(), GetEventDamage());
+			
+		} else {
+			if (!IsManual) {
+				ClearDamageEngineGlobals();
+			}
+
+			if (IsRun) {
+				dbgT(" ");
+				dbgT("Error D0: Недопустимое внутреннее инициирование системы урона.");
+				dbgT("-- " + GetUnitName(GetEventDamageSource()) + "|r -> " + GetUnitName(GetTriggerUnit()) + "|r --");
+			}
+
+			// ИНИЦИАЛИЗАЦИЯ
+			IsRun = true;
+
+			AttackingUnit = GetEventDamageSource();
+			AttackedUnit = GetTriggerUnit();
+			DMGCaptured = GetEventDamage();
+			LifeAttackedUnit = GetWidgetLife(AttackedUnit);
+
+			IsAttack = IsUnitPhysicallyAttacked(AttackedUnit) || IsAttack;
+			IsSpecAttack = IsUnitSpecAttacked(AttackedUnit) || IsSpecAttack;
+			
+			// ДЕБАГ
+			if (DebugDmg) {
+				//dbgT("------------------------------------------------------------------------------");
+				if (IsAttack && !IsSimulate) {
+					dbgT("-- " + GetUnitName(AttackingUnit) + "|r -->> " + GetUnitName(AttackedUnit) + "|r HP" + R2S(GetWidgetLife(AttackedUnit)) + "/" + R2S(GetUnitMaxLife(AttackedUnit)) + " --");
+				} else if (IsSpecAttack) {
+					dbgT("-- " + GetUnitName(AttackingUnit) + "|r -->>* " + GetUnitName(AttackedUnit) + "|r HP" + R2S(GetWidgetLife(AttackedUnit)) + "/" + R2S(GetUnitMaxLife(AttackedUnit)) + " --");
+				} else if (IsSimulate) {
+					dbgT("-- " + GetUnitName(AttackingUnit) + "|r -->>/ " + GetUnitName(AttackedUnit) + "|r HP" + R2S(GetWidgetLife(AttackedUnit)) + "/" + R2S(GetUnitMaxLife(AttackedUnit)) + " --");
+				} else {
+					dbgT("-- " + GetUnitName(AttackingUnit) + "|r -> " + GetUnitName(AttackedUnit) + "|r HP" + R2S(GetWidgetLife(AttackedUnit)) + "/" + R2S(GetUnitMaxLife(AttackedUnit)) + " --");
+				}
+			}
+			
+			// УВОРОТ
+			if (!IgnoreMiss) {
+
+				// динамический расчет модификаторов уворота
+				TriggerExecute(DodgeModifierTrg);
+
+				// логика уворота
+				if ((IsAttack && (GetRandomReal(0, 1) < DodgeChance || GetRandomReal(0, 1) < MissChance))) {
+					if (GetRandomReal(0, 1) < TrueStrikeChance) {
+						// верный удар
+						IsDodge = false;
+						IsTrueStrike = true;
+						//CreateCustomTextToUnit(AttackedUnit, "|c00ff0303" + "pierce!", 9, 15, 1.2, 0.2, 60., 75., 85., 95., -60);
+					} else {
+						// юнит увернулся
+						IsDodge = true;
+						IsTrueStrike = false;
+						NegateDamage(AttackedUnit, DMGCaptured);
+						CreateCustomTextToUnit(AttackedUnit, "|cffff0303" + "miss", 9, 15, 1.2, 0.2, 60., 75., 85., 95., -60);
+						DMGGiven = 0.00;
+						DMGTaken = 0.00;
+					}      
+				} else {
+					// юнит не увернулся
+					IsDodge = false;
+				}
+			}
+
+			if (DebugDmg && IsDodge) {
+				dbgT("- промах");
+			}
+
+			// ДОП УСЛОВИЯ НА СНИЖЕНИЕ БРОНИ
+			//if (IsAttack && !IsDodge && !IsUnitType(AttackedUnit, UNIT_TYPE_TAUREN) && !IsUnitType(AttackedUnit, UNIT_TYPE_STRUCTURE)) {
+			//	if (UnitHasItemType(AttackingUnit, KVINSHPAGA_ID)) { //КВИНШПАГА
+            //        WantDelay = true;
+			//		AddBuffToUnit(AttackingUnit, AttackedUnit, desolate_tid, desolate2_tid, 5, 0, 0, true, true, false, false, 10, false, false, false, false, 1);
+			//	} else if (UnitHasItemType(AttackingUnit, SFERA_EDEMA_ID)) { //СФЕРА ЭДЕМА
+            //        WantDelay = true;
+			//		AddBuffToUnit(AttackingUnit, AttackedUnit, desolate_tid, desolate1_tid, 3, 0, 0, false, false, false, false , 0, false, false, false, false, 1);
+			//	}
+			//	
+			//}
+			
+			// получить исходный урон для героев
+			if ((IsAttack && !IsSimulate && IsHeroDetectAttack(AttackingUnit))) {
+				DetectDMGOrigin();
+			}
+
+			if (DebugDmg) dbgT("- отловленный урон = " + R2S(DMGCaptured));
+			
+			// ПРЕДШЕСТВУЮЩИЕ МОДИФИКАТОРЫ
+			if (!IsDodge && DMGCaptured > 0.0) {
+				// TO DO вычислять с отловленного урона а потом делить DMGMax на броню если это нужно
+
+				// динамический расчет предшествующих модификаторов
+				TriggerExecute(PrecedingModifierTrg);
+
+				DetectDMGOrigin();
+				DMGMax = DMGOrigin;
+
+				// ДОПОЛНИТЕЛЬНЫЙ УРОН (уменьшается защитой)
+				DMGMax = DMGMax + DMGAdd;
+
+				// динамический расчет уникальных модификаторов
+				UniquePower = DMGMax;
+				TriggerExecute(UniqueModifierTrg);
+
+				// изменение урона критом
+				if (CritDmg > 0) {
+					DMGMax = CritDmg;
+					IsCritical = true;
+				}
+
+				// ИЗМЕНЕНИЕ ВСЕГО УРОНА
+				Amplifier = 1;
+				for (1 <= Index <= MAX_COUNT_TYPE_AMPLIFIERS)
+					Amplifier = Amplifier *  DMGAmplifier[Index];
+				
+				DMGMax = DMGMax * Amplifier;
+
+				// определяем наносимый урон
+				DetectArmorReduction();
+				DMGGiven = DMGMax * (1 - (ArmorReduction * (1 - PierceRate)));
+				DMGTaken = DMGGiven;
+
+				if (DebugDmg) dbgT("- атака = " + GetBooleanValue(IsAttack)  + " = " + R2S(DMGOrigin));
+				if (DebugDmg && IsMagical) dbgT("- магический урон");
+				if (DebugDmg && IsPhys) dbgT("- физический урон");
+				if (DebugDmg && IsPure) dbgT("- чистый урон");
+				if (DebugDmg && ArmorReduction != 0) dbgT("- % снижения урона защитой = " + R2S(ArmorReduction));
+				if (DebugDmg && DodgeChance != 0.) dbgT("- % уворота  = " + R2S(DodgeChance));
+				if (DebugDmg && TrueStrikeChance != 0.) dbgT("- % верного удара  = " + R2S(TrueStrikeChance));
+				if (DebugDmg && MissChance != 0.) dbgT("- % промаха  = " + R2S(MissChance));
+				if (DebugDmg && PierceRate != 0.) dbgT("- % пронзания  = " + R2S(PierceRate));
+				if (DebugDmg && DMGAdd != 0.) dbgT("- доп урон (физический)  = " + R2S(DMGAdd));
+				if (DebugDmg && Amplifier != 1.) dbgT("- амплифаер  = " + R2S(Amplifier));
+				if (DebugDmg && DMGMax != 0.) dbgT("- максимальный урон  = " + R2S(DMGMax));
+				if (DebugDmg && DMGGiven != 0.) dbgT("- наносимый урон (до пост модификаторов) = " + R2S(DMGGiven));
+				if (DebugDmg && DMGTaken != 0.) dbgT("- получаемый урон (до пост модификаторов) = " + R2S(DMGTaken));
+			}
+			
+			// динамический расчет модификаторов урона и пост защиты
+			TriggerExecute(PostDamageModifierTrg[INDEX_ORDER_DAMAGE]);
+			DMGGiven = RMaxBJ(DMGGiven, 0.0);
+			DMGTaken = RMaxBJ(DMGTaken, 0.0);
+			DMGMax = RMaxBJ(DMGMax, 0.0);
+			TriggerExecute(PostDamageModifierTrg[INDEX_ORDER_PERCENT]);
+			DMGGiven = RMaxBJ(DMGGiven, 0.0);
+			DMGTaken = RMaxBJ(DMGTaken, 0.0);
+			DMGMax = RMaxBJ(DMGMax, 0.0);
+			TriggerExecute(PostDamageModifierTrg[INDEX_ORDER_AMOUNT]);
+			DMGGiven = RMaxBJ(DMGGiven, 0.0);
+			DMGTaken = RMaxBJ(DMGTaken, 0.0);
+			DMGMax = RMaxBJ(DMGMax, 0.0);
+
+			// ДЕЙСТВИЯ ПОСЛЕ РАСЧЕТА
+			if (!IsDodge && DMGCaptured > 0.0) {
+				DMGBlocked = RMaxBJ(DMGGiven - DMGTaken, 0.0);
+
+				if (DebugDmg && DMGGiven != 0.) dbgT("- наносимый урон (после пост модификаторов) = " + R2S(DMGGiven));
+				if (DebugDmg && DMGTaken != 0.) dbgT("- получаемый урон (после пост модификаторов) = " + R2S(DMGTaken));
+
+				// отменяем наносимый урон
+				if (DMGTaken <= 0.00) {
+					IsBlocked = true;
+					NegateDamage(AttackedUnit, DMGCaptured);
+					DMGBlocked = DMGGiven;
+				} else {
+					// отменяем отловленный урон - получаемый урон
+					if (DMGTaken < DMGCaptured) {
+						NegateDamage(AttackedUnit, DMGCaptured - DMGTaken);
+					} else {
+						// наносим получаемый урон - отловленный
+						if (DMGTaken > DMGCaptured) {
+							UnitDamageToTarget(AttackingUnit, AttackedUnit, DMGTaken - DMGCaptured, ATTACK_TYPE_CHAOS, DAMAGE_TYPE_UNIVERSAL, false, false, false, false, false);
+						}
+					}
+				}
+				//отображаем циферки блока
+				if (DMGBlocked > 1) {
+					ShowSummativeTextToPlayer(AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackedUnit), AttackedUnit, BLOCK_TEXT, DMGBlocked + 0.5, ""), GetOwningPlayer(AttackingUnit));
+				}
+			}
+
+			if (DMGTaken > 0) {
+				IsBlocked = false;
+			}
+
+			if (DebugDmg && DMGBlocked != 0.) dbgT("- заблокировано урона  = " + R2S(DMGBlocked));
+			if (DebugDmg && IsBlocked) dbgT("- блок");
+			
+			//DMGGiven = RMinBJ(DMGGiven, GetWidgetLife(AttackedUnit));
+			
+			// ОТОБРАЖЕНИЕ УРОНА
+			if (!IsDodge && DMGCaptured > 0.0) {
+				// физический критический урон
+				if (IsCritical && !IsHide && !IsMagical && !IsPure)
+					CreateFlyingTextToUnit(AttackedUnit, CRITICAL_STRIKE_COLOR + I2S(R2I(DMGMax + 0.5)) + "‼|r", CRITICAL_INIT_SIZE, CRITICAL_BONUS_SIZE, CRITICAL_TIME_LIFE, CRITICAL_TIME_FADE, CRITICAL_OFFSET_Z, CRITICAL_MIN_SPEED, CRITICAL_MAX_SPEED, CRITICAL_MIN_ANGLE, CRITICAL_MAX_ANGLE);
+
+				// магический критический урон
+				else if (IsCritical && !IsHide && IsMagical)
+					CreateFlyingTextToUnit(AttackedUnit, CRITICAL_MAGIC_COLOR + I2S(R2I(DMGMax + 0.5)) + "‼|r", CRITICAL_INIT_SIZE, CRITICAL_BONUS_SIZE, CRITICAL_TIME_LIFE, CRITICAL_TIME_FADE, CRITICAL_OFFSET_Z, CRITICAL_MIN_SPEED, CRITICAL_MAX_SPEED, CRITICAL_MIN_ANGLE, CRITICAL_MAX_ANGLE);
+
+				// чистый критический урон
+				else if (IsCritical && !IsHide && IsPure)
+					CreateFlyingTextToUnit(AttackedUnit, CRITICAL_PURE_COLOR + I2S(R2I(DMGMax + 0.5)) + "‼|r", CRITICAL_INIT_SIZE, CRITICAL_BONUS_SIZE, CRITICAL_TIME_LIFE, CRITICAL_TIME_FADE, CRITICAL_OFFSET_Z, CRITICAL_MIN_SPEED, CRITICAL_MAX_SPEED, CRITICAL_MIN_ANGLE, CRITICAL_MAX_ANGLE);
+
+				// обычный чистый урон
+				else if (!IsHide && IsPure)
+					AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, REGULAR_TEXT, DMGMax, PURE_DMG_COLOR);
+
+				// обычный магический урон
+				else if (!IsHide && IsMagical)
+					AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, REGULAR_TEXT, DMGMax, MAGICAL_DMG_COLOR);
+
+				if (DMGGiven > 0.00 && (FLOATING_DMG_ON_UNITS || IsUnitType(AttackedUnit, UNIT_TYPE_HERO))) {
+
+					// обычный чистый урон
+					//if (IsPure && !IsHide) {
+					//	AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, DMG_TEXT, DMGGiven, PURE_DMG_COLOR);
+
+					// обычный магический урон
+					//} else if (IsMagical && !IsHide) {
+					//	AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, DMG_TEXT, DMGGiven, MAGICAL_DMG_COLOR);
+
+					// обычный критический урон
+					//} else if (IsCritical && !IsHide) {
+					//	AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, DMG_TEXT, DMGGiven, CRITICAL_DMG_COLOR);
+
+					// обычный урон
+					//} else {
+						AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, DMG_TEXT, DMGGiven, "");
+					//}
+
+				}
+			}
+
+			// СОХРАНЕНИЕ СИЛЫ АТАКИ
+			if (IsAttack && !IsSimulate && WithOrigin && DMGOrigin > 0 && IsUnitType(AttackingUnit, UNIT_TYPE_HERO))
+				SetHeroAttackValue(AttackingUnit, DMGOrigin); 
+			
+			// ПЕРЕДАЧА
+			this = DamagePass.create();
+			this.attackedUnit = AttackedUnit;
+			this.attackingUnit = AttackingUnit;
+			this.bashDamage = BashDamage;
+			this.bashDuration = BashDuration;
+			this.dmgBlocked = DMGBlocked;
+			this.dmgGiven = DMGGiven;
+			this.ignoreBlock = IgnoreBlock;
+			this.isAttack = IsAttack;
+			this.isBlocked = IsBlocked;
+			this.isCritical = IsCritical;
+			this.isDodge = IsDodge;
+			this.isMagical = IsMagical;
+			this.isNoRepeat = IsNoRepeat;
+			this.isPhys = IsPhys;
+			this.isPure = IsPure;
+			this.isReflection = IsReflection;
+			this.isSimulate = IsSimulate;
+			this.isSpecAttack = IsSpecAttack;
+			this.lifeAttackedUnit = LifeAttackedUnit;
+	
+			this.run();
+
+			IsRun = false;
+
+			if (!IsManual) {
+				ClearDamageEngineGlobals();
+			}
+
+			if (DebugDmg) {
+				dbgT("------------------------------------------------------------------------------");
+			}
+		}
+
+		// удаление баффа отлова урона
+		if (IsUnitPhysicallyAttacked(AttackedUnit)) {
+			UnitRemoveAbility(AttackedUnit, BUFF_1_ID);
+			UnitRemoveAbility(AttackedUnit, BUFF_2_ID);
+			UnitRemoveAbility(AttackedUnit, BUFF_S1_ID);
+			UnitRemoveAbility(AttackedUnit, BUFF_S2_ID);
+		}
+	}
+ 
+
+	function onInit() {
+		AnyUnitDamagedEvent(DamageTrigger);
+		TriggerAddAction(DamageTrigger, function Actions);
+
+		TempTrigger = CreateTrigger();
+		TriggerRegisterAnyUnitEventBJ(TempTrigger, EVENT_PLAYER_UNIT_ATTACKED);
+		TriggerAddCondition(TempTrigger, Condition(function() -> boolean {
+			return
+				GetUnitTypeId(GetAttacker()) == DUMMY_ATC_ID &&
+				LoadUnitHandle(HT, GetHandleId(GetAttacker()), UNIT_DUMMY_HID) != GetTriggerUnit()
+			;
+		}));
+		TriggerAddAction(TempTrigger, function() {
+			dbgT(GetUnitName(GetTriggerUnit()) + " not target " + GetUnitName(GetAttacker()));
+			KillUnit(GetAttacker());
+		});
+	}
+
+}

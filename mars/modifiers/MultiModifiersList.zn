@@ -1,0 +1,64 @@
+library MultiModifiersList requires TechUtils {
+
+	public constant integer ABSOLUTE_FORM = 'E039';
+
+	//Стакающиеся модификаторы\\
+	public key CHANCE_PURE;             //шанс на дополнительный чистый урон (вызывает еще одно срабатывание триггера урона) (ТИП, ШАНС, УРОН)
+	public key CHANCE_MAGIC;            //шанс на дополнительный магический урон (вызывает еще одно срабатывание триггера урона) (ТИП, ШАНС, УРОН)
+	public key CHANCE_PHYS;             //шанс на дополнительный физический урон (вызывает еще одно срабатывание триггера урона) (ТИП, ШАНС, УРОН)
+
+	public key CHANCE_CLEAVE;           //шанс на клив (ТИП, ШАНС, ПРОЦЕНТ_УРОНА, РАДИУС, УГОЛ)
+	public key CHANCE_SPLASH;           //шанс на урон по области (ТИП, ШАНС, ПРОЦЕНТ_УРОНА, РАДИУС)
+	//\\
+	
+	//Нестакающиеся модификаторы\\
+	public key CRITICAL_ATTACK;         //критическая атака (значение урона добавлятеся к дамагу)(ТИП, ШАНС, КРИТРЕЙТ)
+	public key CHANCE_CRIT_PURE;        //шанс на дополнительный чистый урон (значение урона добавляется к дамагу) (ТИП, ШАНС, УРОН)
+	public key CHANCE_CRIT_STR;         //шанс на критическую атаку, которая зависит от силы (значение урона добавляется к дамагу) (ТИП, ШАНС, КРИТРЕЙТ_СИЛЫ)
+	public key CHANCE_BUSH;             //шанс на баш с дополнительным уроном (вызывает еще одно срабатывание триггера урона) (ТИП, ШАНС, ДЛИТЕЛЬНОСТЬ, УРОН)
+
+	public key CHANCE_PIERCE;           //шанс на пронзающую атаку (пробивает блок и защиту) (ТИП, ШАНС, ПРОЦЕНТ_ПРОНЗАНИЯ)
+
+	public key CHANCE_BLOCK_MELEE_DMG;  //шанс заблокировать урон в ближнем бою (ТИП, ШАНС, УРОН)
+	public key CHANCE_BLOCK_RANGE_DMG;  //шанс заблокировать урон в дальнем бою (ТИП, ШАНС, УРОН)
+	public key CHANCE_BLOCK_ANY_DMG;    //шанс заблокировать любой урон (ТИП, ШАНС, УРОН)
+	public key CHANCE_PT_BLOCK_ANY_DMG; //шанс заблокировать % любого урон (ТИП, ШАНС, ПРОЦЕНТ_УРОНА)
+	//\\
+	
+	//Стакаются только с разным типом\\
+	public key NON_STACK_TYPE_LIFESTEAL; //процент вампиризма)(ТИП, % вампиризма)
+	//\\
+
+	public function IsMultiModifierNonStacking(integer modifier) -> boolean {
+		return
+			modifier == CRITICAL_ATTACK ||
+			modifier == CHANCE_CRIT_PURE ||
+			modifier == CHANCE_PIERCE ||
+			modifier == CHANCE_BUSH ||
+			modifier == CHANCE_BLOCK_MELEE_DMG ||
+			modifier == CHANCE_BLOCK_RANGE_DMG ||
+			modifier == CHANCE_BLOCK_ANY_DMG ||
+			modifier == CHANCE_PT_BLOCK_ANY_DMG
+		;
+	}
+	
+	public function IsMultiModifierNonStackType(integer modifier) -> boolean {
+		return
+			modifier == NON_STACK_TYPE_LIFESTEAL
+		;
+	}
+	
+	public function IsMultiModifierAbsolute(integer modifier) -> boolean {
+		return
+			modifier == CRITICAL_ATTACK ||
+			modifier == CHANCE_CRIT_PURE ||
+			modifier == CHANCE_TRUE_STRIKE
+		;
+	}
+	
+	public function IsMultiModifierTypeModRange(integer typeMod) -> boolean {
+		return
+			typeMod == 'I06H'
+		;
+	}
+}

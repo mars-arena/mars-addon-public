@@ -1,0 +1,214 @@
+library Modifiers requires ModifiersList {
+	
+	public function AddUnitModifier(unit u, integer modifier, real value) {
+		location locMod;
+		integer countMod;
+		if (IsModifierAdditive(modifier)) {
+			SaveReal(HT, GetHandleId(u), modifier, LoadReal(HT, GetHandleId(u), modifier) + value);
+		} else if (IsModifierMultiplicative(modifier)) {
+			locMod = LoadLocationHandle(HT, GetHandleId(u), modifier);
+			if (locMod == null) {
+				locMod = Location(0, 0);
+				SaveLocationHandle(HT, GetHandleId(u), modifier, locMod);
+			}
+			countMod = LoadInteger(HT, GetHandleId(locMod), 0) + 1;
+			SaveInteger(HT, GetHandleId(locMod), 0, countMod);
+			SaveReal(HT, GetHandleId(locMod), countMod, value);
+		}
+		locMod = null;
+	}
+	
+	public function SubUnitModifier(unit u, integer modifier, real value){
+		location locMod;
+		integer countMod;
+		integer i;
+		boolean sub = false;
+		if (IsModifierAdditive(modifier)) {
+			SaveReal(HT, GetHandleId(u), modifier, LoadReal(HT, GetHandleId(u), modifier) - value);
+			sub = true;
+		} else if (IsModifierMultiplicative(modifier)) {
+			locMod = LoadLocationHandle(HT, GetHandleId(u), modifier);
+			if (locMod == null) {
+				dbgT("Error ME1:" + GetUnitName(u) + " Невозможно удалить значение для не инициализированного модификатора.");
+				return;
+			}
+			countMod = LoadInteger(HT, GetHandleId(locMod), 0);
+			for (1 <= i <= countMod) {
+				if (LoadReal(HT, GetHandleId(locMod), i) == value) {
+					SaveReal(HT, GetHandleId(locMod), i, LoadReal(HT, GetHandleId(locMod), countMod));
+					SaveInteger(HT, GetHandleId(locMod), 0, countMod - 1);
+					sub = true;
+					break;
+				}
+			}
+			
+		}
+		if (!sub) {
+			dbgT("Error ME2:" + GetUnitName(u) + " Невозможно удалить неинициализированное значение модификатора (" + I2S(modifier) + ").");
+		}
+		locMod = null;
+	}
+	
+	public function GetUnitModifier(unit u, integer modifier) -> real {
+		location locMod;
+		integer countMod;
+		integer i;
+		real value = 1.;
+		if (IsModifierAdditive(modifier)) {
+			if (IsModifierPercentage(modifier)) {
+				value = LoadReal(HT, GetHandleId(u), modifier);
+			} else {
+				value = LoadReal(HT, GetHandleId(u), modifier) + 1;
+			}
+			if (modifier == INC_OUT_HEAL && IsUnitType(u, UNIT_TYPE_HERO)) {
+				value = value + GetHeroInt(u, true) * INC_OUT_HEAL_BY_INT; 
+			} else if (modifier == INC_ENTER_HEAL && IsUnitType(u, UNIT_TYPE_HERO)) {
+				value = value + GetHeroStr(u, true) * INC_ENTER_HEAL_BY_STR; 
+			} else if (modifier == INC_LIFESTEAL && IsUnitType(u, UNIT_TYPE_HERO)) {
+				value = value + GetHeroStr(u, true) * INC_LIFESTEAL_BY_STR; 
+			}
+		} else if (IsModifierMultiplicative(modifier)) {
+			locMod = LoadLocationHandle(HT, GetHandleId(u), modifier);
+			
+			if (locMod == null) {
+				if (IsModifierPercentage(modifier)) {
+					return 0.;
+				} else {
+					return 1.;
+				}
+			}
+			
+			countMod = LoadInteger(HT, GetHandleId(locMod), 0);
+			
+			if (countMod == 0) {
+				locMod = null;
+				if (IsModifierPercentage(modifier)) {
+					return 0.;
+				} else {
+					return 1.;
+				}
+			}
+			
+			if (IsModifierNonStacking(modifier)) {
+				value = (1 - LoadReal(HT, GetHandleId(locMod), 1));
+				for (1 <= i <= countMod) {
+					if (value < (1 - LoadReal(HT, GetHandleId(locMod), i))) {
+						value = (1 - LoadReal(HT, GetHandleId(locMod), i));
+					}
+				} 
+			} else {
+				value = 1.;
+				for (1 <= i <= countMod) {
+					value = value * (1 - LoadReal(HT, GetHandleId(locMod), i));
+				}  
+			}
+			
+			if (IsModifierPercentage(modifier)) {
+				value = 1 - value;
+			} 
+			
+		}
+		locMod = null;
+		return value;
+	}
+
+	public function DestroyUnitModifier(integer hashId, integer modifier) {
+		location locMod;
+		integer countMod;
+		integer i;
+		real value = 1.;
+		if (IsModifierAdditive(modifier)) {
+			RemoveSavedReal(HT, hashId, modifier);
+		} else if (IsModifierMultiplicative(modifier)) {
+			locMod = LoadLocationHandle(HT, hashId, modifier);
+			if (locMod == null) {
+				return;
+			}
+			FlushChildHashtable(HT, GetHandleId(locMod));
+			RemoveLocation(locMod);
+			RemoveSavedHandle(HT, hashId, modifier);    
+		}
+		locMod = null;
+	}
+
+	public function CopyUnitModifierToUnit(unit ownerUnit, unit targetUnit, integer modifier) -> boolean {
+		location locMod;
+		integer countMod;
+		integer i;
+		real value;
+		if (IsModifierAdditive(modifier)) {
+			value = LoadReal(HT, GetHandleId(ownerUnit), modifier);
+			if (value != 0)
+				 AddUnitModifier(targetUnit, modifier, value);
+			else
+				return false;
+		} else if (IsModifierMultiplicative(modifier)) {
+			locMod = LoadLocationHandle(HT, GetHandleId(ownerUnit), modifier);
+			
+			if (locMod == null) {
+				return false;
+			}
+
+			countMod = LoadInteger(HT, GetHandleId(locMod), 0);
+			
+			if (countMod == 0) {
+				locMod = null;
+				return false;
+			}
+
+			for (1 <= i <= countMod) {
+				value = LoadReal(HT, GetHandleId(locMod), i);
+				AddUnitModifier(targetUnit, modifier, value);
+			}
+			
+		}
+		locMod = null;
+		return true;
+	}
+
+	public function DestroyAllModifiersByHashId(integer hashId) {
+		DestroyUnitModifier(hashId, INC_OUT_HEAL);
+		DestroyUnitModifier(hashId, INC_ENTER_HEAL);
+		DestroyUnitModifier(hashId, INC_OUT_MANA);
+		DestroyUnitModifier(hashId, INC_ENTER_MANA);
+		
+		DestroyUnitModifier(hashId, INC_OUT_STUN_TIME);
+		DestroyUnitModifier(hashId, INC_ENTER_STUN_TIME);
+			
+		DestroyUnitModifier(hashId, PERCENT_LIFESTEAL);
+		DestroyUnitModifier(hashId, INC_LIFESTEAL);
+		
+		DestroyUnitModifier(hashId, INC_ANY_DMG);
+
+		DestroyUnitModifier(hashId, INC_ENTER_TIME_POS_BUFF);
+		DestroyUnitModifier(hashId, INC_ENTER_TIME_NEG_BUFF);
+		DestroyUnitModifier(hashId, INC_OUT_TIME_POS_BUFF);
+		DestroyUnitModifier(hashId, INC_OUT_TIME_NEG_BUFF);
+
+		DestroyUnitModifier(hashId, DEC_OUT_HEAL);
+		DestroyUnitModifier(hashId, DEC_ENTER_HEAL);
+		DestroyUnitModifier(hashId, DEC_OUT_MANA);
+		DestroyUnitModifier(hashId, DEC_ENTER_MANA);
+		
+		DestroyUnitModifier(hashId, DEC_OUT_STUN_TIME);
+		DestroyUnitModifier(hashId, DEC_ENTER_STUN_TIME);
+		
+		DestroyUnitModifier(hashId, CHANCE_BLOCK_ALL_DAMAGE);
+		DestroyUnitModifier(hashId, PERCENT_BLOCK_ANY_DAMAGE);
+		DestroyUnitModifier(hashId, CHANCE_DODGE_ATTACK);
+		DestroyUnitModifier(hashId, CHANCE_MISS);
+		DestroyUnitModifier(hashId, CHANCE_TRUE_STRIKE);
+
+		DestroyUnitModifier(hashId, DEC_ENTER_TIME_POS_BUFF);
+		DestroyUnitModifier(hashId, DEC_ENTER_TIME_NEG_BUFF);
+		DestroyUnitModifier(hashId, DEC_OUT_TIME_POS_BUFF);
+		DestroyUnitModifier(hashId, DEC_OUT_TIME_NEG_BUFF);
+
+		DestroyUnitModifier(hashId, NON_STACK_PT_BLOCK_ANY_DAMAGE);
+		DestroyUnitModifier(hashId, ADD_TIME_POS_BUFF);
+		DestroyUnitModifier(hashId, ADD_TIME_NEG_BUFF);
+		DestroyUnitModifier(hashId, DEC_PERIOD_BUFF);
+		DestroyUnitModifier(hashId, DEC_TIME_NEG_PER_BUFF);
+	}
+	
+}

@@ -1,0 +1,301 @@
+library DynamicProjectiles requires GameUtils, VectorAPI {
+
+	public struct DynamicProjectile {
+		integer object;
+
+		unit projectile;
+		real vx, vy, vz;
+
+		real size, mass, gravity;
+
+		integer countBounces;
+		real friction;
+		real bounceResistZ;
+		real bounceResistXY;
+		real airResist;
+
+		boolean isColliding;
+		boolean skipDetect;
+
+		string func;
+
+		Vec3 v;
+
+		static real INTERVAL = 1./40.;
+		static group Group;
+		static rect Bounds;
+		static key HID;
+
+		static method create(
+			integer object,
+			unit projectile,
+			string func,
+			real vx,
+			real vy,
+			real vz,
+			real bounceResistZ,
+			real bounceResistXY,
+			real airResist,
+			real friction,
+			real size,
+			real mass,
+			real gravity
+		) -> DynamicProjectile {
+			DynamicProjectile this = DynamicProjectile.allocate();
+			this.object = object;
+			this.projectile = projectile;
+			this.v = Vec3.createAt(GetUnitX(projectile), GetUnitY(projectile), GetUnitZ(projectile));
+			this.vx = vx;
+			this.vy = vy;
+			this.vz = vz;
+			this.func = func;
+
+			this.countBounces = 0;
+			this.isColliding = false;
+			this.skipDetect = false;
+			this.bounceResistZ = (1 - bounceResistZ);
+			this.bounceResistXY = (1 - bounceResistXY);
+			this.airResist = airResist / INTERVAL;
+			this.friction = friction / INTERVAL;
+			this.size = size;
+			this.mass = mass;
+			this.gravity = gravity;
+
+			GroupAddUnit(this.Group, this.projectile);
+
+			SaveInteger(HT, GetHandleId(projectile), DynamicProjectile.HID, this);
+
+			return this;
+		}
+
+		static method load(unit whichUnit) -> DynamicProjectile {
+			return LoadInteger(HT, GetHandleId(whichUnit), DynamicProjectile.HID);
+		}
+
+		method destroy() {
+			GroupRemoveUnit(this.Group, projectile);
+			FlushChildHashtable(HT, GetHandleId(projectile));
+			KillUnit(projectile);
+			projectile = null;
+			v.destroy();
+			this.deallocate();
+		}
+
+		method executeEvent(
+			boolean isBounce,
+			boolean isCollide,
+			boolean isStopped
+		) {
+			SPELL_IS_BOUNCE_GET = isBounce;
+			SPELL_IS_COLLIDE_GET = isCollide;
+			SPELL_IS_STOPPED_GET = isStopped;
+			SPELL_OBJECT_GET = object;
+			ExecuteFunc(func);
+			SPELL_IS_BOUNCE_GET = false;
+			SPELL_IS_COLLIDE_GET = false;
+			SPELL_IS_STOPPED_GET = false;
+			SPELL_OBJECT_GET = 0;
+		}
+
+		method bounce() {
+			countBounces += 1;
+			this.executeEvent(true, false, false);
+		}
+
+		method stopped() {
+			this.executeEvent(false, false, true);
+		}
+
+		method collide() {
+			isColliding = true;
+			this.executeEvent(false, true, false);
+		}
+
+		method notCollide() {
+			isColliding = false;
+		}
+
+		method move() {
+			vx -= vx * airResist * INTERVAL;
+			vy -= vy * airResist * INTERVAL;
+			vz -= vz * airResist * INTERVAL;  
+
+			if (isColliding) {
+				vx -= vx * friction * INTERVAL;
+				vy -= vy * friction * INTERVAL;
+				vz -= vz * friction * INTERVAL;
+			}
+			
+			vz -= gravity * INTERVAL;
+			
+			v.x += vx * INTERVAL;
+			v.y += vy * INTERVAL;
+			v.z += vz * INTERVAL;
+
+			SetUnitXYZ(projectile, v.x, v.y, v.z);
+			if (isColliding && AbsReal(vx) < 20. && AbsReal(vy) < 20. && AbsReal(vz) < 20.) {
+				this.stopped();
+			}
+		}
+
+	}
+
+	function DetectCollisions() {
+		group g1 = CreateGroup();
+		group g2 = CreateGroup();
+		unit u1;
+		unit u2;
+		DynamicProjectile obj1;
+		DynamicProjectile obj2;
+		Vec3 vCollision;
+		Vec3 vCollisionNorm;
+		Vec3 vRelativeVelocity;
+		Vec3 vImpulse;
+		real dist, speed, impulse;
+		
+		//	WtF!??
+		GroupAddGroup(DynamicProjectile.Group, g1);
+		
+		u1 = FirstOfGroup(g1);
+		while (u1 != null) {
+			obj1 = DynamicProjectile.load(u1);
+			if (!obj1.skipDetect) {
+				
+				obj1.notCollide();
+				
+				// Check for left and right
+				if (obj1.v.x <= GetRectMinX(DynamicProjectile.Bounds)) {
+					obj1.collide();
+					obj1.vx = AbsReal(obj1.vx) * obj1.bounceResistXY;
+					obj1.vy = obj1.vy * obj1.bounceResistXY;
+					obj1.vz = obj1.vz * obj1.bounceResistZ;
+					obj1.v.x = GetRectMinX(DynamicProjectile.Bounds);
+				} else if (obj1.v.x >= GetRectMaxX(DynamicProjectile.Bounds)) {
+					obj1.isColliding = true;
+					obj1.vx = -AbsReal(obj1.vx) * obj1.bounceResistXY;
+					obj1.vy = obj1.vy * obj1.bounceResistXY;
+					obj1.vz = obj1.vz * obj1.bounceResistZ;
+					obj1.v.x = GetRectMaxX(DynamicProjectile.Bounds);
+				}
+
+				// Check for bottom and top
+				if (obj1.v.y <= GetRectMinY(DynamicProjectile.Bounds)) {
+					obj1.collide();
+					obj1.vx = obj1.vx * obj1.bounceResistXY;
+					obj1.vy = AbsReal(obj1.vy) * obj1.bounceResistXY;
+					obj1.vz = obj1.vz * obj1.bounceResistZ;
+					obj1.v.y = GetRectMinY(DynamicProjectile.Bounds);
+				} else if (obj1.v.y >= GetRectMaxY(DynamicProjectile.Bounds)) {
+					obj1.collide();
+					obj1.vx = obj1.vx * obj1.bounceResistXY;
+					obj1.vy = -AbsReal(obj1.vy) * obj1.bounceResistXY;
+					obj1.vz = obj1.vz * obj1.bounceResistZ;
+					obj1.v.y = GetRectMaxY(DynamicProjectile.Bounds);
+				}
+
+				// Check for terrain
+				if (obj1.v.z - obj1.size < GetTerrainZ(obj1.v.x + obj1.vx * obj1.INTERVAL * obj1.size / 10, obj1.v.y + obj1.vy * obj1.INTERVAL * obj1.size / 10)) {
+					obj1.collide();
+					obj1.vx = obj1.vx * obj1.bounceResistXY;
+					obj1.vy = obj1.vy * obj1.bounceResistXY;
+					obj1.vz = obj1.vz * obj1.bounceResistZ;
+
+					vImpulse = Vec3.createAt(obj1.vx, obj1.vy, obj1.vz);
+
+					ReflectVectorTerrain(vImpulse, (obj1.v.x + obj1.vx * obj1.INTERVAL * obj1.size / 10 + obj1.v.x)/2, (obj1.v.y + obj1.vy * obj1.INTERVAL * obj1.size / 10 + obj1.v.y)/2);
+
+					obj1.vx = vImpulse.x;
+					obj1.vy = vImpulse.y;
+					obj1.vz = vImpulse.z;
+					vImpulse.destroy();
+				}
+
+				// Check for down
+				if (obj1.v.z <= GetTerrainZ(obj1.v.x, obj1.v.y) + obj1.size) {
+					obj1.collide();
+					obj1.bounce();
+					obj1.vx = obj1.vx * obj1.bounceResistXY;
+					obj1.vy = obj1.vy * obj1.bounceResistXY;
+					obj1.vz = AbsReal(obj1.vz) * obj1.bounceResistZ;
+					obj1.v.z = GetTerrainZ(obj1.v.x, obj1.v.y) + obj1.size;
+				}
+
+				FilterUnit = u1;
+				GroupEnumUnitsInRange(g2, obj1.v.x, obj1.v.y, obj1.size + 64, Condition(function() -> boolean {
+					DynamicProjectile obj1 = DynamicProjectile.load(FilterUnit);
+					DynamicProjectile obj2 = DynamicProjectile.load(GetFilterUnit());
+					real distance = SquareRoot(Pow(obj2.v.x - obj1.v.x, 2) + Pow(obj2.v.y - obj1.v.y, 2) + Pow(obj2.v.z - obj1.v.z, 2));
+					return (GetFilterUnit() != FilterUnit) && (distance <= obj1.size + obj1.size);
+				}));
+
+				u2 = FirstOfGroup(g2);
+				if (u2 != null) obj1.collide();
+
+				while (u2 != null) {
+					obj2 = DynamicProjectile.load(u2);
+					obj2.collide();
+
+					vCollision = Vec3.clone(obj2.v);
+					vCollision.sub(obj1.v);
+
+					dist = obj2.v.distTo(obj1.v);
+
+					vCollisionNorm = Vec3.clone(vCollision);
+					vCollisionNorm.div(dist);
+
+					vRelativeVelocity = Vec3.createAt(obj1.vx - obj2.vx, obj1.vy - obj2.vy, obj1.vz - obj2.vz);
+
+					speed = vRelativeVelocity.dot(vCollisionNorm);
+
+					speed *= MinReal(obj1.bounceResistZ, obj2.bounceResistZ);
+
+					if (speed >= 0) {
+						impulse = 2 * speed / (obj1.mass + obj2.mass);
+					
+						obj1.vx -= (impulse * obj2.mass * vCollisionNorm.x);
+						obj1.vy -= (impulse * obj2.mass * vCollisionNorm.y);
+						obj1.vz -= (impulse * obj2.mass * vCollisionNorm.z);
+						obj2.vx += (impulse * obj1.mass * vCollisionNorm.x);
+						obj2.vy += (impulse * obj1.mass * vCollisionNorm.y);
+						obj2.vz += (impulse * obj1.mass * vCollisionNorm.z);
+						obj2.skipDetect = true;
+					}
+					
+					vCollision.destroy();
+					vCollisionNorm.destroy();
+					vRelativeVelocity.destroy();
+					
+					GroupRemoveUnit(g2, u2);
+					u2 = FirstOfGroup(g2);
+				}
+			} else {
+				obj1.skipDetect = false;
+			}
+
+			GroupRemoveUnit(g1, u1);
+			u1 = FirstOfGroup(g1);
+		}
+
+		DestroyGroup(g1);
+		g1 = null;
+		DestroyGroup(g2);
+		g2 = null;
+		u1 = null;
+		u2 = null;
+	}
+
+	function onInit() {
+		timer tm = CreateTimer();
+		DynamicProjectile.Group = CreateGroup();
+		DynamicProjectile.Bounds = GetWorldBounds();
+
+
+		TimerStart(tm, DynamicProjectile.INTERVAL, true, function() {
+			DetectCollisions();
+			ForGroup(DynamicProjectile.Group, function() {
+				DynamicProjectile.load(GetEnumUnit()).move();
+			});
+		});
+	}
+	
+}

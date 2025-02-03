@@ -1,0 +1,62 @@
+library VectorAPI requires Vector {
+
+	public function AngleBetweenVectors(Vec3 first, Vec3 second) -> real {
+		return Acos((first.x*second.x + first.y*second.y + first.z*second.z)/SquareRoot(first.x*first.x + first.y*first.y + first.z*first.z)*SquareRoot(second.x*second.x + second.y*second.y + second.z*second.z));
+	}
+
+	public function DotProduct(Vec3 first, Vec3 second) -> real {
+		return first.x*second.x + first.y*second.y + first.z*second.z;
+	}
+
+	public function CrossProduct(Vec3 edge1, Vec3 edge2) -> Vec3 {
+		return Vec3.createAt(edge1.y*edge2.z - edge1.z*edge2.y, edge1.z*edge2.x - edge1.x*edge2.z, edge1.x*edge2.y - edge1.y*edge2.x);
+	}
+
+	public function VectorSum(Vec3 summand1, Vec3 summand2) -> Vec3 {
+		return Vec3.createAt(summand1.x + summand2.x, summand1.y + summand2.y, summand1.z + summand2.z);
+	}
+
+	public function VectorSub(Vec3 minuend, Vec3 subtrahend) -> Vec3 {
+		return Vec3.createAt(minuend.x - subtrahend.x, minuend.y - subtrahend.y, minuend.z - subtrahend.z);
+	}
+
+	public function VectorMult(Vec3 multiplied, real multipler) -> Vec3 {
+		return Vec3.createAt(multiplied.x*multipler, multiplied.y*multipler, multiplied.z*multipler);
+	}
+
+	public function VectorDiv(Vec3 dividend, real divisor) -> Vec3 {
+		return Vec3.createAt(dividend.x/divisor, dividend.y/divisor, dividend.z/divisor);
+	}
+
+	public function TriangleNormal(Vec3 a, Vec3 b, Vec3 c) -> Vec3 {
+		Vec3 edge1 = Vec3.clone(b).sub(a);
+		Vec3 edge2 = Vec3.clone(a).sub(a);
+		Vec3 result = CrossProduct(edge1, edge2).normalize();
+		edge1.destroy();
+		edge2.destroy();
+		return result;
+	}
+
+	public function TerrainNormal(real x, real y) -> Vec3 {
+		Vec3 vertex = Vec3.createAt(x, y + 2.0, GetTerrainZ(x, y + 2.0));
+		Vec3 edge1 = Vec3.createAt(x - 1.0, y - SQRT3, GetTerrainZ(x - 1.0, y - SQRT3)).sub(vertex);
+		Vec3 edge2 = Vec3.createAt(x - 1.0, y + SQRT3, GetTerrainZ(x - 1.0, y + SQRT3)).sub(vertex);
+		Vec3 result = CrossProduct(edge1, edge2).normalize();
+		vertex.destroy();
+		edge1.destroy();
+		edge2.destroy();
+		return result;
+	}
+
+	public function ReflectVector(Vec3 toReflect, Vec3 normal) {
+		Vec3 tempNormal = Vec3.clone(normal);
+		toReflect.sub(tempNormal.scale(2.0*DotProduct(tempNormal, toReflect)));
+		tempNormal.destroy();
+	}
+
+	public function ReflectVectorTerrain(Vec3 toReflect, real x, real y) {
+		Vec3 terrainNormal = TerrainNormal(x, y);
+		toReflect.sub(terrainNormal.scale(2.0*DotProduct(terrainNormal, toReflect)));
+		terrainNormal.destroy();
+	}
+}

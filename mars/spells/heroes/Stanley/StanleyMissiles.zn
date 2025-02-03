@@ -1,0 +1,222 @@
+library StanleyMissiles requires Events {
+	constant integer ABILITY_MISSILES_ID = 'A064';
+	constant integer UNIT_MISSILE_ID = 'h00M';
+	constant integer TALENT_CD_ID = 'A0E3';
+	constant integer TALENT_COUNT_ID = 'A1U4';
+	constant real BASE_DMG = 175.;
+	constant real ADD_DMG_MEFISTO = 75.;
+	constant real COOLDOWN = 2;
+	constant real COOLDOWN_MEFISTO = 1.5;
+	constant integer COUNT_MISSILES = 1;
+	constant integer ADD_COUNT_MISSILES_TALENT = 1;
+	constant integer ADD_COUNT_MISSILES_MEFISTO = 1;
+	constant real RANGE = 900.;
+	constant real MIN_FACTOR_DMG = 0.20;
+	constant real SPLASH_RANGE = 135;
+	constant real WAIT_MISSILE = 0.3;
+	constant real SPEED_MISSILE = 900.;
+	constant real APSIS_MISSILE = 200.;
+
+	struct Missile {
+		unit owner;
+		unit target;
+		unit missile;
+		real dmg;
+		timer tm;
+		static integer CK_HID = 0;
+
+		static method create(unit owner, unit target, real dmg, real wait) -> Missile {
+			Missile this = Missile.allocate();
+			this.owner = owner;
+			this.target = target;
+			this.dmg = dmg;
+			this.tm = CreateTimer();
+			SaveInteger(HT, GetHandleId(this.tm), CK_HID, this);
+			TimerStart(this.tm, wait, false, function() {
+				integer parentKey = GetHandleId(GetExpiredTimer());
+				Missile this = LoadInteger(HT, parentKey, CK_HID);
+				missile = CreateUnit(GetOwningPlayer(owner), UNIT_MISSILE_ID, GetUnitX(owner), GetUnitY(owner), AngleBetweenWidgets(owner, target));
+				CreateStaticProjectileFunc(this, owner, target, missile, Missile.hit.name, SPEED_MISSILE, APSIS_MISSILE, 0, false);
+			});
+			return this;
+		}
+
+		method destroy() {
+			FlushChildHashtable(HT, GetHandleId(tm)); PauseTimer(tm); DestroyTimer(tm); tm = null;
+			missile = null;
+			owner = null;
+			target = null;
+			this.deallocate();
+		}
+
+		static method hit() {
+			Missile this = GetSpellObject();
+			real x = GetSpellX();
+			real y = GetSpellY();
+			group gr = CreateGroup();
+
+			if (UnitAlive(target) && GetSpellIsFocused()) {
+				UnitDamageToTarget(owner, target, dmg, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+			}
+
+			This = this;
+			GroupEnumUnitsInRange(gr, x, y, SPLASH_RANGE, Condition(function() -> boolean {
+				Missile this = This;
+				FilterUnit = GetFilterUnit();
+				return
+					UnitAlive(FilterUnit) &&
+					!IsUnitAlly(FilterUnit, GetOwningPlayer(owner)) && 
+					!IsUnitType(FilterUnit, UNIT_TYPE_MAGIC_IMMUNE) &&
+					!IsUnitType(FilterUnit, UNIT_TYPE_MECHANICAL) &&
+					FilterUnit != target;
+			}));
+
+			TempX = x;
+			TempY = y;
+			ForGroup(gr, function() {
+				Missile this = This;
+				unit selected = GetEnumUnit();
+				UnitDamageToTarget(owner, selected, dmg * (1 - ((1 - MIN_FACTOR_DMG)/SPLASH_RANGE * DistanceBetweenCoords(TempX, TempY, GetWidgetX(selected), GetWidgetY(selected)))), ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+				selected = null;
+			});
+				
+			this.destroy();
+			DestroyGroup(gr); gr = null;
+		}
+	}
+
+	key STANLEY_E_HID;
+
+	public struct StanleyE {
+		unit owner;
+		real dmg;
+		real cd;
+		integer count;
+		timer tm;
+		
+		static method create(unit owner) -> StanleyE {
+			StanleyE this = StanleyE.allocate();
+			this.owner = owner;
+			this.update();
+			this.tm = CreateTimer();
+			SaveInteger(HT, GetHandleId(this.tm), STANLEY_E_HID, this);
+			TimerStart(this.tm, this.cd, false, function StanleyE.action);
+			return this;
+		}
+
+		static method load(integer parentKey) -> StanleyE {
+			return LoadInteger(HT, parentKey, STANLEY_E_HID);
+		}
+
+		static method get(unit owner) -> StanleyE {
+			StanleyE this;
+			this = StanleyE.load(GetHandleId(owner));
+
+			if (this <= 0)
+				return StanleyE.create(owner);
+			else
+				return this;
+		}
+
+		method update() {
+			dmg = BASE_DMG;
+			count = COUNT_MISSILES;
+			if (UnitHasMefisto(owner)) {
+				dmg += ADD_DMG_MEFISTO;
+				count += ADD_COUNT_MISSILES_MEFISTO;
+			}
+			if (UnitHasTalent(owner, TALENT_COUNT_ID))
+				count += ADD_COUNT_MISSILES_TALENT;
+
+			if (UnitHasTalent(owner, TALENT_CD_ID))
+				cd = COOLDOWN_MEFISTO;
+			else
+				cd = COOLDOWN;
+		}
+
+		method destroy() {
+			RemoveSavedInteger(HT, GetHandleId(owner), STANLEY_E_HID);
+			FlushChildHashtable(HT, GetHandleId(tm)); PauseTimer(tm); DestroyTimer(tm); tm = null;
+			owner = null;
+			this.deallocate();
+		}
+
+		static method action() {
+			StanleyE this = StanleyE.load(GetHandleId(GetExpiredTimer()));
+			integer i;
+			group gr = CreateGroup();
+			unit target;
+			real cdTrue = 0.15;
+			this.update();
+			if (UnitAlive(owner) && !IsUnitPaused(owner)) {
+				This = this;
+				GroupEnumUnitsInRange(gr, GetUnitX(owner), GetUnitY(owner), RANGE, Condition(function() -> boolean {
+					StanleyE this = This;
+					FilterUnit = GetFilterUnit();
+					return
+						UnitAlive(FilterUnit) &&
+						IsUnitVisible(FilterUnit, GetOwningPlayer(owner)) &&
+						!IsUnitAlly(FilterUnit, GetOwningPlayer(owner)) && 
+						!IsUnitType(FilterUnit, UNIT_TYPE_MAGIC_IMMUNE) && 
+						!IsUnitInvulnerable(FilterUnit) &&
+						!IsUnitType(FilterUnit, UNIT_TYPE_MECHANICAL) &&
+						IsUnitType(FilterUnit, UNIT_TYPE_HERO);
+				}));
+				if (FirstOfGroup(gr) == null)
+					GroupEnumUnitsInRange(gr, GetUnitX(owner), GetUnitY(owner), RANGE, Condition(function() -> boolean {
+						StanleyE this = This;
+						FilterUnit = GetFilterUnit();
+						return
+							UnitAlive(FilterUnit) &&
+							IsUnitVisible(FilterUnit, GetOwningPlayer(owner)) &&
+							!IsUnitAlly(FilterUnit, GetOwningPlayer(owner)) &&
+							!IsUnitInvulnerable(FilterUnit) &&
+							!IsUnitType(FilterUnit, UNIT_TYPE_MECHANICAL) &&
+							!IsUnitType(FilterUnit, UNIT_TYPE_MAGIC_IMMUNE);
+					}));
+
+				i = 0;
+				TempUnit = null;
+				while (i < count) {
+					i = i + 1;
+					if (FirstOfGroup(gr) != null || TempUnit != null)  {
+						cdTrue = cd;
+						target = GroupPickRandomUnit(gr);
+						if (target == null) target = TempUnit;
+						if (!IsUnitType(target, UNIT_TYPE_HERO)) {
+							GroupRemoveUnit(gr, target);
+							TempUnit = target;
+						}
+						Missile.create(owner, target, dmg, i * WAIT_MISSILE);
+					}
+				}
+			}
+			TimerStart(tm, cdTrue, false, function StanleyE.action);
+			DestroyGroup(gr); gr = null;
+			target = null;
+		}
+	}
+
+	public function StanleyMissiles(unit owner) {
+		if (UnitHasAbility(owner, ABILITY_MISSILES_ID) &&
+			GetHeroLevel(owner) >= 15 &&
+			StanleyE.load(GetHandleId(owner)) == 0
+		) {
+			SaveInteger(HT, GetHandleId(owner), STANLEY_E_HID, StanleyE.get(owner));
+		}
+	}
+	
+	function onInit() {
+
+		LevelAddAction(function() {
+			StanleyMissiles(GetTriggerUnit());
+		});
+		EnterAddAction(function() {
+			StanleyMissiles(GetTriggerUnit());
+		});
+
+		ForGroup(INIT_UNITS, function() {
+			StanleyMissiles(GetEnumUnit());
+		});
+	}
+}

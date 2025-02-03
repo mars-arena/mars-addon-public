@@ -1,0 +1,19 @@
+library DodgeStaticModifiers requires Events {
+
+	function onInit() {
+		DodgeModifierAddAction(function() {
+			if (IsModifierAttack()) {
+				AddModifierTrueStrikeChance(
+					GetUnitModifier(GetModifierAttackingUnit(), CHANCE_TRUE_STRIKE)
+				);
+				AddModifierMissChance(
+					GetUnitModifier(GetModifierAttackingUnit(), CHANCE_MISS)
+				);
+				AddModifierDodgeChance(
+					GetUnitModifier(GetModifierAttackedUnit(), CHANCE_DODGE_ATTACK)
+				);
+			}
+		});
+	}
+
+}

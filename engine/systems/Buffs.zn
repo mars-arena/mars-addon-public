@@ -1,0 +1,1177 @@
+library Buffs requires GameUtils {
+	constant integer MaxCountBuffTarget = 100; //Максимальное количество типов бафов, которые могут действовать на одну цель
+	
+	key BuffTarget_hid;
+
+	public Buff TempBuff;
+
+	constant integer CK_HID = 0;
+	constant real tic = 0.03125;
+
+/*----------------Getters------------------------------------------------------------------------------------------------------------------------------------ */
+
+	public function GetBuffDataInt(Buff buf) -> integer { return buf.dataInt; }
+
+	public function GetBuffDataReal(Buff buf) -> real { return buf.dataReal; }
+
+	public function GetBuffOwnerUnit(Buff buf) -> unit { return buf.ownerUnit; }
+	
+	public function GetBuffTargetUnit(Buff buf) -> unit { return buf.targetUnit; }
+	
+	public function GetBuffActionsId(Buff buf) -> integer { return buf.actionsId; }
+	
+	public function GetBuffMaxDuration(Buff buf) -> real { return buf.duration; }
+
+	public function GetBuffDefaultDuration(Buff buf) -> real { return buf.defaultDuration; }
+	
+	public function GetBuffRemainingTimeToAction(Buff buf) -> real { return TimerGetRemaining(buf.tmPerActions); }
+	
+	public function GetBuffRemainingDuration(Buff buf) -> real { return buf.duration - buf.time; }
+	
+	public function GetBuffRank(Buff buf) -> integer { return buf.rank; }
+	
+	public function GetBuffDispelDifficulty(Buff buf) -> integer { return buf.dispelDifficulty; }
+	
+	public function GetBuffStackable(Buff buf) -> boolean { return buf.stackable; }
+	
+	public function GetBuffSingleDuration(Buff buf) -> boolean { return buf.singleDuration; }
+	
+	public function GetBuffSingleOutEnter(Buff buf) -> boolean { return buf.singleOutEnter; }
+
+	public function GetBuffSinglePeriod(Buff buf) -> boolean { return buf.singlePeriod; }
+	
+	public function GetBuffPierceSpellImmun(Buff buf) -> boolean { return buf.pierceSpellImmun; }
+	
+	public function GetBuffPierceInvul(Buff buf) -> boolean { return buf.pierceInvul; }
+	
+	public function GetBuffPierceDeath(Buff buf) -> boolean { return buf.pierceDeath; }
+	
+	public function GetBuffPeriodActions(Buff buf) -> boolean { return buf.periodActions; }
+	
+	public function GetBuffPeriod(Buff buf) -> real { return buf.period; }
+	
+/*----------------Setters------------------------------------------------------------------------------------------------------------------------------------ */
+
+	public function SetBuffDataInt(Buff buf, integer dataInt) { buf.dataInt = dataInt; }
+
+	public function SetBuffDataReal(Buff buf, real dataReal) { buf.dataReal = dataReal; }
+
+	public function SetBuffOwner(Buff buf, unit ownerUnit) { buf.ownerUnit = ownerUnit; }
+	
+	public function SetBuffTarget(Buff buf, unit targetUnit) { buf.targetUnit = targetUnit; }
+	
+	public function SetBuffActionsId(Buff buf, integer actionsId) { buf.actionsId = actionsId; }
+	
+	public function SetBuffDuration(Buff buf, real duration) {
+		buf.defaultDuration = duration;
+		if (duration == 0)  {
+			duration = duration;
+		} else if (buf.rank == 0) {
+			duration = duration + GetUnitModifier(buf.ownerUnit, ADD_TIME_NEG_BUFF);
+		} else if (buf.rank == 1) {
+			duration = duration + GetUnitModifier(buf.ownerUnit, ADD_TIME_POS_BUFF);
+		}
+
+		buf.duration = duration;
+	}
+
+	public function ReduceBuffRemainingDuration(Buff buf, real coef) {
+		buf.duration = GetBuffMaxDuration(buf) - (GetBuffRemainingDuration(buf) * coef);
+	}
+
+	public function AddBuffRemainingDuration(Buff buf, real duration) {
+		buf.duration = buf.duration + duration;
+	}
+
+	public function SetBuffRank(Buff buf, integer rank) { buf.rank = rank; }
+	
+	public function SetBuffDispelDifficulty(Buff buf, integer dispelDifficulty) { buf.dispelDifficulty = dispelDifficulty; }
+	
+	public function SetBuffStackable(Buff buf, boolean stackable) { buf.stackable = stackable; }
+	
+	public function SetBuffSingleDuration(Buff buf, boolean singleDuration) { buf.singleDuration = singleDuration; }
+	
+	public function SetBuffSingleOutEnter(Buff buf, boolean singleOutEnter) { buf.singleOutEnter = singleOutEnter; }
+
+	public function SetBuffSinglePeriod(Buff buf, boolean singlePeriod) { buf.singlePeriod = singlePeriod; }
+	
+	public function SetBuffPierceSpellImmun(Buff buf, boolean pierceSpellImmun) { buf.pierceSpellImmun = pierceSpellImmun; }
+	
+	public function SetBuffPierceInvul(Buff buf, boolean pierceInvul) { buf.pierceInvul = pierceInvul; }
+	
+	public function SetBuffPierceDeath(Buff buf, boolean pierceDeath) { buf.pierceDeath = pierceDeath; }
+	
+	public function SetBuffPeriod(Buff buf, real period) {
+		buf.period = period;
+		if (buf.periodActions) {
+			TimerStart(buf.tmPerActions, GetBuffRemainingTimeToAction(buf), false, function Buff.perNextActions);
+		}
+	}
+	
+/*----------------Main------------------------------------------------------------------------------------------------------------------------------------- */
+
+	public function GetUnitBuffByType(unit u, integer typeId) -> Buff {
+		BuffTarget bTarget = LoadInteger(HT, GetHandleId(u), BuffTarget_hid);
+		integer i = 0;
+		if (bTarget == 0) {
+			return 0;
+		}
+
+		for (1 <= i <= bTarget.countBuffs) {
+			if (bTarget.buffs[i].typeId == typeId) {
+				return bTarget.buffs[i];
+			}
+		}
+		return 0;
+	}
+
+	public function DestroyAllBuffsByHashId(integer hashId) {
+		BuffTarget bTarget = LoadInteger(HT, hashId, BuffTarget_hid);
+		integer i = 0;
+		if (bTarget == 0) {
+			return;
+		}
+
+		i = 1;
+		while(i <= bTarget.countBuffs) {
+			if (bTarget.buffs[i] != 0) {
+				BuffTarget.UnRegBuffForHashId(hashId, bTarget.buffs[i], true);
+				i = 1;
+			} else {
+				i = i + 1;
+			}
+		}
+	}
+
+	public function DestroyUnitBuffs(unit u, integer rank, integer dispelDifficulty) {
+		BuffTarget bTarget = LoadInteger(HT, GetHandleId(u), BuffTarget_hid);
+		integer i = 0;
+		if (bTarget == 0) {
+			return;
+		}
+		
+		i = 1;
+		while(i <= bTarget.countBuffs) {
+			if (bTarget.buffs[i].rank == rank && bTarget.buffs[i].dispelDifficulty <= dispelDifficulty && bTarget.buffs[i] != 0) {
+				BuffTarget.UnRegBuffForUnit(u, bTarget.buffs[i], true);
+				i = 1;
+			} else {
+				i = i + 1;
+			}
+		}
+	}
+
+	public function DestroyUnitBuff(unit u, Buff buf, boolean onOut) {
+		if (buf != 0) BuffTarget.UnRegBuffForUnit(u, buf, onOut);
+	}
+
+	public function IsUnitBuffByType(unit u, integer typeId) -> boolean {
+		BuffTarget bTarget = LoadInteger(HT, GetHandleId(u), BuffTarget_hid);
+		integer i = 0;
+		if (bTarget == 0) {
+			return false;
+		}
+		
+		for (1 <= i <= bTarget.countBuffs) {
+			if (bTarget.buffs[i].typeId == typeId) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function IsUnitBuffByActionId(unit u, integer actionsId) -> boolean {
+		BuffTarget bTarget = LoadInteger(HT, GetHandleId(u), BuffTarget_hid);
+		integer i = 0;
+		if (bTarget == 0) {
+			return false;
+		}
+		
+		for (1 <= i <= bTarget.countBuffs) {
+			if (bTarget.buffs[i].actionsId == actionsId) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function RefreshDurationBuff(Buff buf) { buf.time = 0; }
+
+	public function ExecuteBuffActions(Buff buf) {
+		buf.perAction(null, true);
+	}
+
+	public function ExecuteBuffStackActions(Buff buf, timer buffStack) {
+		buf.perAction(buffStack, true);
+	}
+
+	public function EnableBuffPeriod(Buff buf) {
+		if (buf.period > 0) {
+			if (buf.periodActions) {
+				TimerStart(buf.tmPerActions, buf.period, false, function Buff.perNextActions);
+			} else {
+				buf.periodActions = true;
+				buf.tmPerActions = CreateTimer();
+				SaveInteger(HT, GetHandleId(buf.tmPerActions), 0, buf);
+				TimerStart(buf.tmPerActions, 0., false, function Buff.perNextActions);
+			}
+		}
+	}
+
+	function SetBuffStacks(Buff buf, integer stacks) { buf.stacks = stacks; }
+
+	public function GetBuffStacks(Buff buf) -> integer { return buf.stacks; }
+
+/*----------------Structure Buff----------------------------------------------------------------------------------------------------------------------------- */
+	
+
+	function StartBuffActions(
+		Buff buf,
+		timer buffStack,
+		unit ownerUnit,
+		unit targetUnit,
+		boolean isEntered,
+		boolean isOut,
+		boolean isActions,
+		integer actionsId,
+		boolean delay,
+		boolean isTransfer
+	) {
+		timer tm;
+		integer tmId;
+		if (delay || WantDelay) {
+			WantDelay = false;
+			tm = CreateTimer();
+			tmId = GetHandleId(tm);
+			SaveInteger(HT, tmId, 0, buf);
+			SaveTimerHandle(HT, tmId, 1, buffStack);
+			SaveUnitHandle(HT, tmId, 2, ownerUnit);
+			SaveUnitHandle(HT, tmId, 3, targetUnit);
+			SaveBoolean(HT, tmId, 4, isEntered);
+			SaveBoolean(HT, tmId, 5, isOut);
+			SaveBoolean(HT, tmId, 6, isActions);
+			SaveInteger(HT, tmId, 7, actionsId);
+			SaveBoolean(HT, tmId, 8, isTransfer);
+			TimerStart(tm, 0, false, function() {
+				timer tm = GetExpiredTimer();
+				integer tmId = GetHandleId(tm);
+				BuffId = LoadInteger(HT, tmId, 0);
+				BuffStack = LoadTimerHandle(HT, tmId, 1);
+				OwnerUnit = LoadUnitHandle(HT, tmId, 2);
+				TargetUnit = LoadUnitHandle(HT, tmId, 3);
+				IsEntered = LoadBoolean(HT, tmId, 4);
+				IsOut = LoadBoolean(HT, tmId, 5);
+				IsActions= LoadBoolean(HT, tmId, 6);
+				ActionsId = LoadInteger(HT, tmId, 7);
+				IsTransfer = LoadBoolean(HT, tmId, 8);
+				BuffActions.evaluate();
+				ExecuteFunc("Trig_BuffActionsGUI_Actions");
+				FlushChildHashtable(HT, tmId);
+				PauseTimer(tm);
+				DestroyTimer(tm);
+				tm = null;
+			});
+		} else {
+			BuffId = buf;
+			BuffStack = buffStack;
+			OwnerUnit = ownerUnit;
+			TargetUnit = targetUnit;
+			IsEntered = isEntered;
+			IsOut = isOut;
+			IsActions= isActions;
+			ActionsId = actionsId;
+			IsTransfer = isTransfer;
+			BuffActions.evaluate();
+			ExecuteFunc("Trig_BuffActionsGUI_Actions");
+		}
+		tm = null;
+	}
+
+	boolean DoNotEnter = false;
+	boolean IsWithModifiers = false;
+	
+	public struct Buff
+	{
+		unit ownerUnit;
+		unit targetUnit;
+		integer typeId;
+		integer actionsId;
+		real duration;
+		integer rank;
+		integer dispelDifficulty;
+		boolean stackable;
+		boolean singleDuration;
+		boolean singleOutEnter;
+		boolean singlePeriod;
+		boolean pierceSpellImmun;
+		boolean pierceInvul;
+		boolean pierceDeath;
+		boolean periodActions;
+		real period;
+		
+		integer dataInt;
+		real dataReal;
+		
+		integer countStacks;
+		integer stacks;
+
+		real defaultDuration;
+		
+		integer unitId;
+		
+		timer tmDuration;
+		timer tmPerActions;
+		real time;
+		
+		static method create(
+			unit ownerUnit,
+			unit targetUnit,
+			integer typeId,
+			integer actionsId,
+			real duration,
+			integer rank,
+			integer dispelDifficulty,
+			boolean stackable,
+			boolean singleDuration,    
+			boolean singleOutEnter, 
+			boolean singlePeriod,
+			integer countStacks,
+			boolean pierceSpellImmun, 
+			boolean pierceInvul,
+			boolean pierceDeath,
+			boolean periodActions,
+			real period,
+			real periodTimeRemaining,
+			real defaultDuration
+			)
+			-> Buff
+		{
+			Buff this = Buff.allocate();
+			this.ownerUnit = ownerUnit;
+			this.targetUnit = targetUnit;
+			this.typeId = typeId;
+			this.actionsId = actionsId;
+			this.duration = duration;
+			this.rank = rank;
+			this.dispelDifficulty = dispelDifficulty;
+			this.stackable = stackable;
+			this.singleDuration = singleDuration;
+			this.singleOutEnter = singleOutEnter;
+			this.singlePeriod = singlePeriod;
+			this.countStacks = countStacks;
+			this.pierceSpellImmun = pierceSpellImmun;
+			this.pierceInvul = pierceInvul;
+			this.pierceDeath = pierceDeath;
+			this.periodActions = periodActions;
+			this.period = period;
+			this.unitId = GetHandleId(targetUnit);
+			
+			this.dataInt = 0;
+			this.dataReal = 0.;
+
+			this.stacks = 0;
+
+			this.defaultDuration = defaultDuration;
+			
+			this.time = 0;
+			this.tmDuration = CreateTimer();
+			SaveInteger(HT, GetHandleId(this.tmDuration), CK_HID, this);
+			TimerStart(this.tmDuration, tic, true, function Buff.durationActions);
+
+			if (periodActions && period > 0 && (!stackable || (stackable && singlePeriod))) {
+				this.tmPerActions = CreateTimer();
+				SaveInteger(HT, GetHandleId(this.tmPerActions), CK_HID, this);
+				if (periodTimeRemaining > 0.) {
+					TimerStart(this.tmPerActions, periodTimeRemaining, false, function Buff.perNextActions);
+				} else {
+					TimerStart(this.tmPerActions, this.period, true, function Buff.perActions);
+				}
+			}
+			return this;
+		}
+		
+		method destroy() {
+			BuffStacks.Destroy(this);
+			ownerUnit = null;
+			targetUnit = null;
+			FlushChildHashtable(HT, GetHandleId(tmDuration));
+			FlushChildHashtable(HT, GetHandleId(tmPerActions));
+			PauseTimer(tmDuration);
+			DestroyTimer(tmDuration);
+			tmDuration = null;
+			PauseTimer(tmPerActions);
+			DestroyTimer(tmPerActions);
+			tmPerActions = null;
+			this.deallocate();
+		}
+		
+		method out(timer buffStack) {
+			StartBuffActions(
+				this,
+				buffStack,
+				ownerUnit,
+				targetUnit,
+				false,
+				true,
+				false,
+				actionsId,
+				false,
+				false
+			);
+		}
+		
+		method enter(timer buffStack, boolean isTransfer, boolean wantDelay) {
+			StartBuffActions(
+				this,
+				buffStack,
+				ownerUnit,
+				targetUnit,
+				true,
+				false,
+				false,
+				actionsId,
+				wantDelay,
+				isTransfer
+			);
+		}
+		
+		method perAction(timer buffStack, boolean wantDelay) {
+			StartBuffActions(
+				this,
+				buffStack,
+				ownerUnit,
+				targetUnit,
+				false,
+				false,
+				true,
+				actionsId,
+				wantDelay,
+				false
+			);
+		}
+		
+		static method perActions() {
+			Buff this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+			perAction(GetExpiredTimer(), false);
+		}
+		
+		static method perNextActions() {
+			Buff this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+			perAction(GetExpiredTimer(), false);
+			TimerStart(tmPerActions, period, true, function Buff.perActions);
+		}
+		
+		static method durationActions() {
+			Buff this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+			boolean onOut = true;
+			if (
+				(!pierceSpellImmun && IsUnitType(targetUnit, UNIT_TYPE_MAGIC_IMMUNE)) ||
+				(!pierceInvul && IsUnitInvulnerable(targetUnit)) ||
+				(!pierceDeath && !UnitAlive(targetUnit))
+			) {
+				BuffTarget.UnRegBuffForUnit(targetUnit, this, onOut);
+				return;
+			}
+			
+			time = time + tic;
+			if (time >= duration && duration != 0.) {
+				BuffTarget.UnRegBuffForUnit(targetUnit, this, onOut);
+				return;
+			}
+		}
+		
+	}
+
+/*----------------Structure BuffTarget----------------------------------------------------------------------------------------------------------------------- */
+
+	struct[60000] BuffTarget
+	{
+		unit targetUnit;
+		Buff buffs[MaxCountBuffTarget];
+		integer countBuffs = 0;
+		
+		static method create(unit targetUnit) -> BuffTarget {
+			BuffTarget this = BuffTarget.allocate();
+			this.targetUnit = targetUnit;
+			return this;
+		}
+		
+		method destroy() {
+			RemoveSavedInteger(HT, GetHandleId(targetUnit), BuffTarget_hid);
+			targetUnit = null;
+			this.deallocate();
+		}
+		
+		static method RegBuffForUnit(unit u, Buff buf, boolean onEnter, boolean wantDelay) {
+			BuffTarget bTarget;
+			integer i = 0;
+			if (LoadInteger(HT, GetHandleId(u), BuffTarget_hid) <= 0) {
+				bTarget = bTarget.create(u);
+				SaveInteger(HT, GetHandleId(u), BuffTarget_hid, bTarget);
+			} else {
+				bTarget = LoadInteger(HT, GetHandleId(u), BuffTarget_hid);
+			}
+			for (1 <= i <= bTarget.countBuffs) {
+				if (bTarget.buffs[i] == buf) {
+					dbgT("Error BT1: Регистрация уже зарегестрированного бафа для объекта(" + GetUnitName(u) + ").");
+					return;
+				}
+			}
+			
+			bTarget.countBuffs = bTarget.countBuffs + 1;
+			bTarget.buffs[bTarget.countBuffs] = buf;
+			
+			if (onEnter && !buf.stackable) {
+				buf.enter(null, false, wantDelay);
+			}
+		
+		}
+		
+		static method UnRegBuffForUnit(unit u, Buff buf, boolean onOut) {
+			BuffTarget bTarget = LoadInteger(HT, GetHandleId(u), BuffTarget_hid);
+			integer i = 0;
+			if (bTarget == 0) {
+				dbgT("Error BT2: Удаление бафа для не существующего объекта(" + GetUnitName(u) + "). id" + I2S(buf.unitId));
+				return;
+			}
+			
+			for (1 <= i <= bTarget.countBuffs) {
+				if (bTarget.buffs[i] == buf) {
+					bTarget.buffs[i] = bTarget.buffs[bTarget.countBuffs];
+					bTarget.buffs[bTarget.countBuffs] = 0;
+					bTarget.countBuffs = bTarget.countBuffs - 1;
+				}
+			}
+			
+			if (onOut && !buf.stackable) {
+				buf.out(null);
+			}
+			
+			buf.destroy();
+				
+			if (bTarget.countBuffs == 0) {
+				bTarget.destroy();
+				return;
+			}
+			
+		}
+		
+		static method UnRegBuffForHashId(integer hashId, Buff buf, boolean onOut) {
+			BuffTarget bTarget = LoadInteger(HT, hashId, BuffTarget_hid);
+			integer i = 0;
+			if (bTarget == 0) {
+				dbgT("Error BT3: Удаление бафа для не существующего объекта(" + I2S(hashId) + ").");
+				return;
+			}
+			
+			for (1 <= i <= bTarget.countBuffs) {
+				if (bTarget.buffs[i] == buf) {
+					bTarget.buffs[i] = bTarget.buffs[bTarget.countBuffs];
+					bTarget.buffs[bTarget.countBuffs] = 0;
+					bTarget.countBuffs = bTarget.countBuffs - 1;
+				}
+			}
+			
+			if (onOut && !buf.stackable) {
+				buf.out(null);
+			}
+			
+			buf.destroy();
+				
+			if (bTarget.countBuffs == 0) {
+				bTarget.destroy();
+				return;
+			}
+		}
+	}
+
+/*----------------BuffStacks--------------------------------------------------------------------------------------------------------------------------------- */
+
+	key BuffStacks_hid;
+	key BuffStacksBuff_hid;
+	key BuffStackDuration_hid;
+	key BuffStackDataInt_hid;
+	key BuffStackDataReal_hid;
+
+	struct BuffStacks
+	{
+		Buff buf;
+		location stacks;
+		location periods;
+		integer countStacks;
+		
+		static method create(Buff buf) -> BuffStacks {
+			BuffStacks this = BuffStacks.allocate();
+			this.buf = buf;
+			this.countStacks = 0;
+			this.stacks = Location(0, 0);
+			this.periods = Location(0, 0);
+			SaveInteger(HTBuff, buf, BuffStacks_hid, this);
+			return this;
+		}
+		
+		method destroy() {
+			integer i = 0;
+			timer tm;
+			for (1 <= i <= countStacks) {
+				tm = LoadTimerHandle(HT, GetHandleId(stacks), i);
+				SetBuffStacks(buf, GetBuffStacks(buf) - 1);
+				SetBuffDataInt(buf, GetBuffDataInt(buf) - LoadInteger(HT, GetHandleId(tm), BuffStackDataInt_hid));
+				SetBuffDataReal(buf, GetBuffDataReal(buf) - LoadReal(HT, GetHandleId(tm), BuffStackDataReal_hid));
+				if (!buf.singleOutEnter || GetBuffStacks(buf) == 0) buf.out(tm);
+				FlushChildHashtable(HT, GetHandleId(tm));
+				PauseTimer(tm);
+				DestroyTimer(tm);
+
+				tm = LoadTimerHandle(HT, GetHandleId(periods), i);
+				FlushChildHashtable(HT, GetHandleId(tm));
+				PauseTimer(tm);
+				DestroyTimer(tm);
+			}
+			FlushChildHashtable(HT, GetHandleId(stacks));
+			RemoveLocation(stacks);
+			RemoveSavedInteger(HTBuff, buf, BuffStacks_hid);
+			tm = null;
+			stacks = null;
+			this.deallocate();
+		}
+		
+		static method Destroy(Buff buf) {
+			BuffStacks whichStacks = LoadInteger(HTBuff, buf, BuffStacks_hid);
+			if (whichStacks > 0)
+				whichStacks.destroy();
+		}
+		
+		static method CopyToBuff(Buff oldBuf, Buff newBuf) {
+			BuffStacks whichStacks = LoadInteger(HTBuff, oldBuf, BuffStacks_hid);
+			integer i = 0;
+			timer tm;
+
+			if (whichStacks == 0) return;
+			
+			for (1 <= i <= whichStacks.countStacks) {
+				tm = LoadTimerHandle(HT, GetHandleId(whichStacks.stacks), i);
+				IsWithModifiers = true;
+				SaveUnitHandle(HT,
+					GetHandleId(BuffStacks.RegTimerForBuff(newBuf, TimerGetRemaining(tm), oldBuf.periodActions, oldBuf.period, LoadInteger(HT, GetHandleId(tm), BuffStackDataInt_hid), LoadInteger(HT, GetHandleId(tm), BuffStackDataReal_hid), false, true)),
+					0,
+					LoadUnitHandle(HT, GetHandleId(whichStacks.stacks), 0)
+				);
+				RemoveSavedHandle(HT, GetHandleId(whichStacks.stacks), 0);
+
+				IsWithModifiers = false;
+			}
+
+			tm = null;
+		}
+		
+		static method RegTimerForBuff(Buff buf, real duration, boolean periodActions, real period, integer dataInt, real dataReal, boolean wantDelay, boolean isTransfer) -> timer {
+			BuffStacks whichStacks;
+			integer i = 0;
+			timer tm;
+			timer tmPer;
+			timer whichTmPer;
+			timer whichTm;
+
+			if (LoadInteger(HTBuff, buf, BuffStacks_hid) <= 0)
+				whichStacks = BuffStacks.create(buf);
+			else
+				whichStacks = LoadInteger(HTBuff, buf, BuffStacks_hid);
+			
+			if (buf.countStacks <= whichStacks.countStacks && buf.countStacks > 0) {
+				tm = LoadTimerHandle(HT, GetHandleId(whichStacks.stacks), 1);
+				tmPer = LoadTimerHandle(HT, GetHandleId(whichStacks.periods), 1);
+				if (!buf.singleDuration) {
+					for (1 <= i <= whichStacks.countStacks) {
+						whichTm = LoadTimerHandle(HT, GetHandleId(whichStacks.stacks), i);
+						whichTmPer = LoadTimerHandle(HT, GetHandleId(whichStacks.periods), i);
+						if (TimerGetRemaining(whichTm) < TimerGetRemaining(tm)) {
+							tm = whichTm;
+							tmPer = whichTmPer;
+						}
+					}
+				}
+				SetBuffDataInt(buf, GetBuffDataInt(buf) - LoadInteger(HT, GetHandleId(tm), BuffStackDataInt_hid));
+				SetBuffDataReal(buf, GetBuffDataReal(buf) - LoadReal(HT, GetHandleId(tm), BuffStackDataReal_hid));
+				if (!buf.singleOutEnter) buf.out(tm);
+			} else {
+				tm = CreateTimer();
+				tmPer = CreateTimer();
+
+				whichStacks.countStacks += 1;
+				SaveTimerHandle(HT, GetHandleId(whichStacks.stacks), whichStacks.countStacks, tm);
+	
+				SetBuffStacks(buf, GetBuffStacks(buf) + 1);
+				SaveInteger(HT, GetHandleId(tm), BuffStacksBuff_hid, buf);
+				
+				SaveTimerHandle(HT, GetHandleId(whichStacks.periods), whichStacks.countStacks, tmPer);
+				SaveInteger(HT, GetHandleId(tmPer), CK_HID, buf);
+			}
+			
+			SetBuffDataInt(buf, GetBuffDataInt(buf) + dataInt);
+			SetBuffDataReal(buf, GetBuffDataReal(buf) + dataReal);
+			SaveInteger(HT, GetHandleId(tm), BuffStackDataInt_hid, dataInt);
+			SaveReal(HT, GetHandleId(tm), BuffStackDataReal_hid, dataReal);
+			
+			SaveReal(HT, GetHandleId(tm), BuffStackDuration_hid, duration);
+			
+			PauseTimer(tm);
+			PauseTimer(tmPer);
+
+			if (duration > 0. && !buf.singleDuration ) {
+				if (!IsWithModifiers) {
+					if (buf.rank == 0) {
+						duration = duration + GetUnitModifier(buf.ownerUnit, ADD_TIME_NEG_BUFF);
+					} else if (buf.rank == 1) {
+						duration = duration + GetUnitModifier(buf.ownerUnit, ADD_TIME_POS_BUFF);
+					}
+					IsWithModifiers = false;
+				}
+				
+				TimerStart(tm, duration, false, function() {
+					timer tm = GetExpiredTimer();
+					Buff buf = LoadInteger(HT, GetHandleId(tm), BuffStacksBuff_hid);
+					BuffStacks.UnRegTimerForBuff(buf, tm);
+					tm = null;
+				});
+			}
+		
+			if (!buf.singleOutEnter || GetBuffStacks(buf) == 1) buf.enter(tm, isTransfer, wantDelay);
+			
+			if (!buf.singlePeriod && periodActions && period > 0) {
+				TimerStart(tmPer, period, true, function Buff.perActions);
+			}
+			
+			TempTimer = tm;
+			tm = null;
+			tmPer = null;
+			whichTm = null;
+			whichTmPer = null;
+			return TempTimer;
+		}
+		
+		static method UnRegTimerForBuff(Buff buf, timer unTm) {
+			BuffStacks whichStacks = LoadInteger(HTBuff, buf, BuffStacks_hid);
+			integer i = 0;
+			timer whichTm;
+			
+			if (whichStacks == 0) {
+				dbgT("Error BuffStacks: Удаление таймера для несуществующего баффа юнита (" + I2S(buf) + ")");
+				return;
+			}
+			
+			for (1 <= i <= whichStacks.countStacks) {
+				whichTm = LoadTimerHandle(HT, GetHandleId(whichStacks.stacks), i);
+				if (whichTm == unTm) {
+					SaveTimerHandle(HT, GetHandleId(whichStacks.stacks), i, LoadTimerHandle(HT, GetHandleId(whichStacks.stacks), whichStacks.countStacks));
+					RemoveSavedHandle(HT, GetHandleId(whichStacks.stacks), whichStacks.countStacks);
+					
+					whichTm = LoadTimerHandle(HT, GetHandleId(whichStacks.periods), i);
+					SaveTimerHandle(HT, GetHandleId(whichStacks.periods), i, LoadTimerHandle(HT, GetHandleId(whichStacks.periods), whichStacks.countStacks));
+					RemoveSavedHandle(HT, GetHandleId(whichStacks.periods), whichStacks.countStacks);
+
+					FlushChildHashtable(HT, GetHandleId(whichTm));
+					PauseTimer(whichTm);
+					DestroyTimer(whichTm);
+					
+					break;
+				}
+			}
+			
+			whichStacks.countStacks -= 1;
+			SetBuffStacks(buf, GetBuffStacks(buf) - 1);
+			
+			SetBuffDataInt(buf, GetBuffDataInt(buf) - LoadInteger(HT, GetHandleId(unTm), BuffStackDataInt_hid));
+			SetBuffDataReal(buf, GetBuffDataReal(buf) - LoadReal(HT, GetHandleId(unTm), BuffStackDataReal_hid));
+			
+			if (!buf.singleOutEnter || GetBuffStacks(buf) == 0) buf.out(unTm);
+			
+			FlushChildHashtable(HT, GetHandleId(unTm));
+			PauseTimer(unTm);
+			DestroyTimer(unTm);
+				
+			if (whichStacks.countStacks == 0) whichStacks.destroy();
+			
+			whichTm = null;
+		}
+	
+	}
+
+	function AddBuffStackTimed(Buff buf, real duration, boolean periodActions, real period, integer dataInt, real dataReal, boolean wantDelay) { BuffStacks.RegTimerForBuff(buf, duration, periodActions, period, dataInt, dataReal, wantDelay, false); }
+
+	public function RefreshDurationBuffStacks(Buff buf) {
+		BuffStacks whichStacks = LoadInteger(HTBuff, buf, BuffStacks_hid);
+		integer i = 0;
+		timer tm;
+		real duration;
+		
+		if (whichStacks == 0 || buf.singleDuration) return;
+			
+		for (1 <= i <= whichStacks.countStacks) {
+			tm = LoadTimerHandle(HT, GetHandleId(whichStacks.stacks), i);
+			PauseTimer(tm);
+
+			duration = LoadReal(HT, GetHandleId(tm), BuffStackDuration_hid);
+
+			if (duration > 0.) {
+				if (buf.rank == 0) {
+					duration = duration + GetUnitModifier(buf.ownerUnit, ADD_TIME_NEG_BUFF);
+				} else if (buf.rank == 1) {
+					duration = duration + GetUnitModifier(buf.ownerUnit, ADD_TIME_POS_BUFF);
+				}
+
+				TimerStart(tm, duration, false, function() {
+					timer tm = GetExpiredTimer();
+					Buff buf = LoadInteger(HT, GetHandleId(tm), BuffStacksBuff_hid);
+					BuffStacks.UnRegTimerForBuff(buf, tm);
+					tm = null;
+				});
+			}
+		}
+		tm = null;
+	}
+	
+	public function GetBuffStackDataInt(timer buffStack) -> integer { return LoadInteger(HT, GetHandleId(buffStack), BuffStackDataInt_hid); }
+	
+	public function GetBuffStackDataReal(timer buffStack) -> real { return LoadReal(HT, GetHandleId(buffStack), BuffStackDataReal_hid); }
+
+	public function GetBuffStackRemainingDuration(timer buffStack) -> real { return TimerGetRemaining(buffStack); }
+	
+	public function SetBuffStackDataInt(Buff buf, timer buffStack, integer dataInt) {
+		SetBuffDataInt(buf, GetBuffDataInt(buf) - LoadInteger(HT, GetHandleId(buffStack), BuffStackDataInt_hid));
+		SaveInteger(HT, GetHandleId(buffStack), BuffStackDataInt_hid, dataInt);
+		SetBuffDataInt(buf, GetBuffDataInt(buf) + dataInt);
+	}
+	
+	public function SetBuffStackDataReal(Buff buf, timer buffStack, real dataReal) {
+		SetBuffDataReal(buf, GetBuffDataReal(buf) - LoadReal(HT, GetHandleId(buffStack), BuffStackDataReal_hid));
+		SaveReal(HT, GetHandleId(buffStack), BuffStackDataReal_hid, dataReal);
+		SetBuffDataReal(buf, GetBuffDataReal(buf) + dataReal);
+	}
+	
+/*----------------Main Functions----------------------------------------------------------------------------------------------------------------------------- */
+
+	public function AddBuffToUnit(
+		unit ownerUnit,             //владелец бафа
+		unit targetUnit,            //цель бафа
+		integer typeId,             //тип бафа
+		integer actionsId,          //id действий
+		real duration,              //длительность баффа
+		integer rank,               //ранг баффа (0 - negative, 1 - positive, [2-..] - others)
+		integer dispelDifficulty,   //сложность развеивания баффа (рассеиваются баффы равны или ниже этому значению)
+		boolean stackable,          //true - бафф получает стаки в случае если бафф такого же типа уже активен, false - бафф замещается новым
+		boolean singleDuration,     //true - стаки используют единую длительность баффа, false - стаки используют независимую длительность (для стакабельных) (для нестакабельных true будет обновлять параметры и длительность баффа)
+		boolean singleOutEnter,     //true - дополнительные стаки стакабельного баффа не будут триггерить действия входа/выхода, для нестакабельных действия входа/выхода не будут запущены при замещении баффа
+		boolean singlePeriod,       //true - бафф имеет единый таймер периодических действий, false - стаки имеют свои таймеры периодических действий (только для stackable)
+		integer countStacks,        //максимальное количество стаков (при переполненности уничтожает стак с самой маленькой длительностью (с действием выхода) и создает новый стак (с действием входа))
+		boolean pierceSpellImmun,   //false - бафф автоматически снимется, если юнит станет неуязвимым к магии, true - игнорирует неуязвимость к магии
+		boolean pierceInvul,        //false - бафф автоматически снимется, если юнит станет неуязвимым, true - игнорирует неуязвимость
+		boolean pierceDeath,        //false - бафф автоматически снимется, если юнит умрет, true - игнорирует смерть юнита
+		boolean periodActions,      //включить периодические действия (true - вкл, false - выкл)
+		real period)                //промежуток времени между периодическими действиями
+		-> Buff
+	{
+		Buff buf = 0;
+		Buff currentBuf = 0;
+		boolean onEnter = false;
+		real periodTimeRemaining = 0.;
+		real defaultDuration = duration;
+		boolean wantDelay = WantDelay;
+		integer stackDataInt = udg_BS_StackDataInt;
+		real stackDataReal = udg_BS_StackDataReal;
+		WantDelay = false;
+		udg_BS_StackDataInt = 0;
+		udg_BS_StackDataReal = 0.;
+		
+
+		if ((!pierceSpellImmun && IsUnitType(targetUnit, UNIT_TYPE_MAGIC_IMMUNE)) || (!pierceInvul && IsUnitInvulnerable(targetUnit))) {
+			return buf;
+		}
+
+		if (rank == 0) {
+			if (duration != 0.) {
+				duration = duration + GetUnitModifier(ownerUnit, ADD_TIME_NEG_BUFF);
+				duration = duration *
+					GetUnitModifier(targetUnit, INC_ENTER_TIME_NEG_BUFF) *
+					GetUnitModifier(targetUnit, DEC_ENTER_TIME_NEG_BUFF) *
+					GetUnitModifier(ownerUnit, INC_OUT_TIME_NEG_BUFF) *
+					GetUnitModifier(ownerUnit, DEC_OUT_TIME_NEG_BUFF)
+				;
+			}
+			if (periodActions) period = period * GetUnitModifier(ownerUnit, DEC_TIME_NEG_PER_BUFF);
+		} else if (rank == 1) {
+			if (duration != 0.) {
+				duration = duration + GetUnitModifier(ownerUnit, ADD_TIME_POS_BUFF);
+				duration = duration *
+					GetUnitModifier(targetUnit, INC_ENTER_TIME_POS_BUFF) *
+					GetUnitModifier(targetUnit, DEC_ENTER_TIME_POS_BUFF) *
+					GetUnitModifier(ownerUnit, INC_OUT_TIME_POS_BUFF) *
+					GetUnitModifier(ownerUnit, DEC_OUT_TIME_POS_BUFF)
+				;
+			}
+		}
+		if (duration != 0.) duration += 0.01;
+		period = period * GetUnitModifier(ownerUnit, DEC_PERIOD_BUFF);
+		
+		if (!stackable) {
+			currentBuf = GetUnitBuffByType(targetUnit, typeId);
+
+			if (currentBuf == 0) {
+				onEnter = true;
+			} else {
+				if (singleDuration) {
+					currentBuf.actionsId = actionsId;
+					currentBuf.rank = rank;
+					currentBuf.dispelDifficulty = dispelDifficulty;
+					currentBuf.pierceSpellImmun = pierceSpellImmun;
+					currentBuf.pierceInvul = pierceInvul;
+					currentBuf.pierceDeath = pierceDeath;
+					if (stackDataInt != 0) {
+						SetBuffDataInt(currentBuf, stackDataInt);
+					}
+					if (stackDataReal != 0) {
+						SetBuffDataReal(currentBuf, stackDataReal);
+					}
+					
+					if (periodActions && !currentBuf.periodActions) {
+						SetBuffPeriod(currentBuf, period);
+						EnableBuffPeriod(currentBuf);
+					} else if (period != currentBuf.period) {
+						SetBuffPeriod(currentBuf, period);
+					}
+					
+					SetBuffDuration(currentBuf, MaxReal(GetBuffDefaultDuration(currentBuf), defaultDuration));
+					RefreshDurationBuff(currentBuf);
+
+					return currentBuf;
+				} else {
+					onEnter = !singleOutEnter;
+					periodTimeRemaining = GetBuffRemainingTimeToAction(currentBuf);
+					DestroyUnitBuff(targetUnit, currentBuf, !singleOutEnter);
+				}
+			}
+		} else {
+			currentBuf = GetUnitBuffByType(targetUnit, typeId);
+			if (currentBuf == 0) {
+				onEnter = true;
+			} else {
+				currentBuf.actionsId = actionsId;
+				currentBuf.rank = rank;
+				currentBuf.dispelDifficulty = dispelDifficulty;
+				currentBuf.pierceSpellImmun = pierceSpellImmun;
+				currentBuf.pierceInvul = pierceInvul;
+				currentBuf.pierceDeath = pierceDeath;
+				currentBuf.countStacks = countStacks;
+				  
+				if (periodActions && !currentBuf.periodActions) {
+					SetBuffPeriod(currentBuf, period);
+					EnableBuffPeriod(currentBuf);
+				} else if (period != currentBuf.period) {
+					SetBuffPeriod(currentBuf, period);
+				}
+				
+				if (singleDuration) {
+					AddBuffStackTimed(currentBuf, 0., periodActions, period, stackDataInt, stackDataReal, wantDelay);
+					SetBuffDuration(currentBuf, MaxReal(GetBuffDefaultDuration(currentBuf), defaultDuration));
+					RefreshDurationBuff(currentBuf);
+				} else {
+					AddBuffStackTimed(currentBuf, duration, periodActions, period, stackDataInt, stackDataReal, wantDelay);
+					if (GetBuffRemainingDuration(currentBuf) < duration ) {
+						SetBuffDuration(currentBuf, defaultDuration);
+						RefreshDurationBuff(currentBuf);
+					}
+				}
+				
+				return currentBuf;
+			}
+		}
+		
+
+		buf = Buff.create(
+			ownerUnit,
+			targetUnit,
+			typeId,
+			actionsId,
+			duration,
+			rank,
+			dispelDifficulty,
+			stackable,
+			singleDuration,
+			singleOutEnter,
+			singlePeriod,
+			countStacks,
+			pierceSpellImmun,
+			pierceInvul,
+			pierceDeath,
+			periodActions,
+			period,
+			periodTimeRemaining,
+			defaultDuration
+		);
+
+		if (!stackable && stackDataInt != 0) {
+			SetBuffDataInt(buf, GetBuffDataInt(buf) + stackDataInt);
+		}
+
+		if (!stackable && stackDataReal != 0) {
+			SetBuffDataReal(buf, GetBuffDataReal(buf) + stackDataReal);
+		}
+
+		BuffTarget.RegBuffForUnit(targetUnit, buf, onEnter, wantDelay);
+		if (stackable && !DoNotEnter) {
+			AddBuffStackTimed(buf, duration, periodActions, period, stackDataInt, stackDataReal, wantDelay);
+		}
+		return buf;
+	}
+	
+	public function AddBuffToUnitGUI() -> Buff
+	{
+		return AddBuffToUnit(
+			udg_BS_OwnerUnit,
+			udg_BS_TargetUnit,
+			udg_BS_TypeID,
+			udg_BS_ActionsID,
+			udg_BS_Duration,
+			udg_BS_Rank,
+			udg_BS_DispelDifficulty,
+			udg_BS_Stackable,
+			udg_BS_SingleDuration,
+			udg_BS_SingleOutEnter,
+			udg_BS_SinglePeriod,
+			udg_BS_CountStacks,
+			udg_BS_PierceSpellImmun,
+			udg_BS_PierceInvul,
+			udg_BS_PierceDeath,
+			udg_BS_PeriodActions,
+			udg_BS_Period
+		);
+	}
+
+	public function TransferUnitBuffsToUnit(unit ownerUnit, unit targetUnit, integer rankC, integer dispelDifficultyC) {
+		BuffTarget bOwner = LoadInteger(HT, GetHandleId(ownerUnit), BuffTarget_hid);
+		Buff buf;
+		integer i = 0;
+		integer typeId;
+		integer actionsId;
+		real duration = 0.;
+		integer rank;
+		integer dispelDifficulty;
+		boolean stackable;
+		boolean singleDuration;
+		boolean singleOutEnter;
+		boolean singlePeriod;
+		integer countStacks;
+		boolean pierceSpellImmun;
+		boolean pierceInvul;
+		boolean pierceDeath;
+		boolean periodActions;
+		real period;
+		real time = 0;
+		
+		integer dataInt = 0;
+		real dataReal = 0.;
+		if (bOwner == 0) {
+			return;
+		}
+		
+		i = 1;
+		while(i <= bOwner.countBuffs) {
+			if (bOwner.buffs[i].rank == rankC && bOwner.buffs[i].dispelDifficulty <= dispelDifficultyC && bOwner.buffs[i] != 0) {
+				typeId = bOwner.buffs[i].typeId;
+				actionsId = bOwner.buffs[i].actionsId;
+				rank = bOwner.buffs[i].rank;
+				dispelDifficulty = bOwner.buffs[i].dispelDifficulty;
+				stackable = bOwner.buffs[i].stackable;
+				singleDuration = bOwner.buffs[i].singleDuration;
+				singleOutEnter = bOwner.buffs[i].singleOutEnter;
+				singlePeriod = bOwner.buffs[i].singlePeriod;
+				countStacks = bOwner.buffs[i].countStacks;
+				pierceSpellImmun = bOwner.buffs[i].pierceSpellImmun;
+				pierceInvul = bOwner.buffs[i].pierceInvul;
+				pierceDeath = bOwner.buffs[i].pierceDeath;
+				periodActions = bOwner.buffs[i].periodActions;
+				period = bOwner.buffs[i].period;
+				duration = bOwner.buffs[i].defaultDuration;
+				time = bOwner.buffs[i].time;
+				dataInt =  bOwner.buffs[i].dataInt;
+				dataReal = bOwner.buffs[i].dataReal;
+				
+				DestroyUnitBuff(targetUnit, GetUnitBuffByType(targetUnit, bOwner.buffs[i].typeId), true);
+				
+				WantDelay = true;
+				DoNotEnter = true;
+				buf = AddBuffToUnit(
+					targetUnit,
+					targetUnit,
+					typeId,
+					actionsId,
+					duration,
+					rank,
+					dispelDifficulty,
+					stackable,
+					singleDuration,
+					singleOutEnter,
+					singlePeriod,
+					countStacks,
+					pierceSpellImmun,
+					pierceInvul,
+					pierceDeath,
+					periodActions,
+					period
+				);
+				DoNotEnter = false;
+				WantDelay = false;
+				
+				SetBuffDataInt(buf, dataInt);
+				SetBuffDataReal(buf, dataReal);
+				buf.time = time;
+				
+				BuffStacks.CopyToBuff(bOwner.buffs[i], buf);
+				
+				DestroyUnitBuff(ownerUnit, bOwner.buffs[i], true);
+				i = 1;
+			} else {
+				i += 1;
+			}
+		}
+	}
+
+/*----------------Init--------------------------------------------------------------------------------------------------------------------------------------- */
+
+	// API
+
+	integer COUNT_SELECTED_BUFFS_GET;
+	Buff SELECTED_BUFF_GET[];
+	Buff FILTER_BUFF_GET;
+	public boolean FILTER_BOOLEAN_GET;
+
+	public function GetFilterBuff() -> Buff {
+		return FILTER_BUFF_GET;
+	}
+
+	public function GetSelectedBuff(integer i) -> Buff {
+		return SELECTED_BUFF_GET[i];
+	}
+
+	public function GetCountSelectedBuffs() -> integer {
+		return COUNT_SELECTED_BUFFS_GET;
+	}
+
+	public function InitBuffsLoop(unit u, string condition) {
+		BuffTarget bTarget = LoadInteger(HT, GetHandleId(u), BuffTarget_hid);
+		integer i = 0;
+		COUNT_SELECTED_BUFFS_GET = 0;
+		if (bTarget == 0) {
+			return;
+		}
+		for (1 <= i <= bTarget.countBuffs) {
+			FILTER_BUFF_GET = bTarget.buffs[i];
+			ExecuteFunc(condition);
+			if (FILTER_BOOLEAN_GET) {
+				COUNT_SELECTED_BUFFS_GET += 1;
+				SELECTED_BUFF_GET[COUNT_SELECTED_BUFFS_GET] = bTarget.buffs[i];
+			}
+		}
+	}
+
+}

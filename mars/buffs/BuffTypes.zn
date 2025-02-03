@@ -1,0 +1,292 @@
+library BuffTypes requires GameUtils {
+
+    //Arthas
+    public key ARTHAS_DOME_TID;
+    public key arthas2shield_tid;
+    public key arthas3buff_tid;
+    public key arthas4buff_tid;
+    //Admirale
+    public key admirale1stun_tid;
+    public key admirale2buff_tid;
+    //Aeon
+    public key aeonwave_tid;
+    public key aeonroar_tid;
+    public key aeon3buff_tid;
+    public key aeon4stun_tid;
+    //Alice
+    public key alice2buff_tid;
+    public key alice3delay_tid;
+    //Ametyst Treant
+    public key atreant1buff_tid;
+    public key atreant2buffa_tid;
+    public key atreant2buffb_tid;
+    public key atreant3buff_tid;
+    public key atreant5buff_tid;
+    //Anna
+    public key anna0buff_tid;
+    public key anna1buff_tid;
+    public key anna3buff_tid;
+    public key anna3slowbuff_tid;
+    public key anna4buff_tid;
+    //Beatljax
+    public key beatl1buff_tid;
+    public key beatl3buff_tid;
+    //Ben Seer
+    public key ben5buff_tid;
+    public key ben1buff_tid;
+    public key ben2buff_tid;
+    //Bloop
+    public key bloop1buff_tid;
+    public key bloop1action_tid;
+    //Collector
+    public key collector5buff_tid;
+    //Draken
+    public key draken3buff_tid;
+    public key draken4buff_tid;
+    //Evelyn
+    public key eva1buff_tid;
+    public key eva3silence_tid;
+    //Flash
+    public key flash2fear_tid;
+    //Fliz
+    public key fliz1buff_tid;
+    //Forg
+    public key forg1buff_tid;
+    public key forg2buff_tid;
+    public key forg3buff_tid;
+    //Fox
+    public key fox0buff_tid;
+    public key fox1action_tid;
+    public key fox1buff_tid;
+    public key fox4buff_tid;
+    //Gallywix
+    public key gall2buff_tid;
+    //Gluma
+    public key gluma2buff_tid;
+    public key gluma4buff_tid;
+    public key gluma5buff_tid;
+    //Gregor
+    public key gregor3buff_tid;
+    //Gordon
+    public key gordon2buff_tid;
+    public key gordon3buff_tid;
+    //Gossein
+    public key gosseinitem_tid;
+    public key gossein1buff_tid;
+    public key gossein3buff_tid;
+    public key gossein5prebuff_tid;
+    public key gossein5buff_tid;
+    //Goliath
+    public key goliath1action_tid;
+    public key goliath1buff_tid;
+    public key goliath5buff_tid;
+    //Gzull
+    public key gzull5buff_tid;
+    //Hope
+    public key hope1buff_tid;
+    public key hope2buff_tid;
+    public key hope3buff_tid;
+    public key hope4stun_tid;
+    public key hope4buff_tid;
+    //Hort
+    public key hort1buff_tid;
+    //Hugo
+    public key hugobuff_tid;
+    public key hugo3buff_tid;
+    //Illidan
+    public key illidan2buff_tid;
+    public key illidan4abuff_tid;
+    public key illidan4bbuff_tid;
+    public key illidan4cbuff_tid;
+    public key illidan5fear_tid;
+    //Jake
+    public key jake2buff_tid;
+    public key jake3buff_tid;
+    //Katrina
+    public key katrina1buff_tid;
+    public key katrina2buff_tid;
+    public key katrina5buff_tid;
+    //Kresh
+    public key kresh5death_tid;
+    public key kresh0buff_tid;
+    public key kresh1buff_tid;
+    //Linx
+    public key linx2buff_tid;
+    public key linx3buff_tid;
+    //Lita
+    public key lita4buff_tid;
+    public key lita4_attack_tid;
+    //Lonwon
+    public key lonwon4buff_tid;
+    //Lord
+    public key lord3buff_tid;
+    public key lord4buff_tid;
+    public key lord5buff_tid;
+    //May
+    public key may2silence_tid;
+    public key may2sleep_tid;
+    public key may4buff_tid;
+    public key may5fear_tid;
+    //Miku
+    public key miku0stars_tid;
+    public key miku4buff_tid;
+    public key miku5buff_tid;
+    //Mizuki
+    public key mizuki3buff_tid;
+    public key shieldbuff_tid;
+    //Morderkay
+    public key morderkay3buff_tid;
+    public key morderkay5ult_tid;
+    //Morgen
+    public key morgeen4buff_tid;
+    public key morgeen4fear_tid;
+    //Nomi
+    public key nomi1fear_tid;
+    public key nomi3buff_tid;
+    public key nomi4buff_tid;
+    public key nomi5buff_tid;
+    //Nullidai
+    public key nullidai3buff_tid;
+    //Orion
+    public key orion1buff_tid;
+    //Puss in boots
+    public key puss0buff_tid;
+    public key puss1buff_tid;
+    public key puss2buff_tid;
+    public key puss3buff_tid;
+    //Rane
+    public key rane0buff_tid;
+    public key rane2buff_tid;
+    public key rane3buff_tid;
+    public key rane5buff_tid;
+    //Razzlo
+    public key razzlo1abuff_tid;
+    public key razzlo1bbuff_tid;
+    //Richard
+    public key richard0buff_tid;
+    public key richard1buff_tid;
+    public key richard2buff_tid;
+    public key richard5abuff_tid;
+    public key richard5bbuff_tid;
+    //Robbie
+    public key robbie2buff_tid;
+    //Rotto
+    public key rotto2buff_tid;
+    public key rotto4buff_tid;
+    //Sanya
+    public key sanyahammerbuff_tid;
+    public key sanya1buff_tid;
+    public key sanya2buff_tid;
+    public key sanya4buff_tid;
+    //Silena
+    public key silena2buff_tid;
+    //Spike
+    public key spike1buff_tid;
+    public key spike2abuff_tid;
+    public key spike2bbuff_tid;
+    public key spike2cbuff_tid;
+    public key spike2dbuff_tid;
+    public key spike2fbuff_tid;
+    //Stanley
+    public key stanley1buff_tid;
+    //Tenjin
+    public key tenjin3buff_tid;
+    //Todzi
+    public key todzi2buff_tid;
+    public key todzi2_attack_tid;
+    //Vlad
+    public key vlad2buff_tid;
+    public key vlad3buff_tid;
+    //Ursa
+    public key ursa1buff_tid;
+    public key ursa2buff_tid;
+    public key ursa4buff_tid;
+    public key ursa4mefbuff_tid;
+    //Witcher
+    public key witcher01buff_tid;
+    public key witcher02buff_tid;
+    public key witcher03buff_tid;
+    public key witcher04buff_tid;
+    public key witcher04abuff_tid;
+    public key witcher04bbuff_tid;
+    public key witcher05buff_tid;
+    public key witcher06buff_tid;
+    public key witcher07buff_tid;
+    public key witcher08buff_tid;
+    public key witcher09buff_tid;
+    public key witcherq3buff_tid;
+    public key witcherq4buff_tid;
+    //Wormy
+    public key wormy0buff_tid;
+    public key wormy1buff_tid;
+    public key wormy2buff_tid;
+    public key wormy4buff_tid;
+    //Other
+    public key bluepotion_tid;
+    public key blademail_tid;
+    public key megagun_tid;
+    public key manachargebuff_tid;
+    public key manacharge2buff_tid;
+    public key enspeed1_tid;
+    public key enspeed2_tid;
+    public key astralgub_tid;
+    public key darkprop_tid;
+    public key yatunic_tid;
+    public key justicehammer1_tid;
+    public key justicehammer2_tid;
+
+    public key poison2_tid;
+    public key poison3_tid;
+    public key poison4_tid;
+    public key blackspear_tid;
+    public key solaris_tid;
+    public key solaris2_tid;
+    public key endshpil_tid;
+    public key invisibility_tid;
+    public key invisibility1_tid;
+    public key invisibility2_tid;
+    public key invulnerability_tid;
+    public key ridgevortexer_tid;
+    public key hex_tid;
+    public key hex1_tid;
+    public key hex2_tid;
+    public key fafnir_tid;
+    public key doomcaller_tid;
+    public key masterboots_tid;
+    public key lifebranch4_tid;
+    public key lifebranch4b_tid;
+    public key mondretboss_tid;
+    public key harpyboss_tid;
+    public key ogreboss_tid;
+    public key frostslow_tid;
+    public key frostslowcrown_tid;
+    public key basicslow_tid;
+    public key basicslow1_tid;
+    public key knightarmor_tid;
+    public key astral_tid;
+    public key silence_tid;
+    public key silence1_tid;
+    public key skyshield_tid;
+    public key skyheal_tid;
+    public key stormgrenade1_tid;
+    public key stormgrenade2_tid;
+    public key dummytimer_tid;
+    public key basicroot_tid;
+    public key basicsleep_tid;
+    public key basicsleep1_tid;
+    public key basicfear_tid;
+    public key basicfear1_tid;
+    public key teacup_tid;
+    public key benihime_tid;
+    public key desolate_tid;
+    public key desolate1_tid;
+    public key desolate2_tid;
+    public key magicshield_tid;
+    public key giantslayer_tid;
+    public key cerebrobuff_tid;
+    public key chumpunk_tid;
+    public key BUFF_POS_TID;
+    public key BUFF_NEG_TID;
+    public key BUFF_STACKABLE_TID;
+
+}

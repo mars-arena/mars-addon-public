@@ -1,0 +1,95 @@
+library SetUnitMaxState uses BJHooked
+
+	constant function MaxStateModifierId takes unitstate u returns integer
+		if u == UNIT_STATE_MAX_LIFE then
+			return 'A1SA' // Rawcode of the Max Life Modifier ability.
+		elseif u == UNIT_STATE_MAX_MANA then
+			return 'A0UN' // Rawcode of the Max Mana Modifier ability.
+		endif
+		return 0
+	endfunction
+	
+	function SetUnitMaxState takes unit whichUnit, unitstate whichUnitState, integer newVal returns boolean
+		local integer c = newVal-R2I(GetUnitStateHook(whichUnit, whichUnitState))
+		local integer i = MaxStateModifierId(whichUnitState)
+		if i == 0 then
+			return false
+		endif
+		if c > 0 then
+			loop
+				exitwhen c == 0
+				call UnitAddAbility(whichUnit, i)
+				if c >= 100 then
+					set c = c - 100
+					call SetUnitAbilityLevel(whichUnit, i, 4)
+				elseif c >= 10 then
+					set c = c - 10
+					call SetUnitAbilityLevel(whichUnit, i, 3)
+				else
+					set c = c - 1
+					call SetUnitAbilityLevel(whichUnit, i, 2)
+				endif
+				call UnitRemoveAbility(whichUnit, i)
+			endloop
+		elseif c < 0 then
+			set c = -c
+			loop
+				exitwhen c == 0
+				call UnitAddAbility(whichUnit, i)
+				if c >= 100 then
+					set c = c - 100
+					call SetUnitAbilityLevel(whichUnit, i, 7)
+				elseif c >= 10 then
+					set c = c - 10
+					call SetUnitAbilityLevel(whichUnit, i, 6)
+				else
+					set c = c - 1
+					call SetUnitAbilityLevel(whichUnit, i, 5)
+				endif
+				call UnitRemoveAbility(whichUnit, i)
+			endloop
+		endif
+		return true
+	endfunction
+
+	function AddUnitSight takes unit whichUnit, integer newVal returns boolean
+		local integer c = newVal
+		local integer i = 'A205'
+		if c > 0 then
+			loop
+				exitwhen c == 0
+				call UnitAddAbility(whichUnit, i)
+				if c >= 100 then
+					set c = c - 100
+					call SetUnitAbilityLevel(whichUnit, i, 4)
+				elseif c >= 10 then
+					set c = c - 10
+					call SetUnitAbilityLevel(whichUnit, i, 3)
+				else
+					set c = c - 1
+					call SetUnitAbilityLevel(whichUnit, i, 2)
+				endif
+				call UnitRemoveAbility(whichUnit, i)
+			endloop
+		elseif c < 0 then
+			set c = -c
+			loop
+				exitwhen c == 0
+				call UnitAddAbility(whichUnit, i)
+				if c >= 100 then
+					set c = c - 100
+					call SetUnitAbilityLevel(whichUnit, i, 7)
+				elseif c >= 10 then
+					set c = c - 10
+					call SetUnitAbilityLevel(whichUnit, i, 6)
+				else
+					set c = c - 1
+					call SetUnitAbilityLevel(whichUnit, i, 5)
+				endif
+				call UnitRemoveAbility(whichUnit, i)
+			endloop
+		endif
+		return true
+	endfunction
+
+endlibrary

@@ -1,0 +1,134 @@
+library AurasFilters requires TechUtils
+{
+    
+    unit filterUnit;
+    
+    //AuraOwnerUnit - владелец ауры
+    //filterUnit - цель ауры
+    public function FilterRadiance() -> boolean {
+        filterUnit = GetFilterUnit();
+        return
+            UnitAlive(filterUnit) &&
+            !IsUnitAlly(AuraOwnerUnit, GetOwningPlayer(filterUnit)) && 
+            !IsUnitType(filterUnit, UNIT_TYPE_MAGIC_IMMUNE) &&
+            !IsUnitInvulnerable(filterUnit) &&
+            !IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+            !IsUnitType(filterUnit, ConvertUnitType(20))
+            ;
+    }
+
+    public function FilterLinx5() -> boolean {
+        filterUnit = GetFilterUnit();
+        return
+            UnitAlive(filterUnit) &&
+            !IsUnitAlly(AuraOwnerUnit, GetOwningPlayer(filterUnit)) && 
+            !IsUnitType(filterUnit, UNIT_TYPE_MAGIC_IMMUNE) &&
+            !IsUnitInvulnerable(filterUnit) &&
+            !IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+            !IsUnitType(filterUnit, ConvertUnitType(20)) &&
+            IsUnitVisible(filterUnit, GetOwningPlayer(AuraOwnerUnit))
+            ;
+    }
+
+    public function FilterPourSpell() -> boolean {
+        filterUnit = GetFilterUnit();
+        return
+            UnitAlive(filterUnit) &&
+            !IsUnitAlly(AuraOwnerUnit, GetOwningPlayer(filterUnit)) && 
+            !IsUnitInvulnerable(filterUnit) &&
+            !IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+            !IsUnitType(filterUnit, ConvertUnitType(20))
+            ;
+    }
+    
+    public function FilterAuraEnemy() -> boolean {
+        filterUnit = GetFilterUnit();
+        return
+            UnitAlive(filterUnit) &&
+            !IsUnitAlly(AuraOwnerUnit, GetOwningPlayer(filterUnit)) && 
+            !IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+            !IsUnitType(filterUnit, ConvertUnitType(20))
+            ;
+    }
+
+    public function FilterAuraAllnotOwned() -> boolean {
+        filterUnit = GetFilterUnit();
+        return
+            UnitAlive(filterUnit) &&
+            GetOwningPlayer(filterUnit) != GetOwningPlayer(AuraOwnerUnit) &&
+            !IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+            !IsUnitType(filterUnit, ConvertUnitType(20))
+            ;
+    }
+    
+    public function FilterSelf() -> boolean {
+        filterUnit = GetFilterUnit();
+        return
+            UnitAlive(filterUnit) &&
+            AuraOwnerUnit == filterUnit
+            ;
+    }
+    
+    public function FilterAuraEnemyHero() -> boolean {
+        filterUnit = GetFilterUnit();
+        return
+            UnitAlive(filterUnit) &&
+            !IsUnitAlly(AuraOwnerUnit, GetOwningPlayer(filterUnit)) && 
+            !IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+            IsUnitType(filterUnit, UNIT_TYPE_HERO) &&
+            !IsUnitType(filterUnit, ConvertUnitType(20))
+            ;
+    }
+    
+    public function FilterAuraAlly() -> boolean {
+        filterUnit = GetFilterUnit();
+        return
+            UnitAlive(filterUnit) &&
+            IsUnitAlly(AuraOwnerUnit, GetOwningPlayer(filterUnit)) && 
+            !IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+            !IsUnitType(filterUnit, ConvertUnitType(20))
+            ;
+    }
+
+    public function FilterOnlyAlly() -> boolean {
+        filterUnit = GetFilterUnit();
+        return
+            UnitAlive(filterUnit) &&
+            AuraOwnerUnit != filterUnit &&
+            IsUnitAlly(AuraOwnerUnit, GetOwningPlayer(filterUnit)) && 
+            !IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+            !IsUnitType(filterUnit, ConvertUnitType(20))
+            ;
+    }
+    
+    public function FilterAuraRotto() -> boolean {
+        filterUnit = GetFilterUnit();
+        return
+            UnitAlive(filterUnit) &&
+            GetUnitTypeId(filterUnit) == 'E00I' &&
+            GetHeroLevel(filterUnit) >= 30
+            ;
+    }
+
+    public function FilterAuraMarcus() -> boolean {
+        filterUnit = GetFilterUnit();
+        return
+            UnitAlive(filterUnit) &&
+            !IsUnitIllusion(filterUnit) &&
+            GetUnitTypeId(filterUnit) == 'H008'
+            ;
+    }
+    
+    public function FilterMikuOwl() -> boolean {
+        filterUnit = GetFilterUnit();
+        return
+            UnitAlive(filterUnit) &&
+            IsUnitAlly(AuraOwnerUnit, GetOwningPlayer(filterUnit)) && 
+            !IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+            !IsUnitIllusionBJ(filterUnit) &&
+            GetUnitTypeId(filterUnit) == 'E01N' &&
+            !IsUnitType(filterUnit, ConvertUnitType(20))
+            ;
+    }
+    
+}

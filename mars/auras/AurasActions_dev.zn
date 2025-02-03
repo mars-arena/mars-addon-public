@@ -1,0 +1,31 @@
+library AurasActions requires Auras {
+
+	public function AuraActions() {
+		unit ownerUnit = AuraOwnerUnit;
+		unit targetUnit = AuraTargetUnit;
+		boolean isEntered = IsEntered;
+		boolean isOut = IsOut;
+		boolean isActions = IsActions;
+		integer actionsId = ActionsId;
+
+		if (actionsId == 0) {
+			if (isEntered) {
+			}
+			if (isOut) {
+			}
+			if (isActions) {
+			}
+		} else if (actionsId == testaura_tid) { //
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A00L');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A00L');
+			}
+		}
+
+		ownerUnit = null;
+		targetUnit = null;
+	}
+
+}

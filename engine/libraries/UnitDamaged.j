@@ -1,0 +1,77 @@
+/*Описание функций
+
+//Добавление события:
+call AnyUnitDamagedEvent(subscribingTrigger)
+
+//Источник урона (атаковавший юнит):
+GetEventDamageSource()
+
+//Цель урона (атакованный юнит):
+GetTriggerUnit() 
+
+//Величина нанесённого урона:
+//GetEventDamage()
+
+Ограничения:
+Нельзя использовать с динамичными триггерами
+Нельзя использовать более, чем с JASS_MAX_ARRAY_SIZE триггеров
+*/
+
+library UnitDamaged initializer initRect requires TechUtils
+
+	globals
+		private group   allUnits
+		private region  mapArea
+		private trigger array Trigger
+		private integer TrigsNum = 0
+	endglobals
+
+	private function unitDamagedEvent takes nothing returns nothing
+		static if IS_DEV then
+			call UnitAddAbilityPermanent(GetEnumUnit(), 'Aat1')
+		endif
+		call TriggerRegisterUnitEvent(Trigger[TrigsNum], GetEnumUnit(), EVENT_UNIT_DAMAGED)
+	endfunction
+
+	function AnyUnitDamagedEvent takes trigger toTrigger returns nothing
+		set Trigger[TrigsNum] = toTrigger
+		call ForGroup(allUnits, function unitDamagedEvent)
+		set TrigsNum = TrigsNum + 1
+	endfunction
+
+	private function onUnitSpawn takes nothing returns nothing
+		local integer i = 0
+		loop
+			exitwhen (i == TrigsNum)
+			static if IS_DEV then
+				call UnitAddAbilityPermanent(GetEnteringUnit(), 'Aat1')
+			endif
+			call TriggerRegisterUnitEvent(Trigger[i], GetEnteringUnit(), EVENT_UNIT_DAMAGED)
+			set i = i + 1
+		endloop
+		call GroupAddUnit(allUnits, GetEnteringUnit())
+	endfunction
+
+	private function onUnitDecay takes nothing returns nothing
+		call GroupRemoveUnit(allUnits, GetDecayingUnit())
+	endfunction
+
+	private function initRect takes nothing returns nothing
+		local integer i = 0
+		local trigger onSpawn = CreateTrigger()
+		local trigger onDecay = CreateTrigger()
+		set allUnits = CreateGroup()
+		set mapArea = CreateRegion()
+		call GroupEnumUnitsInRect(allUnits, GetWorldBounds(), null)
+		call RegionAddRect(mapArea, GetWorldBounds())
+		call TriggerRegisterEnterRegion(onSpawn, mapArea, null)
+		loop
+			exitwhen (i == bj_MAX_PLAYER_SLOTS)
+			call TriggerRegisterPlayerUnitEvent(onDecay, Player(i), EVENT_PLAYER_UNIT_DECAY, null)
+			set i = i + 1
+		endloop
+		call TriggerAddAction(onSpawn, function onUnitSpawn)
+		call TriggerAddAction(onDecay, function onUnitDecay)
+	endfunction
+	
+endlibrary

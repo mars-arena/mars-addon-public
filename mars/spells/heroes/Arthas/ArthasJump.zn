@@ -1,0 +1,260 @@
+library ArthasJump requires Events {
+
+	constant integer ABILITY_ID = 'A24D';			//равкод способности
+	constant integer ABILITY_SLAM_ID = 'A24E';		//равкод способности при ударе молотом
+	constant string ABILITY_SLAM_ORDER = "stomp";	//приказ способности при ударе молотом
+
+	constant integer TALENT_DIST_ID = 'A24J';		//равкод таланта
+	constant integer TALENT_CHANCE_ID = 'A24Y';		//равкод таланта
+
+	constant real DISTANCE_JUST_SLAM = 225.; 	//дистанция удара без прыжка
+	constant real DISTANCE_HAMMER = 150.; 		//дистанция от героя до точки удара молотом
+	constant real MAX_HEIGHT = 180.; 			//максимальная высота, на которую может запрыгнуть юнит (физическая)
+	constant real APSIS = 220.; 				//апогей параболы траектории прыжка
+
+	constant string EFFECT_SLAM_PATH = "Heroes\\Arthas\\Arthas_1.mdl";					//эффект при ударе молотом
+	constant string EFFECT_HOLY_PATH = "Heroes\\Arthas\\Arthas_0.mdl";					//святой эффект при ударе молотом
+	constant string EFFECT_HOLY_ATTACH_PATH = "Heroes\\Arthas\\Sweep_Holy_Large.mdx";	//святой аттач на оружие
+
+	constant real MAX_DIST = 600 - DISTANCE_HAMMER;	//максимальная дистанция прыжка, должна быть такая же как и в РО способности - DistanceHammer
+	constant real MAX_DIST_TALENT = 780 - DISTANCE_HAMMER;	//максимальная дистанция прыжка, должна быть такая же как и в РО способности - DistanceHammer
+
+	constant real RANGE = 200;			//радиус поражения способности (радиус стана изменять в способности ABILITY_SLAM_ID)
+	constant real RANGE_HOLY = 300;		//радиус святого поражения
+	constant real DMG = 280;			//урон
+	constant real DMG_CHANCE_ID = 500;		//урон с талантом
+	constant real DMG_HOLY = 300;		//святой урон
+	constant real HEAL_HOLY = 300;		//святой хил
+	constant real CHANCE_HOLY = 26.;	//шанс на святую атаку
+	constant real CHANCE_HOLY_TALENT = 100.;	//шанс на святую атаку
+	constant real DURATION_STUN = 1.;
+
+	constant real SIZE = 50;
+
+	struct Jump {
+		unit caster;
+		Point2D current;
+		Point2D virtual;
+		Point2D end;
+		Point2D collide;
+		Parabola parabola;
+		real speed;
+		real distance;
+		real currentDistance;
+		real negativeAngle;
+		real maxHeight;
+
+		boolean isSlam;
+		boolean isHoly;
+		effect holyEffectAttach;
+
+		timer tm;
+		timer tmSlam;
+
+		triggeraction stunAction;
+
+		static key THIS_HID;
+		static real INTERVAL = 1./40.;
+
+		static method create(unit caster, real x, real y) -> Jump {
+			Jump this = Jump.allocate();
+			this.caster = caster;
+			this.current = Point2D.createAtWidget(caster);
+			this.virtual = Point2D.clone(current);
+			this.collide = Point2D.create();
+			this.end = Point2D.createAt(x, y).moveTowards(current, DISTANCE_HAMMER);
+			if (UnitHasTalent(caster, TALENT_DIST_ID)) {
+				this.parabola = Parabola.create(Point2D.clone(current), Point2D.clone(end), APSIS / (MAX_DIST_TALENT / current.distTo(end)));
+			} else {
+				this.parabola = Parabola.create(Point2D.clone(current), Point2D.clone(end), APSIS / (MAX_DIST / current.distTo(end)));
+			}
+			this.speed = GetUnitMoveSpeed(caster) * 2.25;
+			this.distance = current.distTo(end);
+			this.currentDistance = 0;
+			this.isSlam = false;
+			this.isHoly = false;
+			this.holyEffectAttach = null;
+			this.negativeAngle = AngleNormalize(current.angleToCoords(x, y) + 180.);
+			this.maxHeight = MAX_HEIGHT;
+
+			if (end.getTerrainCliffZ() - current.getTerrainCliffZ() > MAX_HEIGHT) {
+				this.maxHeight = 0;
+			}
+
+			if ((UnitHasTalent(this.caster, TALENT_CHANCE_ID) && GetRandomReal(0, 100) <= CHANCE_HOLY_TALENT) ||
+				(!UnitHasTalent(this.caster, TALENT_CHANCE_ID) && GetRandomReal(0, 100) <= CHANCE_HOLY)
+			) {
+				this.isHoly = true;
+				this.holyEffectAttach = AddSpecialEffectTarget(EFFECT_HOLY_ATTACH_PATH, this.caster, "weapon");
+			}
+
+			StunUnit(caster, caster, LOST_CONTROL_STUN, 1000);
+
+			this.tm = CreateTimer();
+			SaveHandleDataInt(tm, this);
+			
+			this.tmSlam = CreateTimer();
+			SaveHandleDataInt(tmSlam, this);
+
+			IssueImmediateOrder(caster, "stop");
+
+			if (current.distToCoords(x, y) >= DISTANCE_JUST_SLAM && IsUnitCanBeMoved(caster, caster)) {
+				SetUnitAnimation(caster, "Spell Jump");
+				MakeUnitFly(caster);
+				SetUnitPathing(caster, false);
+				TimerStart(tm, 0, false, function Jump.callback);
+			} else {
+				end.setAt(x, y);
+				this.prepareSlam(true);
+			}
+
+			return this;
+		}
+
+		method destroy() {
+			SetUnitZ(caster, 0);
+			SetUnitTimeScale(caster, 1);
+			RemoveUnitStunByType(caster, LOST_CONTROL_STUN);
+
+			if (IsTerrainPathable(GetUnitX(caster), GetUnitY(caster), PATHING_TYPE_WALKABILITY)) {
+				CheckAndFreeUnit(caster);
+			} else {
+				SetUnitPathing(caster, true);
+			}
+
+			caster = null;
+			DestroyEffect(holyEffectAttach); holyEffectAttach = null;
+			StunRemoveAction(stunAction); stunAction = null;
+
+			FlushTimer(tm); tm = null;
+			FlushTimer(tmSlam); tmSlam = null;
+
+			current.destroy();
+			end.destroy();
+			parabola.destroy();
+			collide.destroy();
+			virtual.destroy();
+
+			this.deallocate();
+		}
+
+		static method callback() {
+			Jump this = LoadHandleDataInt(GetExpiredTimer());
+
+			TimerStart(tm, INTERVAL, false, function Jump.callback);
+
+			current.setAtWidget(caster);
+			collide.copy(current);
+			virtual.moveTowards(end, speed * INTERVAL);
+
+			if (!Out(current.x, current.y) ||
+				collide.moveTowards(end, SIZE + speed * INTERVAL).getTerrainZ() - parabola.calculateZMaxHeight(virtual, 0, 0, maxHeight) > SIZE
+			) {
+				currentDistance = MaxReal(distance * 0.5, currentDistance);
+				end.copy(current).movePolar(distance - currentDistance, negativeAngle);
+				negativeAngle = AngleNormalize(negativeAngle + 180.);
+				//parabola.setEnd(end);
+			}
+
+			if (IsUnitCanBeMoved(caster, caster)) {
+				current.moveTowards(end, speed * INTERVAL);
+			} else if (!isSlam) {
+				this.prepareSlam(false);
+			}
+			currentDistance += speed * INTERVAL;
+
+			SetUnitX(caster, current.x);
+			SetUnitY(caster, current.y);
+			SetUnitZ(caster, parabola.calculateZMaxHeight(virtual, 0, 0, maxHeight));
+
+			if (currentDistance >= distance * 0.7 && !isSlam) {
+				this.prepareSlam(false);
+			}
+		}
+
+		method prepareSlam(boolean onSpot) {
+			isSlam = true;
+			SaveInteger(HT, GetHandleId(caster), THIS_HID, this);
+			stunAction = StunAddAction(function() {
+				Jump this = LoadInteger(HT, GetHandleId(GetStunnedUnit()), THIS_HID);
+				if (GetStunIsEnter() && isSlam) {
+					SetUnitAnimation(caster, "stand");
+				}
+			});
+			if (!onSpot) {
+				if (IsUnitCanDoActions(caster)) {
+					SetUnitAnimation(caster, "Spell Slam");
+					QueueUnitAnimation(caster, "stand");
+					TimerStart(tmSlam, 0.20, false, function Jump.slam);
+				} else {
+					TimerStart(tmSlam, 0.20, false, function() {
+						Jump this = LoadHandleDataInt(GetExpiredTimer());
+						SetUnitAnimation(caster, "stand");
+						this.destroy();
+					});
+				}
+			} else {
+				SetUnitTimeScale(caster, 1.6);
+				SetUnitAnimation(caster, "Attack Slam");
+				QueueUnitAnimation(caster, "Stand");
+				TimerStart(tmSlam, 0.3, false, function Jump.slam);
+			}
+
+		}
+
+		static method slam() {
+			Jump this = LoadHandleDataInt(GetExpiredTimer());
+			real x = GetPolarOffsetX(GetUnitX(caster), DISTANCE_HAMMER, GetUnitFacing(caster));
+			real y = GetPolarOffsetY(GetUnitY(caster), DISTANCE_HAMMER, GetUnitFacing(caster));
+			if (IsUnitCanDoActions(caster)) {
+				TempGroup = CreateGroup();
+				GroupEnumUnitsInRangeFiz(TempGroup, x, y, RANGE, ConditionWithOwner(function FilterEnemyNotImmune, caster));
+	
+				EnumUnit = FirstOfGroup(TempGroup);
+				while (EnumUnit != null) {
+					if (UnitHasTalent(caster, TALENT_CHANCE_ID)) {
+						UnitDamageToTarget(caster, EnumUnit, DMG_CHANCE_ID, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+					} else {
+						UnitDamageToTarget(caster, EnumUnit, DMG, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+					}
+					StunUnit(caster, EnumUnit, NORMAL_STUN, DURATION_STUN);
+					GroupRemoveUnit(TempGroup, EnumUnit);
+					EnumUnit = FirstOfGroup(TempGroup);
+				}
+			
+				if (isHoly) {
+					GroupEnumUnitsInRangeFiz(TempGroup, x, y, RANGE_HOLY, ConditionWithOwner(function FilterAll, caster));
+		
+					EnumUnit = FirstOfGroup(TempGroup);
+					while (EnumUnit != null) {
+						if (!IsUnitAlly(EnumUnit, GetOwningPlayer(caster))) {
+							UnitDamageToTarget(caster, EnumUnit, DMG_HOLY, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+						} else {
+							HealUnit(caster, EnumUnit, HEAL_HOLY);
+						}
+						GroupRemoveUnit(TempGroup, EnumUnit);
+						EnumUnit = FirstOfGroup(TempGroup);
+					}
+				
+					DestroyEffect(AddSpecialEffect(EFFECT_HOLY_PATH, x, y));
+				}
+	
+				DestroyEffect(AddSpecialEffect(EFFECT_SLAM_PATH, x, y));
+	
+				ApplyAbility(caster, x, y, ABILITY_SLAM_ID, 1, ABILITY_SLAM_ORDER);
+	
+				DestroyGroup(TempGroup);
+			}
+
+			this.destroy();
+		}
+	}
+
+	function onInit() {
+		SpellEffectAddAction(function() {
+			if (GetSpellAbilityId() == ABILITY_ID)
+				Jump.create(GetTriggerUnit(), GetSpellTargetX(), GetSpellTargetY());
+		});
+	}
+
+}

@@ -1,0 +1,111 @@
+library Points {
+
+	public Point2D TempPoint;
+
+	public struct Point2D {
+		real x, y;
+		
+		// Constructors
+		static method createAt(real x, real y) -> Point2D {
+			return Point2D.allocate().setAt(x, y);
+		}
+
+		static method createAtWidget(widget which) -> Point2D {
+			return Point2D.allocate().setAt(GetWidgetX(which), GetWidgetY(which));
+		}
+		
+		static method create() -> Point2D {
+			return Point2D.allocate().setAt(0.0, 0.0);
+		}
+		
+		// Transitional behavior
+		static method clone(Point2D another) -> Point2D {
+			return Point2D.allocate().setAt(another.x, another.y);
+		}
+		
+		method setAt(real x, real y) -> Point2D {
+			this.x = x + GetRandomReal(-0.1, 0.1);
+			this.y = y + GetRandomReal(-0.1, 0.1);
+			return this;
+		}
+
+		method setAtWidget(widget which) -> Point2D {
+			this.setAt(GetWidgetX(which), GetWidgetY(which));
+			return this;
+		}
+	
+		method clear() -> Point2D {
+			return this.setAt(0.0, 0.0);
+		}
+
+		method copy(Point2D another) -> Point2D {
+			return this.setAt(another.x, another.y);
+		}
+
+		// Hash
+		method save(handle whichHandle, integer childKey) -> Point2D {
+			SaveInteger(HT, GetHandleId(whichHandle), childKey, this);
+			return this;
+		}
+
+		static method load(handle whichHandle, integer childKey) -> Point2D {
+			return LoadInteger(HT, GetHandleId(whichHandle), childKey);
+		}
+
+	
+		// Math
+		method distTo(Point2D another) -> real {
+			return DistanceBetweenCoords(this.x, this.y, another.x, another.y);
+		}
+
+		method distToCoords(real x, real y) -> real {
+			return DistanceBetweenCoords(this.x, this.y, x, y);
+		}
+
+		method distToWidget(widget which) -> real {
+			return DistanceBetweenCoords(this.x, this.y, GetWidgetX(which), GetWidgetY(which));
+		}
+
+		method angleTo(Point2D another) -> real {
+			return AngleNormalize(AngleBetweenCoords(this.x, this.y, another.x, another.y));
+		}
+
+		method angleToCoords(real x, real y) -> real {
+			return AngleNormalize(AngleBetweenCoords(this.x, this.y, x, y));
+		}
+
+		method angleFromCoords(real x, real y) -> real {
+			return AngleNormalize(AngleBetweenCoords(x, y, this.x, this.y));
+		}
+
+		method movePolar(real distance, real angle) -> Point2D {
+			this.x = GetPolarOffsetX(this.x, distance, angle);
+			this.y = GetPolarOffsetY(this.y, distance, angle);
+			return this;
+		}
+
+		method moveTowards(Point2D another, real distance) -> Point2D {
+			real angle = this.angleTo(another);
+			this.x = GetPolarOffsetX(this.x, distance, angle);
+			this.y = GetPolarOffsetY(this.y, distance, angle);
+			return this;
+		}
+	
+		method getTerrainZ() -> real {
+			return GetTerrainZ(this.x, this.y);
+		}
+
+		method getTerrainCliffZ() -> real {
+			return (GetTerrainCliffLevel(this.x, this.y) - 1) * 128.;
+		}
+
+		method approachClosestAvailablePoint(Point2D another) {
+			real angle = this.angleTo(another);
+			real height = another.getTerrainCliffZ();
+			while (IsTerrainPathable(x, y, PATHING_TYPE_WALKABILITY) || AbsReal(this.getTerrainCliffZ() - height) > 100.) {
+				this.movePolar(50, angle);
+			}
+		}
+	}
+
+}

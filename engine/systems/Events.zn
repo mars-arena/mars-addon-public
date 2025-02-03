@@ -1,0 +1,256 @@
+library Events requires SpellGetters {
+
+	trigger SpellEffectTrg = CreateTrigger();
+	trigger SpellEndcCastTrg = CreateTrigger();
+	trigger LevelTrg = CreateTrigger();
+	trigger EnterTrg = CreateTrigger();
+	trigger DeathTrg = CreateTrigger();
+	trigger ReviveTrg = CreateTrigger();
+	trigger EscTrg = CreateTrigger();
+	public trigger StunTrg = CreateTrigger();
+	public trigger DodgeModifierTrg = CreateTrigger();
+	public trigger PrecedingModifierTrg = CreateTrigger();
+	public trigger UniqueModifierTrg = CreateTrigger();
+	public trigger DamageTrg = CreateTrigger();
+	public trigger BuffTrg = CreateTrigger();
+
+	// @const индекс порядка запуска
+	public constant integer INDEX_ORDER_DAMAGE = 1;
+	public constant integer INDEX_ORDER_PERCENT = 2;
+	public constant integer INDEX_ORDER_AMOUNT = 3;
+
+	public trigger PostDamageModifierTrg[INDEX_ORDER_AMOUNT];
+
+	// EVENT_PLAYER_UNIT_SPELL_ENDCAST
+	//
+	// GetSpellAbilityUnit() -> unit
+	// GetSpellAbility() -> ability
+	// GetSpellAbilityId -> integer
+	// GetSpellTargetUnit() -> unit
+	// GetSpellTargetDestructable -> destructable
+	// GetSpellTargetItem -> item
+	// GetSpellTargetX -> real
+	// GetSpellTargetY -> real
+	public function SpellEffectAddAction(code action) -> triggeraction {
+		return TriggerAddAction(SpellEffectTrg, action);
+	}
+
+	// EVENT_PLAYER_UNIT_SPELL_ENDCAST
+	//
+	// GetSpellAbilityUnit() -> unit
+	// GetSpellAbility() -> ability
+	// GetSpellAbilityId -> integer
+	// GetSpellTargetUnit() -> unit
+	// GetSpellTargetDestructable -> destructable
+	// GetSpellTargetItem -> item
+	// GetSpellTargetX -> real
+	// GetSpellTargetY -> real
+	public function SpellEndAddAction(code action) -> triggeraction {
+		return TriggerAddAction(SpellEndcCastTrg, action);
+	}
+
+	public function EscAddAction(code action) -> triggeraction {
+		return TriggerAddAction(EscTrg, action);
+	}
+
+	// EVENT_PLAYER_HERO_LEVEL
+	//
+	// GetLevelingUnit() -> unit
+	public function LevelAddAction(code action) -> triggeraction {
+		return TriggerAddAction(LevelTrg, action);
+	}
+
+	// EVENT_GAME_ENTER_REGION
+	//
+	// GetTriggeringRegion() -> region
+	// GetEnteringUnit() -> unit
+	public function EnterAddAction(code action) -> triggeraction {
+		return TriggerAddAction(EnterTrg, action);
+	}
+
+	// EVENT_PLAYER_UNIT_DEATH
+	//
+	// GetDyingUnit() -> unit
+	// GetKillingUnit() -> unit
+	public function DeathAddAction(code action) -> triggeraction {
+		return TriggerAddAction(DeathTrg, action);
+	}
+
+	// EVENT_PLAYER_UNIT_DEATH
+	//
+	// GetRevivingUnit -> unit
+	public function ReviveAddAction(code action) -> triggeraction {
+		return TriggerAddAction(ReviveTrg, action);
+	}
+
+	// Событие оглушения юнита
+	//
+	// GetTriggerStun() -> Stun
+	// GetStunningUnit() -> unit
+	// GetStunnedUnit() -> unit
+	// GetStunTypeId() -> integer
+	// GetStunDuration() -> real
+	// GetStunIsEnter() -> boolean
+	// GetStunIsOut() -> boolean
+	// GetStunIsFirst() -> boolean
+	public function StunAddAction(code action) -> triggeraction {
+		return TriggerAddAction(StunTrg, action);
+	}
+
+	public function StunRemoveAction(triggeraction action) {
+		TriggerRemoveAction(StunTrg, action);
+	}
+
+	// Событие модификатора уворота
+	//
+	// AddModifierDodgeChance(real dodgeChance)
+	// AddModifierMissChance(real missChance)
+	// AddModifierTrueStrikeChance(real trueStrikeChance)
+	// GetModifierAttackedUnit() -> unit
+	// GetModifierAttackingUnit() -> unit
+	// GetModifierDodgeChance() -> real
+	// GetModifierMissChance() -> real
+	// GetModifierTrueStrikeChance() -> real
+	// IsModifierAttack() -> boolean
+	// SetModifierDodgeChance(real dodgeChance)
+	// SetModifierMissChance(real missChance)
+	// SetModifierTrueStrikeChance(real trueStrikeChance)
+	public function DodgeModifierAddAction(code action) -> triggeraction {
+		return TriggerAddAction(DodgeModifierTrg, action);
+	}
+
+	// Событие предществующего модификатора урона
+	//
+	// GetModifierAttackedUnit() -> unit
+	// GetModifierAttackingUnit() -> unit
+	// IsModifierAttack() -> boolean
+	// IsModifierIgnoreBlock() -> boolean
+	// IsModifierMagical() -> boolean
+	// IsModifierNoRepeat() -> boolean
+	// IsModifierPhysical() -> boolean
+	// IsModifierPure() -> boolean
+	// IsModifierReflection() -> boolean
+	// IsModifierSimulate() -> boolean
+	// IsModifierSpecAttack() -> boolean
+	//
+	// AddModifierPierceRate(real pierceRate)
+	// GetModifierPierceRate() -> real
+	// SetModifierPierceRate(real pierceRate)
+	// SetModifierPierceType(integer pierceType)
+	//
+	// AddModifierDMGAdd(real dmgAdd)
+	// GetModifierDMGAdd() -> real
+	// SetModifierDMGAdd(real dmgAdd)
+	//
+	// AddModifierDMGAmplifier(integer typeAmplifier, real dmgAmplifier)
+	// GetModifierDMGAmplifier(integer typeAmplifier) -> real
+	// SetModifierDMGAmplifier(integer typeAmplifier, real dmgAmplifier)
+	public function PrecedingModifierAddAction(code action) -> triggeraction {
+		return TriggerAddAction(PrecedingModifierTrg, action);
+	}
+
+	// Событие уникальных модификаторов (работает один из)
+	//
+	// GetModifierAttackedUnit() -> unit
+	// GetModifierAttackingUnit() -> unit
+	// IsModifierAttack() -> boolean
+	// IsModifierIgnoreBlock() -> boolean
+	// IsModifierMagical() -> boolean
+	// IsModifierNoRepeat() -> boolean
+	// IsModifierPhysical() -> boolean
+	// IsModifierPure() -> boolean
+	// IsModifierReflection() -> boolean
+	// IsModifierSimulate() -> boolean
+	// IsModifierSpecAttack() -> boolean
+	//
+	// AddModifierBash(integer typeId, real bashDamage, real duration)
+	// AddModifierCriticalDamage(integer typeId, real criticalDamage) 
+	// AddModifierCriticalRate(integer typeId, real criticalRate)
+	// GetModifierCriticalType() -> integer
+	// PlusModifierCriticalRate(real criticalRate)
+	public function UniqueModifierAddAction(code action) -> triggeraction {
+		return TriggerAddAction(UniqueModifierTrg, action);
+	}
+
+	// Событие пост модификатора урона
+	//
+	// GetModifierAttackedUnit() -> unit
+	// GetModifierAttackingUnit() -> unit
+	// IsModifierAttack() -> boolean
+	// IsModifierCritical() -> boolean
+	// IsModifierDodge() -> boolean
+	// IsModifierIgnoreBlock() -> boolean
+	// IsModifierMagical() -> boolean
+	// IsModifierNoRepeat() -> boolean 
+	// IsModifierPhysical() -> boolean
+	// IsModifierPure() -> boolean
+	// IsModifierReflection() -> boolean
+	// IsModifierSimulate() -> boolean
+	// IsModifierSpecAttack() -> boolean
+	//
+	// GetBlockedFromAmount(real amount) -> real
+	//
+	// GetModifierDamageGiven() -> real
+	// SetModifierDamageGiven(real dmgGiven)
+	//
+	// GetModifierDamageTaken() -> real
+	// SetModifierDamageTaken(real dmgTaken)
+	//
+	// GetModifierDamageMax() -> real
+	// SetModifierDamageMax(real dmgMax)
+	public function PostDamageModifierAddAction(integer orderIndex, code action) -> triggeraction {
+		return TriggerAddAction(PostDamageModifierTrg[orderIndex], action);
+	}
+
+	// Событие любого урона
+	//
+	// GetDamageAttackedUnit() -> unit
+	// GetDamageAttackingUnit() -> unit
+	// GetDamageBash() -> real
+	// GetDamageBashDuration() -> real
+	// GetDamageBlocked() -> real
+	// GetDamageGiven() -> real
+	// GetDamageIgnoreBlock() -> boolean
+	// GetDamageIsAttack() -> boolean
+	// GetDamageIsBlocked() -> boolean
+	// GetDamageIsCritical() -> boolean
+	// GetDamageIsDodge() -> boolean
+	// GetDamageIsMagical() -> boolean
+	// GetDamageIsNoRepeat() -> boolean 
+	// GetDamageIsPhysical() -> boolean
+	// GetDamageIsPure() -> boolean
+	// GetDamageIsReflection() -> boolean
+	// GetDamageIsSimulate() -> boolean
+	// GetDamageIsSpecAttack() -> boolean
+	// GetDamageLifeAttackedUnit() -> real
+	public function DamageAddAction(code action) -> triggeraction {
+		return TriggerAddAction(DamageTrg, action);
+	}
+
+	// Событие баффа
+	// GetTriggerBuffOwner() -> unit
+	// GetTriggerBuffTarget() -> unit
+	// GetTriggerBuffIsEntered() -> boolean
+	// GetTriggerBuffIsOut() -> boolean
+	// GetTriggerBuffIsActions() -> boolean
+	// GetTriggerBuffIsTransfer() -> boolean
+	// GetTriggerBuffActionsId() -> integer
+	// GetTriggerBuffId() -> integer
+	// GetTriggerBuffStack() -> timer
+	public function BuffAddAction(code action) -> triggeraction {
+		return TriggerAddAction(BuffTrg, action);
+	}
+
+	function onInit() {
+		TriggerRegisterAnyUnitEventBJ(SpellEffectTrg, EVENT_PLAYER_UNIT_SPELL_EFFECT);
+		TriggerRegisterAnyUnitEventBJ(SpellEndcCastTrg, EVENT_PLAYER_UNIT_SPELL_ENDCAST);
+		TriggerRegisterAnyUnitEventBJ(LevelTrg, EVENT_PLAYER_HERO_LEVEL);
+		TriggerRegisterEnterRectSimple(EnterTrg, bj_mapInitialPlayableArea);
+		TriggerRegisterAnyUnitEventBJ(DeathTrg, EVENT_PLAYER_UNIT_DEATH);
+		TriggerRegisterAnyUnitEventBJ(ReviveTrg, EVENT_PLAYER_HERO_REVIVE_FINISH);
+		TriggerRegisterPlayerEvent(EscTrg, Player(0), EVENT_PLAYER_END_CINEMATIC);
+		for (1 <= Index <= MAX_COUNT_TYPE_AMPLIFIERS)
+			PostDamageModifierTrg[Index] = CreateTrigger();
+	}
+
+}

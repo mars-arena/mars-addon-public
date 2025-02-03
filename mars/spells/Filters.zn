@@ -1,0 +1,221 @@
+library Filters requires SpellGetters {
+
+	unit filterUnit;
+
+	public unit FILTER_OWNER_UNIT_GET;
+	public unit FILTER_TARGET_UNIT_GET;
+	public real FILTER_REAL_GET;
+
+	public function GetFilterOwnerUnit() -> unit {return FILTER_OWNER_UNIT_GET;}
+	public function GetFilterTargetUnit() -> unit {return FILTER_TARGET_UNIT_GET;}
+	public function GetFilterReal() -> real {return FILTER_REAL_GET;}
+
+	public function ConditionWithOwner(code func, unit ownerUnit) -> conditionfunc {
+		FILTER_OWNER_UNIT_GET = ownerUnit;
+		return Condition(func);
+	}
+
+	public function ConditionParameters(code func, unit ownerUnit, unit targetUnit, real filterReal) -> conditionfunc {
+		FILTER_OWNER_UNIT_GET = ownerUnit;
+		FILTER_TARGET_UNIT_GET = targetUnit;
+		FILTER_REAL_GET = filterReal;
+		return Condition(func);
+	}
+
+	public function FilterCleave() -> boolean {
+		filterUnit = GetFilterUnit();
+		return
+			UnitAlive(filterUnit) &&
+			filterUnit != udg_AttackedUnit &&
+			!IsUnitType(filterUnit, UNIT_TYPE_STRUCTURE) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_TAUREN) &&
+			!IsUnitInvulnerable(filterUnit) &&
+			IsUnitEnemy(filterUnit, GetOwningPlayer(udg_AttackingUnit)) &&
+			RAbsBJ((ModuloReal(AngleBetweenCoords(GetUnitX(udg_AttackingUnit), GetUnitY(udg_AttackingUnit), GetUnitX(udg_AttackedUnit), GetUnitY(udg_AttackedUnit)) + 180, 360.00) - 180) - (ModuloReal(AngleBetweenCoords(GetUnitX(udg_AttackingUnit), GetUnitY(udg_AttackingUnit), GetUnitX(filterUnit), GetUnitY(filterUnit)) + 180, 360.00) - 180)) < SplashAngle
+		;
+	}
+	
+	public function FilterSplash() -> boolean {
+		filterUnit = GetFilterUnit();
+		return
+			UnitAlive(filterUnit) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_STRUCTURE) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_TAUREN) &&
+			!IsUnitInvulnerable(filterUnit) &&
+			IsUnitEnemy(filterUnit, GetOwningPlayer(udg_AttackingUnit))
+		;
+	}
+	
+	public function FilterRectangleSplash() -> boolean {
+		filterUnit = GetFilterUnit();
+		return
+			UnitAlive(filterUnit) &&
+			filterUnit != GetFilterTargetUnit() &&
+			!IsUnitType(filterUnit, UNIT_TYPE_STRUCTURE) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_TAUREN) &&
+			!IsUnitInvulnerable(filterUnit) &&
+			IsUnitEnemy(filterUnit,  GetOwningPlayer(GetFilterOwnerUnit()))
+		;
+	}
+	
+	public function FilterAbsorb() -> boolean {
+		filterUnit = GetFilterUnit();
+		return
+			UnitAlive(filterUnit) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_STRUCTURE) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_TAUREN) &&
+			!IsUnitInvulnerable(filterUnit) &&
+			IsUnitEnemy(filterUnit, GetOwningPlayer(udg_AttackedUnit))
+		;
+	}
+	
+	public function FilterLightning() -> boolean {
+		filterUnit = GetFilterUnit();
+		return
+			UnitAlive(filterUnit) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_STRUCTURE) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_TAUREN) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_MAGIC_IMMUNE) &&
+			IsUnitEnemy(filterUnit, GetOwningPlayer(GetFilterOwnerUnit())) &&
+			!IsUnitInvulnerable(filterUnit) &&
+			IsUnitVisible(filterUnit, GetOwningPlayer(GetFilterOwnerUnit())) &&
+			RAbsBJ((ModuloReal(AngleBetweenCoords(GetUnitX(GetFilterOwnerUnit()), GetUnitY(GetFilterOwnerUnit()), GetUnitX(GetFilterTargetUnit()), GetUnitY(GetFilterTargetUnit())) + 180, 360.00) - 180) - (ModuloReal(AngleBetweenCoords(GetUnitX(GetFilterOwnerUnit()), GetUnitY(GetFilterOwnerUnit()), GetUnitX(filterUnit), GetUnitY(filterUnit)) + 180, 360.00) - 180)) < GetFilterReal()
+			;
+	}
+
+	public function SimpleSpell() -> boolean {
+		filterUnit = GetFilterUnit();
+		return
+			UnitAlive(filterUnit) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_STRUCTURE) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_TAUREN) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_MAGIC_IMMUNE) &&
+			IsUnitEnemy(GetSpellOwnerUnit(), GetOwningPlayer(filterUnit)) &&
+			!IsUnitInvulnerable(filterUnit)
+		;
+	}
+
+	public function FilterEnemyNotImmune() -> boolean {
+		filterUnit = GetFilterUnit();
+		return
+			UnitAlive(filterUnit) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_STRUCTURE) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_TAUREN) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_MAGIC_IMMUNE) &&
+			IsUnitEnemy(GetFilterOwnerUnit(), GetOwningPlayer(filterUnit)) &&
+			!IsUnitInvulnerable(filterUnit)
+		;
+	}
+
+	public function FilterAlly() -> boolean {
+		filterUnit = GetFilterUnit();
+		return
+			UnitAlive(filterUnit) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_STRUCTURE) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_TAUREN) &&
+			IsUnitAlly(GetFilterOwnerUnit(), GetOwningPlayer(filterUnit))
+		;
+	}
+
+	public function FilterAll() -> boolean {
+		filterUnit = GetFilterUnit();
+		return
+			UnitAlive(filterUnit) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_STRUCTURE) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_TAUREN)
+		;
+	}
+
+	public function FilterAllMoveable() -> boolean {
+		filterUnit = GetFilterUnit();
+		return
+			UnitAlive(filterUnit) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_STRUCTURE) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_TAUREN) &&
+                        !UnitHasAbility(filterUnit, 'A1ZO')
+		;
+	}
+
+	public function FilterPause() -> boolean {
+		filterUnit = GetFilterUnit();
+		return
+			!IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL)
+		;
+	}
+
+	public function FilterAeon4() -> boolean {
+		filterUnit = GetFilterUnit();
+		return
+			UnitAlive(filterUnit) &&
+			!IsUnitAlly(GetSpellOwnerUnit(), GetOwningPlayer(filterUnit)) && 
+			!IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+			!IsUnitType(filterUnit, ConvertUnitType(20)) &&
+			!IsUnitInvulnerable(filterUnit) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_STRUCTURE)
+		;
+	}
+
+	public function FilterShiva() -> boolean {
+		filterUnit = GetFilterUnit();
+		return
+			UnitAlive(filterUnit) &&
+			!IsUnitAlly(GetSpellOwnerUnit(), GetOwningPlayer(filterUnit)) && 
+			!IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+			!IsUnitType(filterUnit, ConvertUnitType(20)) &&
+			!IsUnitInvulnerable(filterUnit) &&
+			!IsUnitType(filterUnit, UNIT_TYPE_STRUCTURE) &&
+			DistanceBetweenWidgets(GetSpellOwnerUnit(), filterUnit) >= 700 * GetSpellCompletion() - 200
+		;
+	}
+
+	public function IsUnitCannotBeMoved(unit initiator, unit target) -> boolean {
+		return
+			UnitHasAbility(target, 'A1ZO') ||
+			IsUnitType(target, UNIT_TYPE_SNARED) ||
+			(
+				GetUnitMoveSpeed(target) < 100.00  &&
+				IsUnitAlly(target, GetOwningPlayer(initiator))
+			)
+		;
+	}
+
+	public function IsUnitCanBeMoved(unit initiator, unit target) -> boolean {
+		return !IsUnitCannotBeMoved(initiator, target);
+	}
+
+	public function IsUnitDisarmed(unit whichUnit) -> boolean {
+		return
+			GetUnitAbilityLevel(whichUnit, DISARM_BUFF_ID) > 0
+		;
+	}
+
+	public function IsUnitCanDoActions(unit whichUnit) -> boolean {
+		return
+			!IsUnitStunnedExceptType(whichUnit, LOST_CONTROL_STUN) &&
+			!IsUnitHexed(whichUnit) &&
+			!IsUnitBuffByType(whichUnit, basicfear_tid)
+		;
+	}
+
+	public function IsUnitCanAttack(unit whichUnit) -> boolean {
+		return
+			IsUnitCanDoActions(whichUnit) &&
+			!IsUnitDisarmed(whichUnit)
+		;
+	}
+
+	public function IsUnitDummy(unit whichUnit) -> boolean {
+		return IsUnitType(whichUnit, UNIT_TYPE_MECHANICAL);
+	}
+
+}

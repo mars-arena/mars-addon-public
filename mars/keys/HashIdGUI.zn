@@ -1,0 +1,29 @@
+library HashIdGUI {
+	
+	public key ABSORB_HID;
+	public key CRIT_COUNT_HID;
+	public key ROBBIE_PAS_HID;
+	public key PUSS2BUFF_HID;
+	public key VLAD3BUFF_HID;
+	public key SKYSLAYERCREEPS_HID;
+	public key ROTTO4LVL_HID;
+	public key ROTTO4SKILL_HID;
+	public key ROTTO4SKILLOUT_HID;
+	public key ENGECY_HID;
+	public key SPIKEMEAT_HID;
+	public key FOXMISSES_HID;
+	public key HORTBONUS_HID;
+	public key ILLIDAN3_COUNT_HID;
+	public key GLUMAHUNT_COUNT_HID;
+	public key GLUMABOMB_HID;
+	public key ALICEARROWS_HID;
+	public key GORDONATTACK_HID;
+	public key BEN4AOEDAMAGE_HID;
+	public key KAENSECONDS_HID;
+	public key KAENSPHERES_HID;
+	public key HIRUZENSPEAR_HID;
+	public key JAMESILLUSIONS_HID;
+	public key BLOOPAURA_HID;
+	public key ARTHAS_PAS_HID;
+
+}

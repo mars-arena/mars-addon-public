@@ -1,0 +1,206 @@
+library Chakram requires SpellGetters, BJHooked {
+
+	//Чакрам\\
+	struct Chakram {
+		unit owner;
+		unit target;
+		unit chakram;
+		real dmg;
+		real reduction;
+		integer countTargets;
+		boolean isAttack;
+		boolean isSpec;
+		real radius;
+		real speed;
+		integer actionsId;
+		real angleChakram;
+
+		group grTargetsUnits;
+		timer tm;
+		static integer CK_HID = 0;
+
+		static method create(unit owner, unit target, integer chakramId, real dmg, real reduction, integer countTargets, real radius, real speed, boolean isAttack, boolean isSpec, integer actionsId) -> Chakram {
+			Chakram this = Chakram.allocate();
+			this.owner = owner;
+			this.target = target;
+			this.dmg = dmg;
+			this.reduction = reduction;
+			this.countTargets = countTargets;
+			this.radius = radius;
+			this.speed = speed;
+			this.isAttack = isAttack;
+			this.isSpec = isSpec;
+			this.actionsId = actionsId;
+
+			this.grTargetsUnits = CreateGroup();
+			GroupAddUnit(grTargetsUnits, this.target);
+
+			this.chakram = CreateUnit(GetOwningPlayer(this.owner), chakramId, GetUnitX(this.target), GetUnitY(this.target), AngleBetweenCoords(GetUnitX(this.owner), GetUnitY(this.owner), GetUnitX(this.target), GetUnitY(this.target)));
+			this.angleChakram = AngleNormalize(AngleBetweenCoords(GetUnitX(this.owner), GetUnitY(this.owner), GetUnitX(this.target), GetUnitY(this.target)));
+
+			this.tm = CreateTimer();
+			SaveInteger(HT, GetHandleId(this.tm), CK_HID, this);
+			TimerStart(this.tm, 0, false, function Chakram.searchTarget);
+			return this;
+		}
+
+		method destroy() {
+			KillUnit(chakram);
+			owner = null;
+			target = null;
+			chakram = null;
+
+			DestroyGroup(grTargetsUnits); grTargetsUnits = null;
+			FlushChildHashtable(HT, GetHandleId(tm)); PauseTimer(tm); DestroyTimer(tm); tm = null;
+
+			this.deallocate();
+		}
+
+		static method callbackReturn() {
+			Chakram this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+			real xC = GetUnitX(chakram);
+			real yC = GetUnitY(chakram);
+			real xT = GetUnitX(owner);
+			real yT = GetUnitY(owner);
+			real angle = AngleNormalize(AngleBetweenCoords(xC, yC, xT, yT));
+
+			real angleSpeed = 7.5 * (1 + 150/DistanceBetweenWidgets(chakram, owner));
+
+			if (AngleDifference(angle, angleChakram + angleSpeed) < AngleDifference(angle, angleChakram - angleSpeed)) {
+				angleChakram = AngleNormalize(angleChakram + angleSpeed);
+			} else {
+				angleChakram = AngleNormalize(angleChakram - angleSpeed);
+			}
+
+			SetUnitFacing(chakram, angleChakram);
+			SetUnitXY(chakram, GetPolarOffsetX(xC, speed * 0.02, angleChakram), GetPolarOffsetY(yC, speed * 0.02, angleChakram));
+			SetUnitZ(chakram, GetTerrainZ(GetUnitX(chakram), GetUnitY(chakram)) + 45);
+			if (DistanceBetweenCoords(GetUnitX(chakram), GetUnitY(chakram), xT, yT) <= 25.)
+			{
+				SetUnitXY(chakram, xT, yT);
+				SPELL_OWNER_UNIT_GET = owner;
+				SPELL_COUNT_TARGETS_GET = CountUnitsInGroup(grTargetsUnits);
+				ExecuteFunc("Trig_" + TRIG_EVENT_SPELLS + "_Actions");
+				SPELL_OWNER_UNIT_GET = null;
+				SPELL_COUNT_TARGETS_GET = 0;
+				this.destroy();
+			}
+		}
+
+		static method searchTarget() {
+			Chakram this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+			group g = CreateGroup();
+			real x = GetUnitX(target);
+			real y = GetUnitY(target);
+			real angle;
+			real dist;
+			unit newTarget;
+
+			This = this;
+			GroupEnumUnitsInRange(g, x, y, radius, Condition(function() -> boolean {
+				Chakram this = This;
+				FilterUnit = GetFilterUnit();
+				return
+					UnitAlive(FilterUnit) &&
+					!IsUnitAlly(FilterUnit, GetOwningPlayer(owner)) &&
+					!IsUnitInGroup(FilterUnit, grTargetsUnits) &&
+					!IsUnitType(FilterUnit, UNIT_TYPE_MECHANICAL) &&
+					!IsUnitType(FilterUnit, UNIT_TYPE_STRUCTURE) &&
+					!IsUnitType(FilterUnit, UNIT_TYPE_TAUREN) &&
+					!IsUnitFogged(FilterUnit, GetOwningPlayer(owner)) &&
+					IsUnitVisible(FilterUnit, GetOwningPlayer(owner)) &&
+					!IsUnitInvulnerable(FilterUnit);
+			}));
+
+			FilteredUnit = FirstOfGroup(g);
+			ForGroup(g, function() {
+				Chakram this = This;
+				EnumUnit = GetEnumUnit();
+				if (DistanceBetweenWidgets(FilteredUnit, target) > DistanceBetweenWidgets(EnumUnit, target)) {
+					FilteredUnit = EnumUnit;
+				}
+			}); 
+
+			newTarget = FilteredUnit;
+			if (newTarget != null) {
+				target = newTarget;
+				TimerStart(this.tm, 0.02, true, function Chakram.callback);
+			} else {
+				PauseTimer(tm);
+				if (actionsId != 0)
+					TimerStart(tm, 0.02, true, function Chakram.callbackReturn);
+				else 
+					this.destroy();
+			}
+
+			newTarget = null;
+			DestroyGroup(g);
+			g = null;
+		}
+
+		static method callback() {
+			Chakram this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+			real xC = GetUnitX(chakram);
+			real yC = GetUnitY(chakram);
+			real xT = GetUnitX(target);
+			real yT = GetUnitY(target);
+			real angle = AngleNormalize(AngleBetweenCoords(xC, yC, xT, yT));
+
+			real angleSpeed = 7.5 * (1 + 150/DistanceBetweenWidgets(chakram, target));
+
+			if (AngleDifference(angle, angleChakram + angleSpeed) < AngleDifference(angle, angleChakram - angleSpeed)) {
+				angleChakram = AngleNormalize(angleChakram + angleSpeed);
+			} else {
+				angleChakram = AngleNormalize(angleChakram - angleSpeed);
+			}
+
+			SetUnitFacing(chakram, angleChakram);
+			SetUnitXY(chakram, GetPolarOffsetX(xC, speed * 0.02, angleChakram), GetPolarOffsetY(yC, speed * 0.02, angleChakram));
+			SetUnitZ(chakram, GetTerrainZ(GetUnitX(chakram), GetUnitY(chakram)) + 45);
+			if (DistanceBetweenCoords(GetUnitX(chakram), GetUnitY(chakram), xT, yT) <= 25.)
+			{
+				//дамаг
+				dmg = dmg - (dmg * reduction);
+
+				if (isAttack) {
+					UnitAttackToTarget(owner, target, dmg, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, isSpec, false, false, false, true);
+				} else {
+					UnitDamageToTarget(owner, target, dmg, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, true, false, false, false, true);
+				}
+
+				countTargets = countTargets - 1;
+				GroupAddUnit(grTargetsUnits, target);
+				
+				SetUnitXY(chakram, xT, yT);
+
+				if (countTargets <= 0) {
+					PauseTimer(tm);
+					if (actionsId != 0)
+						TimerStart(tm, 0.02, true, function Chakram.callbackReturn);
+					else 
+						this.destroy();
+				} else {
+					PauseTimer(tm);
+					TimerStart(tm, 0, false, function Chakram.searchTarget);
+				}
+			}
+		}
+	}
+
+	public function CastChakram(
+		unit owner,             //владелец
+		unit target,            //цель
+		integer chakramId,      //тип юнита чакрама
+		real dmg,               //урон
+		real reduction,         //коефициент снижения урона
+		integer countTargets,   //количество целей
+		real radius,            //максимальный радиус поражения чакрамом
+		real speed,             //скорость чакрама
+		boolean isAttack,       //считается ли атакой
+		boolean isSpec,         //считается ли специальной атакой
+		integer actionsId       //id действий
+	) {
+		Chakram.create(owner, target, chakramId, dmg, reduction, countTargets, radius, speed, isAttack, isSpec, actionsId);
+	}
+
+}

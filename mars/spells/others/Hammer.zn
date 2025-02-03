@@ -1,0 +1,149 @@
+library Hammer requires SpellGetters, BJHooked {
+
+	struct Hammer {
+		unit owner;
+		unit target;
+		integer hammerId;
+		real dmg;
+		real reduction;
+		integer countTargets;
+		boolean isAttack;
+		boolean isSpec;
+		real range;
+		real speed;
+		integer actionsId;
+
+		group grTargets;
+
+		static method create(unit owner, unit target, integer hammerId, real dmg, real reduction, integer countTargets, real range, real speed, boolean isAttack, boolean isSpec, integer actionsId) -> Hammer {
+			Hammer this = Hammer.allocate();
+			this.owner = owner;
+			this.target = target;
+			this.hammerId = hammerId;
+			this.dmg = dmg;
+			this.reduction = reduction;
+			this.countTargets = countTargets;
+			this.range = range;
+			this.speed = speed;
+			this.isAttack = isAttack;
+			this.isSpec = isSpec;
+			this.actionsId = actionsId;
+
+			this.grTargets = CreateGroup();
+
+			this.newTarget();
+
+			return this;
+		}
+
+		method destroy() {
+			owner = null;
+			target = null;
+
+			DestroyGroup(grTargets); grTargets = null;
+			this.deallocate();
+		}
+
+		method newTarget() {
+			group g = CreateGroup();
+			unit hammer;
+			unit oldTarget = target;
+
+			countTargets = countTargets - 1;
+			GroupAddUnit(grTargets, oldTarget);
+
+			This = this;
+			GroupEnumUnitsInRange(g, GetUnitX(oldTarget), GetUnitY(oldTarget), range, Condition(function() -> boolean {
+				Hammer this = This;
+				FilterUnit = GetFilterUnit();
+				return
+					UnitAlive(FilterUnit) &&
+					!IsUnitAlly(FilterUnit, GetOwningPlayer(owner)) &&
+					!IsUnitInGroup(FilterUnit, grTargets) &&
+					!IsUnitType(FilterUnit, UNIT_TYPE_MECHANICAL) &&
+					!IsUnitType(FilterUnit, UNIT_TYPE_STRUCTURE) &&
+					!IsUnitType(FilterUnit, UNIT_TYPE_TAUREN) &&
+					!IsUnitFogged(FilterUnit, GetOwningPlayer(owner)) &&
+					IsUnitVisible(FilterUnit, GetOwningPlayer(owner)) &&
+					!IsUnitInvulnerable(FilterUnit);
+			}));
+
+			FilteredUnit = FirstOfGroup(g);
+			This = this;
+			ForGroup(g, function() {
+				Hammer this = This;
+				EnumUnit = GetEnumUnit();
+				if (DistanceBetweenWidgets(FilteredUnit, target) > DistanceBetweenWidgets(EnumUnit, target)) {
+					FilteredUnit = EnumUnit;
+				}
+			}); 
+			target = FilteredUnit;
+
+			if (target != null) {
+				hammer = CreateUnit(GetOwningPlayer(owner), hammerId, GetUnitX(oldTarget), GetUnitY(oldTarget), AngleBetweenWidgets(oldTarget, target));
+				CreateStaticProjectileFunc(this, owner, target, hammer, Hammer.hit.name, speed, 150, 50, false);
+			} else {
+				if (actionsId != 0) {
+					hammer = CreateUnit(GetOwningPlayer(owner), hammerId, GetUnitX(oldTarget), GetUnitY(oldTarget), AngleBetweenWidgets(oldTarget, owner));
+					CreateStaticProjectileFunc(this, owner, owner, hammer, Hammer.back.name, speed, 150, 50, false);
+				} else {
+					this.destroy();
+				}
+			}
+
+			DestroyGroup(g); g = null;
+			hammer = null; oldTarget = null;
+		}
+
+		static method hit() {
+			Hammer this = GetSpellObject();
+			unit hammer;
+			dmg = dmg - (dmg * reduction);
+			if (isAttack) {
+				UnitAttackToTarget(owner, target, dmg, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, isSpec, false, false, false, true);
+			} else {
+				UnitDamageToTarget(owner, target, dmg, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, true, false, false, false, true);
+			}
+
+			if (countTargets <= 0) {
+				if (actionsId != 0) {
+					hammer = CreateUnit(GetOwningPlayer(owner), hammerId, GetUnitX(target), GetUnitY(target), AngleBetweenWidgets(target, owner));
+					CreateStaticProjectileFunc(this, owner, owner, hammer, Hammer.back.name, speed, 150, 50, false);
+				} else {
+					this.destroy();
+				}
+			} else {
+				this.newTarget();
+			}
+			hammer = null;
+		}
+
+		static method back() {
+			Hammer this = GetSpellObject();
+			SPELL_OWNER_UNIT_GET = owner;
+			SPELL_COUNT_TARGETS_GET = CountUnitsInGroup(grTargets);
+			ExecuteFunc("Trig_" + TRIG_EVENT_SPELLS + "_Actions");
+			SPELL_OWNER_UNIT_GET = null;
+			SPELL_COUNT_TARGETS_GET = 0;
+			this.destroy();
+		}
+
+	}
+
+	public function CastHammer(
+		unit owner,             //владелец
+		unit target,            //цель
+		integer hammerId,      //тип юнита чакрама
+		real dmg,               //урон
+		real reduction,         //коефициент снижения урона
+		integer countTargets,   //количество целей
+		real range,            //максимальный радиус поражения чакрамом
+		real speed,             //скорость чакрама
+		boolean isAttack,       //считается ли атакой
+		boolean isSpec,         //считается ли специальной атакой
+		integer actionsId       //id действий
+	) {
+		Hammer.create(owner, target, hammerId, dmg, reduction, countTargets, range, speed, isAttack, isSpec, actionsId);
+	}
+
+}

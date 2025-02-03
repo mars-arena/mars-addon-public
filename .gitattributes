@@ -1,0 +1,3 @@
+*.j linguist-language=Lua
+*.zn linguist-language=TypeScript
+*.cj linguist-language=C++

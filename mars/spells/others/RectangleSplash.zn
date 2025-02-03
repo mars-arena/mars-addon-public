@@ -1,0 +1,32 @@
+library RectangleSplash requires SpellGetters, BJHooked {
+
+	public function RectangleSplash(
+		unit owner,             //владелец
+		unit target,            //цель
+		real dmg,               //урон
+		real percentdmg,        //процент от урона
+		real length,            //длина сплеша
+		real width              //ширина сплеша
+	) {
+		unit u;
+		boolexpr filter = ConditionParameters(function FilterRectangleSplash, owner, target, 0);
+		group g = CreateGroup();
+		real x = GetUnitX(owner);
+		real y = GetUnitY(owner);
+		real angle = AngleBetweenWidgets(owner, target);
+		GroupEnumUnitsInRectangleCollision(g, GetPolarOffsetX(x, length / 2., angle), GetPolarOffsetY(y, length / 2., angle), width, length, Deg2Rad(angle), filter);
+
+		u = FirstOfGroup(g);
+		while(u != null) {
+			GroupRemoveUnit(g, u);
+			UnitDamagePureToTarget(owner, u, dmg * percentdmg);
+			u = FirstOfGroup(g);
+		}
+
+		DestroyGroup(g); 
+		g = null;
+		filter = null;
+		u = null;
+	}
+
+}

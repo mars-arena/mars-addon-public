@@ -1,0 +1,195 @@
+library HortArena requires Events {
+
+	constant integer ABILITY_ID = 'A0P6';
+	constant integer ARENA_ID = 'e021';
+	constant integer TALENT_ID = 'A1EP';
+
+	constant string SOUND_PATH = "Heroes\\Hort\\Hort_4.wav";
+	constant string EFFECT_PATH = "Abilities\\Weapons\\AncestralGuardianMissile\\AncestralGuardianMissile.mdl";
+	constant string EFFECT_ATTACH = "origin";
+
+	constant integer RANGE = 250;
+	constant real DURATION = 5.;
+	constant real INTERVAL = 0.5;
+	constant real DAMAGE_RATIO = 1.5;
+
+	constant real DURATION_TALENT = 7.;
+
+	struct Arena {
+		unit owner;
+		unit arena;
+		real time;
+		real expire;
+		real interval;
+		real x, y;
+		sound snd;
+		
+		timer tm;
+		
+		static integer CK_HID = 0;
+		static real TM_INTERVAL = 1./40.;
+		
+		static method create(unit owner, real duration) -> Arena {
+			Arena this = Arena.allocate();
+			
+			this.owner = owner;
+			this.arena = CreateUnit(GetOwningPlayer(owner), ARENA_ID, GetUnitX(owner), GetUnitY(owner), 270.);
+			this.time = 0;
+			this.expire = duration;
+			this.interval = 0;
+			this.x = GetUnitX(arena); this.y = GetUnitY(arena);
+			
+			SetUnitScale(arena, RANGE / 160., RANGE / 160., RANGE / 160.);
+			SetUnitAnimation(arena, "Birth");
+			AddAuraToUnit(arena, hortbuff_tid, null, false, 0,  false, false, false, hortbuff_tid, Condition(function FilterAll), RANGE, 0, false, 1);
+			
+			this.snd = CreateSound(SOUND_PATH, false, true, true, 10, 10, "SpellsEAX");
+			SetSoundDuration(this.snd, 9192);
+			SetSoundChannel(this.snd, 11);
+			SetSoundVolume(this.snd, 127);
+			SetSoundPitch(this.snd, 1.0);
+			SetSoundDistances(this.snd, 600.0, 10000.0);
+			SetSoundDistanceCutoff(this.snd, 3000.0);
+			SetSoundConeAngles(this.snd, 0.0, 0.0, 127);
+			SetSoundConeOrientation(this.snd, 0.0, 0.0, 0.0);
+			AttachSoundToUnit(this.snd, arena);
+			StartSound(this.snd);
+			
+			tm = CreateTimer();
+			SaveInteger(HT, GetHandleId(this.tm), CK_HID, this);
+			TimerStart(this.tm, TM_INTERVAL, true, function Arena.callback);
+			return this;
+		}
+		
+		method destroy() {
+			StopSound(snd, true, true); KillSoundWhenDone(snd); snd = null;
+			owner = null;
+			KillUnit(arena); arena = null;
+			
+			FlushChildHashtable(HT, GetHandleId(tm)); PauseTimer(tm); DestroyTimer(tm); tm = null;
+			
+			this.deallocate();
+		}
+		
+		static method callback() {
+			Arena this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+			group gr = CreateGroup();
+			unit target;
+			
+			This = this;
+			GroupEnumUnitsInRangeFiz(gr, x, y, RANGE, Condition(function() -> boolean {
+				Arena this = This;
+				FilterUnit = GetFilterUnit();
+
+				if (!(UnitAlive(FilterUnit) &&
+					!IsUnitType(FilterUnit, UNIT_TYPE_MAGIC_IMMUNE) &&
+					!IsUnitInvulnerable(FilterUnit) &&
+					!IsUnitType(FilterUnit, UNIT_TYPE_MECHANICAL))
+				) {
+					return false;
+				}
+			
+				if (UnitHasTalent(owner, TALENT_ID)) {
+					return !IsUnitAlly(FilterUnit, GetOwningPlayer(owner));
+				} else {
+					return true;
+				}
+			}));
+			
+			EnumUnit = FirstOfGroup(gr);
+			ForGroup(gr, function() {
+				Arena this = This;
+				unit selected = GetEnumUnit();
+				if (GetUnitLifePercentHook(EnumUnit) < GetUnitLifePercentHook(selected)) {
+					EnumUnit = selected;
+				}
+				selected = null;
+			}); 
+			target = EnumUnit;
+			
+			interval = interval + TM_INTERVAL;
+			if (target != null && interval >= INTERVAL) {
+				interval = 0.;
+				UnitDamageToTarget(arena, target, GetHeroAgi(owner, true) * DAMAGE_RATIO, ATTACK_TYPE_CHAOS, DAMAGE_TYPE_UNIVERSAL, true, false, false, false, false);
+				DestroyEffect(AddSpecialEffectTarget(EFFECT_PATH, target, EFFECT_ATTACH));
+			}
+		
+			ForGroup(gr, function() {
+				Arena this = This;
+				EnumUnit = GetEnumUnit();
+					
+				if (DistanceBetweenCoords(x, y, GetUnitX(EnumUnit), GetUnitY(EnumUnit)) < RANGE - 25 && 
+					(DistanceBetweenCoords(x, y, GetUnitX(EnumUnit), GetUnitY(EnumUnit)) >= RANGE - 65 && 
+					AngleDifference(AngleBetweenCoords(x, y, GetUnitX(EnumUnit), GetUnitY(EnumUnit)), GetUnitFacing(EnumUnit)) < 95.))
+				{
+					// TO DO
+					udg_Knockback_Counts = GetUnitUserData(EnumUnit);
+					udg_Knockback_Caster[udg_Knockback_Counts] = arena;
+					udg_Knockback_Target[udg_Knockback_Counts] = EnumUnit;
+					udg_Arrow_CasterLoc = GetUnitLoc(udg_Knockback_Caster[udg_Knockback_Counts]);
+					udg_Knockback_TargetLoc = GetUnitLoc(udg_Knockback_Target[udg_Knockback_Counts]);
+					udg_Arrow_Angle = AngleBetweenPoints(udg_Knockback_TargetLoc, udg_Arrow_CasterLoc);
+					GroupAddUnitSimple( udg_Knockback_Target[udg_Knockback_Counts], udg_Target_StartGroup );
+					udg_Knockback_Distance[udg_Knockback_Counts] = ( DistanceBetweenPoints(udg_Knockback_TargetLoc, udg_Arrow_CasterLoc) - 100.00 );
+					udg_Knockback_Collision[udg_Knockback_Counts] = true;
+					SetUnitPathing( udg_Knockback_Target[udg_Knockback_Counts], false );
+					udg_Knockback_DistanceTravel[udg_Knockback_Counts] = 0.00;
+					udg_Knockback_Speed[udg_Knockback_Counts] = 25.00;
+					udg_Knockback_Effect[udg_Knockback_Counts] = "Abilities\\Weapons\\PhoenixMissile\\Phoenix_Missile_mini.mdl";
+					udg_Knockback_Collision[udg_Knockback_Counts] = true;
+					udg_Knockback_Effect_Unit[udg_Knockback_Counts] = 0;
+					udg_Knockback_Invuel[udg_Knockback_Counts] = false;
+					udg_Knockback_Collision2[udg_Knockback_Counts] = false;
+					udg_Knockback_PhysX[udg_Knockback_Counts] = false;
+					udg_Knockback_Finish_Caster[udg_Knockback_Counts] = 0;
+					udg_Knockback_Finish_Spell[udg_Knockback_Counts] = 'Asla';
+					udg_Knockback_Finish_Spell_lvl[udg_Knockback_Counts] = 0.00;
+					udg_Knockback_Finish_Damage[udg_Knockback_Counts] = 0.00;
+					udg_Knockback_Finish_Stun[udg_Knockback_Counts] = 0.00;
+					udg_Knockback_Finish_Crash[udg_Knockback_Counts] = false;
+					udg_Arrow_StunType[udg_Knockback_Counts] = 0;
+					udg_Arrow_Pierce[udg_Knockback_Counts] = false;
+					udg_Arrow_Scale[udg_Knockback_Counts] = 0.00;
+					GroupClear( udg_Arrow_W_Unit_Group[udg_Knockback_Counts] );
+					DestroyGroup (udg_Arrow_W_Unit_Group[udg_Knockback_Counts]);
+					udg_Arrow_W_Unit_Group[udg_Knockback_Counts] = CreateGroup();
+					udg_Arrow_Damage[udg_Knockback_Counts] = 0.00;
+					udg_Arrow_Damage_Type[udg_Knockback_Counts] = DAMAGE_TYPE_MAGIC;
+					udg_Arrow_Attack_Type[udg_Knockback_Counts] = ATTACK_TYPE_NORMAL;
+					udg_Arrow_PickMove[udg_Knockback_Counts] = false;
+					SetUnitPathing( udg_Knockback_Target[udg_Knockback_Counts], false );
+					udg_Target_Angle[udg_Knockback_Counts] = udg_Arrow_Angle;
+					EnableTrigger( gg_trg_Just_Move );
+					RemoveLocation (udg_Arrow_CasterLoc);
+					RemoveLocation (udg_Knockback_TargetLoc);
+
+				}
+				
+			});
+			
+			time = time + TM_INTERVAL;
+			if (time >= expire) {
+				this.destroy();
+			}
+			
+			DestroyGroup(gr);
+			gr = null;
+			target = null;
+		}
+	}
+
+	public function HortArena(unit owner) {
+		if (UnitHasTalent(owner, TALENT_ID)) {
+			Arena.create(owner, DURATION_TALENT);
+		} else {
+			Arena.create(owner, DURATION);
+		}
+	}
+
+	function onInit() {
+		SpellEffectAddAction(function() {
+			if (GetSpellAbilityId() == ABILITY_ID) HortArena(GetTriggerUnit());
+		});
+	}
+
+}

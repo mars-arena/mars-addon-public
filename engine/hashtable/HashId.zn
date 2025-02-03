@@ -1,0 +1,12 @@
+library HashId requires Constants {
+
+	public hashtable HT;
+	public hashtable HTBuff;
+ 
+	function onInit() {
+		HT = InitHashtable();
+		HTBuff = InitHashtable();
+		udg_HT_GUI = InitHashtable();
+	}
+ 
+}

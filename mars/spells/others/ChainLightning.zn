@@ -1,0 +1,117 @@
+library ChainLightning requires SpellGetters, BJHooked {
+
+	//Цепная молния\\
+	struct ChainLightning {
+		unit caster;
+		unit target;
+		real value;
+		real reduction;
+		integer countTargets;
+		real radius;
+
+		group grTargetsUnits;
+		timer tm;
+		static integer CK_HID = 0;
+		static real TIMER_PERIOD = 0.25;
+
+		static method create(unit caster, unit target, real value, real reduction, integer countTargets, real radius) -> ChainLightning {
+			ChainLightning this = ChainLightning.allocate();
+			this.caster = caster;
+			this.target = target;
+			this.value = value;
+			this.reduction = reduction;
+			this.countTargets = countTargets;
+			this.radius = radius;
+
+			this.grTargetsUnits = CreateGroup();
+			this.tm = CreateTimer();
+
+			SaveInteger(HT, GetHandleId(this.tm), CK_HID, this);
+			TimerStart(this.tm, TIMER_PERIOD, true, function ChainLightning.callback);
+			this.action(caster, target);
+			return this;
+		}
+
+		method destroy() {
+			caster = null;
+			target = null;
+
+			DestroyGroup(grTargetsUnits); grTargetsUnits = null;
+			FlushChildHashtable(HT, GetHandleId(tm)); PauseTimer(tm); DestroyTimer(tm); tm = null;
+
+			this.deallocate();
+		}
+
+		method action(unit target1, unit target2) {
+			CreateUnitLightningTarget(target1, target2, "CLPB", "", "", "Abilities\\Weapons\\Bolt\\BoltImpact.mdl", "origin", 1.4, 10000, 50., 0.75, true);
+			UnitDamageToTarget(caster, target2, value, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+			value = value - (value * reduction);
+			countTargets = countTargets - 1;
+			GroupAddUnit(grTargetsUnits, target2);
+
+			target = target2;
+
+			if (countTargets <= 0) {
+				this.destroy();
+			}
+		}
+
+		static method callback() {
+			ChainLightning this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+			group g = CreateGroup();
+			real x = GetUnitX(target);
+			real y = GetUnitY(target);
+			unit newTarget;
+
+			This = this;
+			GroupEnumUnitsInRange(g, x, y, radius, Condition(function() -> boolean {
+				ChainLightning this = This;
+				FilterUnit = GetFilterUnit();
+				return
+					UnitAlive(FilterUnit) &&
+					!IsUnitAlly(FilterUnit, GetOwningPlayer(caster)) &&
+					!IsUnitInGroup(FilterUnit, grTargetsUnits) &&
+					!IsUnitType(FilterUnit, UNIT_TYPE_MECHANICAL) &&
+					!IsUnitType(FilterUnit, UNIT_TYPE_STRUCTURE) &&
+					!IsUnitType(FilterUnit, UNIT_TYPE_TAUREN) &&
+					!IsUnitType(FilterUnit, UNIT_TYPE_MAGIC_IMMUNE) &&
+					!IsUnitFogged(FilterUnit, GetOwningPlayer(caster)) &&
+					IsUnitVisible(FilterUnit, GetOwningPlayer(caster)) &&
+					!IsUnitInvulnerable(FilterUnit);
+			}));
+
+			FilteredUnit = FirstOfGroup(g);
+			ForGroup(g, function() {
+				ChainLightning this = This;
+				EnumUnit = GetEnumUnit();
+				if (DistanceBetweenWidgets(FilteredUnit, target) > DistanceBetweenWidgets(EnumUnit, target)) {
+					FilteredUnit = EnumUnit;
+				}
+			});
+
+			newTarget = FilteredUnit;
+			if (newTarget != null) {
+				this.action(target, newTarget);
+			} else {
+				 this.destroy();
+			}
+
+			newTarget = null;
+			DestroyGroup(g);
+			g = null;
+		}
+
+	}
+
+	public function CastChainLightning(
+		unit caster,            //кастер
+		unit target,            //цель
+		real value,             //величина урона
+		real reduction,         //коефициент снижения исцеления
+		integer countTargets,   //количество целей
+		real radius             //максимальный раидус исцеления
+	) {
+		ChainLightning.create(caster, target, value, reduction, countTargets, radius);
+	}
+
+}

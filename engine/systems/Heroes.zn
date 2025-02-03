@@ -1,0 +1,197 @@
+library Heroes requires Modifiers {
+
+// Constants
+
+	// @const длительность короткой серии убийств (сек).
+	constant real DURATION_SHORT_STREAK = 15.;
+
+// Variables
+
+	// Debug Variables
+	public boolean DebugHero = false;
+
+	// Getters Variables
+	integer BROKEN_STREAK_GET = 0;
+
+	// Hash Variables
+	key HERO_HID;
+
+// Tech Fucntions
+
+	function dbg(string msg) {
+		if (DebugHero) dbgT(msg);
+	}
+
+// API
+
+	// Event Getters
+	public function GetBrokenStreak() -> integer { return BROKEN_STREAK_GET; }
+
+	// Functions
+
+	// Обрабатывает событие убийства одним героем другого.
+	//
+	// * @arg unit `killingHero` герой, совершивший убийство.
+	// * @arg unit `killedHero` герой, который был убит.
+	public function KillingEvent(unit killingHero, unit killedHero) {
+		Hero.KillingEvent(Hero.get(killingHero), Hero.get(killedHero));
+	}
+
+	// Проверяет, активен ли режим обнаружения величины атаки для героя.
+	//
+	// * @arg unit `whichHero` герой.
+	// * @return boolean true, если режим обнаружения величины атаки активен.
+	public function IsHeroDetectAttack(unit whichHero) -> boolean {
+		return Hero.get(whichHero).isDetectAttack;
+	}
+
+	// Устанавливает режим обнаружения величины атаки для героя.
+	//
+	// * @arg unit `whichHero` герой.
+	// * @arg boolean `isDetectAttack` true, если режим обнаружения величины атаки должен быть активен.
+	public function SetHeroDetectAttack(unit whichHero, boolean isDetectAttack) {
+		Hero.get(whichHero).isDetectAttack = isDetectAttack;
+	}
+
+	// Возвращает величину атаки героя.
+	//
+	// * @arg unit `whichHero` герой.
+	// * @return real величину атаки героя.
+	public function GetHeroAttackValue(unit whichHero) -> real {
+		return Hero.get(whichHero).attackValue;
+	}
+
+	// Устанавливает величину атаки для героя.
+	//
+	// * @arg unit `whichHero` герой.
+	// * @arg real `attackValue` новое величину атаки.
+	public function SetHeroAttackValue(unit whichHero, real attackValue) {
+		Hero this = Hero.get(whichHero);
+		this.attackValue = attackValue;
+		//dbg(GetUnitName(this.u) + "|r: AttackValue=" + R2S(attackValue));
+	}
+
+	// Возвращает общую серию убийств героя.
+	//
+	// * @arg unit `whichHero` герой.
+	// * @return integer общее количество последовательных убийств.
+	public function GetHeroTotalStreak(unit whichHero) -> integer {
+		return Hero.get(whichHero).totalStreak;
+	}
+
+	// Возвращает короткую серию убийств героя.
+	//
+	// * @arg unit `whichHero` герой.
+	// * @return integer количество убийств в текущей короткой серии.
+	public function GetHeroShortStreak(unit whichHero) -> integer {
+		return Hero.get(whichHero).shortStreak;
+	}
+
+	// Возвращает количество убийств игрока одного героя другим.
+	//
+	// * @arg unit `originHero` герой, совершивший убийства.
+	// * @arg unit `targetHero` герой, который был убит.
+	// * @return integer количество убийств одного игрока другим.
+	public function GetHeroPlayerStreak(unit originHero, unit targetHero) -> integer {
+		return Hero.get(originHero).playerStreak[GetPlayerId(GetOwningPlayer(Hero.get(targetHero).u))];
+	}
+
+// Structures
+
+	// Object Structure
+	struct Hero {
+		unit u;
+
+		boolean isDetectAttack;
+		real attackValue;
+
+		integer totalStreak;
+		integer shortStreak;
+		integer playerStreak[MAX_PLAYERS];
+		timer tmShortStreak;
+
+		static integer CK_HID = 0;
+
+		static method create(unit whichHero) -> Hero {
+			Hero this = Hero.allocate();
+			integer index;
+			this.u = whichHero;
+			this.isDetectAttack = false;
+			this.attackValue = 0.;
+
+			this.totalStreak = 0;
+			this.shortStreak = 0;
+			for (0 <= index <= 16) {
+				this.playerStreak[index] = 0;
+			}
+			this.tmShortStreak = CreateTimer();
+			SaveInteger(HT, GetHandleId(this.tmShortStreak), CK_HID, this);
+
+			SaveInteger(HT, GetHandleId(this.u), HERO_HID, this);
+			return this;
+		}
+
+		method destroy() {
+			RemoveSavedInteger(HT, GetHandleId(u), HERO_HID);
+			u = null;
+			FlushChildHashtable(HT, GetHandleId(tmShortStreak));
+			PauseTimer(tmShortStreak);
+			DestroyTimer(tmShortStreak);
+			tmShortStreak = null;
+			this.deallocate();
+		}
+
+		static method get(unit whichHero) -> Hero {
+			Hero this;
+			if (!IsUnitType(whichHero, UNIT_TYPE_HERO)) return 0;
+			this = LoadInteger(HT, GetHandleId(whichHero), HERO_HID);
+
+			if (this <= 0)
+				return Hero.create(whichHero);
+			else
+				return this;
+		}
+
+		static method clearShortStreak() {
+			Hero this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+			shortStreak = 0;
+
+			dbg(GetUnitName(u) + "|r: SS=0");
+		}
+
+		method died(Hero killingHero) {
+			totalStreak = 0;
+			//shortStreak = 0;
+			playerStreak[GetPlayerId(GetOwningPlayer(killingHero.u))] = 0;
+			//PauseTimer(tmShortStreak);
+		}
+
+		method kill(Hero killedHero) {
+			totalStreak += 1;
+			shortStreak += 1;
+			playerStreak[GetPlayerId(GetOwningPlayer(killedHero.u))] += 1;
+			PauseTimer(tmShortStreak);
+			TimerStart(tmShortStreak, DURATION_SHORT_STREAK, false, function Hero.clearShortStreak);
+		}
+
+		static method KillingEvent(Hero killingHero, Hero killedHero) {
+			BROKEN_STREAK_GET = killedHero.totalStreak;
+
+			killingHero.kill(killedHero);
+			killedHero.died(killingHero);
+
+			dbg(GetUnitName(killingHero.u) + "|r:"
+				+ " TS=" + I2S(killingHero.totalStreak)
+				+ " SS=" + I2S(killingHero.shortStreak)
+				+ " PS=" + I2S(killingHero.playerStreak[GetPlayerId(GetOwningPlayer(killedHero.u))])
+			);
+			dbg(GetUnitName(killedHero.u) + "|r:"
+				+ " TS=" + I2S(killedHero.totalStreak)
+				+ " SS=" + I2S(killedHero.shortStreak)
+				+ " PS=" + I2S(killedHero.playerStreak[GetPlayerId(GetOwningPlayer(killingHero.u))])
+			);
+		}
+
+	}
+
+}

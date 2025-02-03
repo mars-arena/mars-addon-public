@@ -1,0 +1,186 @@
+library Rectangle {
+
+	public struct Rectangle {
+		real cx, cy, tx, ty, lx, ly, rx, ry, bx, by;
+	
+		real tlx, tly, trx, try, blx, bly, brx, bry;
+
+		real radians;
+
+		real width, height, diagonal;
+
+		static method new(real cx, real cy, real width, real height, real radians) -> thistype {
+			return thistype.allocate().setData(cx, cy, width, height, radians);
+		}
+
+		method setData(real cx, real cy, real width, real height, real radians) -> thistype {
+			this.cx = cx;
+			this.cy = cy;
+			this.width = width;
+			this.height = height;
+			return setRadians(radians);
+		}
+
+		method setCenter(real cx, real cy, real radians) -> thistype {
+			this.cx = cx;
+			this.cy = cy;
+			return setRadians(radians);
+		}
+
+		method setSize(real width, real height, real radians) -> thistype {
+			this.width = width;
+			this.height = height;
+			return setRadians(radians);
+		}
+
+		method setRadians(real radians) -> thistype {
+			real wa = (bj_PI - Atan(height / width) * 2) * .5;
+			real nr, d;
+			real hw = width * .5;
+			real hh = height * .5;
+			real hp = bj_PI * .5;
+
+			diagonal = SquareRoot(width * width + height * height);
+			d = diagonal * .5;
+
+			this.radians = radians - 2 * bj_PI * R2I(radians / (bj_PI * 2));
+			
+			tx = cx + hh * Cos(this.radians);
+			ty = cy + hh * Sin(this.radians);
+
+			nr = radians + hp;
+			lx = cx + hw * Cos(nr);
+			ly = cy + hw * Sin(nr);
+
+			nr = radians - hp;
+			rx = cx + hw * Cos(nr);
+			ry = cy + hw * Sin(nr);
+
+			nr = radians - wa;
+			trx = cx + d * Cos(nr);
+			try = cy + d * Sin(nr);
+
+			nr = radians + wa;
+			tlx = cx + d * Cos(nr);
+			tly = cy + d * Sin(nr);
+
+			radians = radians + bj_PI;
+			bx = cx + hh * Cos(radians);
+			by = cy + hh * Sin(radians);
+
+			nr = radians - wa;
+			blx = cx + d * Cos(nr);
+			bly = cy + d * Sin(nr);
+
+			nr = radians + wa;
+			brx = cx + d * Cos(nr);
+			bry = cy + d * Sin(nr);
+
+			return this;
+		}
+
+		method translateOffset(real dx, real dy) -> thistype {
+			cx += dx;
+			cy += dy;
+
+			tx += dx;
+			ty += dy;
+			lx += dx;
+			ly += dy;
+			rx += dx;
+			ry += dy;
+			bx += dx;
+			by += dy;
+
+			tlx += dx;
+			tly += dy;
+			trx += dx;
+			try += dy;
+			blx += dx;
+			bly += dy;
+			brx += dx;
+			bry += dy;
+
+			return this;
+		}
+
+		method translatePolar(real distance, real radians) -> thistype {
+			real x = cx + distance * Cos(radians);
+			real y = cy + distance * Sin(radians);
+			return translateOffset(x - cx, y - cy);
+		}
+		
+		method rotate(real ox, real oy, real radians) -> thistype {
+			real cos = Cos(radians);
+			real sin = Sin(radians);
+			real xn, yn;
+
+			cx -= ox;
+			cy -= oy;
+			xn = cx * cos - cy * sin;
+			yn = cx * sin + cy * cos;
+			cx = xn + rx;
+			cy = yn + ry;
+
+			return setRadians(this.radians + radians);
+		}
+
+		method distanceXY(real x, real y) -> real {
+			real a = 0 - radians;
+			real cos = Cos(a);
+			real sin = Sin(a);
+			real xn, yn, dx , dy, d;
+			real hh = height * .5;
+			real hw = width * .5;
+			real xmin = cx - hh;
+			real xmax = cx + hh;
+			real ymin = cy - hw;
+			real ymax = cy + hw;
+
+			x = x - cx;
+			y = y - cy;
+			xn = x * cos - y * sin;
+			yn = x * sin + y * cos;
+			x = xn + cx;
+			y = yn + cy;
+
+			dx = RMaxBJ(0, RMaxBJ(xmin - x, x - xmax));
+			dy = RMaxBJ(0, RMaxBJ(ymin - y, y - ymax));
+
+			d = dx * dx + dy * dy;
+			if (d > 0) {
+				return 0 - d;
+			}
+			d = RMinBJ(x - xmin, RMinBJ(xmax - x, RMinBJ(y - ymin, ymax - y)));
+			return d * d;
+		}
+	}
+
+	//API
+	integer This;
+	real TargetX, TargetY, Distance;
+	unit EnumUnit;
+	group WhichGroup;
+
+	public function GroupEnumUnitsInRectangleCollision(group whichGroup, real centerX, real centerY, real width, real height, real radians, boolexpr filter) {
+		Rectangle this = Rectangle.new(centerX, centerY, width, height, radians);
+
+		GroupEnumUnitsInRange(whichGroup, this.cx, this.cy, this.diagonal * .5 + 200, filter);
+
+		This = this;
+		WhichGroup = whichGroup;
+		ForGroup(whichGroup, function() {
+			Rectangle this = This;
+			EnumUnit = GetEnumUnit();
+			
+			TargetX = GetUnitX(EnumUnit);
+			TargetY = GetUnitY(EnumUnit);
+			
+			Distance = this.distanceXY(TargetX, TargetY);
+			if (Distance < 0 && !IsUnitInRangeXY(EnumUnit, TargetX, TargetY + SquareRoot(-Distance), 0)) 
+				GroupRemoveUnit(WhichGroup, EnumUnit);
+		});
+		this.destroy();
+	}
+
+}

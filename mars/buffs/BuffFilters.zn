@@ -1,0 +1,7 @@
+library BuffFilters requires Buffs {
+
+	public function FilterNegativeBuff() {
+		FILTER_BOOLEAN_GET = GetBuffRank(GetFilterBuff()) == 0;
+	}
+
+}

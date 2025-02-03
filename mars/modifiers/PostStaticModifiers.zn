@@ -1,0 +1,67 @@
+library PostStaticModifiers requires Events {
+
+	function onInit() {
+		PostDamageModifierAddAction(INDEX_ORDER_PERCENT, function() {
+			unit attackingUnit = GetModifierAttackingUnit();
+			unit attackedUnit = GetModifierAttackedUnit();
+
+			// ПРОЦЕНТНОЕ БЛОКИРОВАНИЕ
+
+			// шанс полностью заблокировать любой урон
+			if (!IsModifierIgnoreBlock() && GetRandomReal(0, 1) < GetUnitModifier(attackedUnit, CHANCE_BLOCK_ALL_DAMAGE)) {
+				SetModifierDamageTaken(
+					GetModifierDamageTaken() - GetBlockedFromAmount(GetModifierDamageTaken())
+				);
+			}
+
+
+			// процент блокирования любого урона (не игнорируется IgnoreBlock)
+			SetModifierDamageTaken(
+				GetModifierDamageTaken() - GetBlockedFromAmount(GetModifierDamageTaken() * GetUnitModifier(attackedUnit, PERCENT_BLOCK_ANY_DAMAGE))
+			);
+
+			// шанс заблокировать процент любого урона (не игнорируется IgnoreBlock)
+			GetUnitMultiModifier(attackedUnit, CHANCE_PT_BLOCK_ANY_DMG);
+			SetModifierDamageTaken(
+				GetModifierDamageTaken() - GetBlockedFromAmount(GetModifierDamageTaken() * ValueMod3)
+			);
+
+			SetModifierDamageTaken(
+				GetModifierDamageTaken() - GetBlockedFromAmount(GetModifierDamageTaken() * GetUnitModifier(attackedUnit, NON_STACK_PT_BLOCK_ANY_DAMAGE))
+			);
+		});
+
+		PostDamageModifierAddAction(INDEX_ORDER_AMOUNT, function() {
+			unit attackingUnit = GetModifierAttackingUnit();
+			unit attackedUnit = GetModifierAttackedUnit();
+
+			// ФИКСИРОВАННОЕ БЛОКИРОВАНИЕ (максимальное одно из)
+
+			// шанс заблокировать х любого урона
+			if (!IsModifierIgnoreBlock()) {
+				GetUnitMultiModifier(attackedUnit, CHANCE_BLOCK_ANY_DMG);
+				SetModifierDamageTaken(
+					GetModifierDamageTaken() - GetBlockedFromAmount(ValueMod3)
+				);
+			}
+
+			// шанс заблокировать х любого урона в ближнем бою
+			if (!IsModifierIgnoreBlock() && IsModifierAttack() && IsUnitIdType(GetUnitTypeId(attackingUnit), UNIT_TYPE_MELEE_ATTACKER)) {
+				GetUnitMultiModifier(attackedUnit, CHANCE_BLOCK_MELEE_DMG);
+				SetModifierDamageTaken(
+					GetModifierDamageTaken() - GetBlockedFromAmount(ValueMod3)
+				);
+			}
+
+			// шанс заблокировать х любого урона в дальнем бою
+			if (!IsModifierIgnoreBlock() && IsModifierAttack() && IsUnitIdType(GetUnitTypeId(attackingUnit), UNIT_TYPE_RANGED_ATTACKER)) {
+				GetUnitMultiModifier(attackedUnit, CHANCE_BLOCK_RANGE_DMG);
+				SetModifierDamageTaken(
+					GetModifierDamageTaken() - GetBlockedFromAmount(ValueMod3)
+				);
+			}
+
+		});
+	}
+
+}

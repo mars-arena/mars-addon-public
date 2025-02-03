@@ -1,0 +1,41 @@
+library Lightning requires SpellGetters, BJHooked {
+
+	//Разветленная молния
+	public function CastLightning(
+		unit caster,            //кастер
+		unit target,            //цель
+		real value,             //величина урона
+		real angle,             //угол
+		integer countTargets,   //количество целей
+		real radius             //максимальный раидус
+	) {
+		group gr = CreateGroup();
+		real x = GetUnitX(caster);
+		real y = GetUnitY(caster);
+		integer i;
+		GroupEnumUnitsInRange(gr, x, y, radius, ConditionParameters(function FilterLightning, caster, target, angle));
+		i = countTargets;
+		CreateUnitLightningTarget(caster, target, "FORK", "", "", "Abilities\\Weapons\\Bolt\\BoltImpact.mdl", "origin", 1.4, 10000, 50., 0.75, true);
+		UnitDamageToTarget(caster, target, value, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+		GroupRemoveUnit(gr, target);
+		i = i - 1;
+		while (i > 0 && FirstOfGroup(gr) != null) {
+			TempX = (GetUnitX(caster) + GetUnitX(target)) / 2;
+			TempY = (GetUnitY(caster) + GetUnitY(target)) / 2;
+			FilteredUnit = FirstOfGroup(gr);
+			EnumUnit = null;
+			ForGroup(gr, function() {
+				EnumUnit = GetEnumUnit();
+				if (DistanceBetweenCoords(GetUnitX(EnumUnit), GetUnitY(EnumUnit), TempX, TempY) < DistanceBetweenCoords(GetUnitX(FilteredUnit), GetUnitY(FilteredUnit), TempX, TempY)) {
+					FilteredUnit = EnumUnit;
+				}
+			});
+			CreateUnitLightningTarget(caster, FilteredUnit, "FORK", "", "", "Abilities\\Weapons\\Bolt\\BoltImpact.mdl", "origin", 1.4, 10000, 50., 0.75, true);
+			UnitDamageToTarget(caster, FilteredUnit, value, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+			GroupRemoveUnit(gr, FilteredUnit);
+			i = i - 1;
+		}
+		DestroyGroup(gr); gr = null;
+	}
+
+}

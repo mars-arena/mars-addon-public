@@ -1,0 +1,20 @@
+library PrecedingStaticModifiers requires Events {
+
+	function onInit() {
+		PrecedingModifierAddAction(function() {
+			unit attackingUnit = GetModifierAttackingUnit();
+			unit attackedUnit = GetModifierAttackedUnit();
+
+			// РАСЧЕТ ПРОЦЕНТА ПРОНЗАНИЯ
+			if (IsModifierAttack() && !IsModifierIgnorePierce() && !IsUnitType(attackedUnit, UNIT_TYPE_STRUCTURE) && !IsUnitType(attackedUnit, UNIT_TYPE_TAUREN)) {
+				GetUnitMultiModifier(attackingUnit, CHANCE_PIERCE);
+				SetModifierPierceType(TypeMod);
+				AddModifierPierceRate(ValueMod3);
+			}
+
+			// УВЕЛИЧЕНИЕ ВСЕГО УРОНА
+			AddModifierDMGAmplifier(SIMPLE_AMPLIFIER, GetUnitModifier(attackingUnit, INC_ANY_DMG));
+		});
+	}
+
+}

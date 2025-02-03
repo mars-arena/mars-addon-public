@@ -1,0 +1,192 @@
+library TexttagUtils requires TechUtils {
+
+	public function CreateCustomTextToUnit(unit target, string s, real size, real transparency, real lifespan, real fadepoint, real lowSpeed, real maxSpeed, real lowAngle, real maxAngle, real zOffset) {
+		texttag t = CreateTextTagUnitBJ(s, target, zOffset, size, 100.00, 100.00, 100.00, transparency);
+		force f;
+		boolexpr b;
+		FilterUnit = target;
+		f = CreateForce();
+		b = Condition(function() -> boolean {
+			return (!IsUnitFogged(FilterUnit, GetFilterPlayer()) && IsUnitVisible(FilterUnit, GetFilterPlayer()) == true);
+		});
+		ForceEnumPlayers(f, b);
+		ShowTextTagForceBJ(false, t, GetPlayersAll());
+		ShowTextTagForceBJ(true, t, f);
+		SetTextTagVelocityBJ(t, GetRandomReal(lowSpeed, maxSpeed), GetRandomReal(lowAngle, maxAngle));
+		SetTextTagPermanentBJ(t, false);
+		SetTextTagLifespanBJ(t, lifespan);
+		SetTextTagFadepointBJ(t, fadepoint);
+		DestroyForce(f);
+		t = null;
+		f = null;
+		b = null;
+	}
+
+	public function CreateFlyingTextToUnit(unit u, string s, real sizeMin, real sizeBonus, real timeLife, real timeFade, real zOffset, real lowSpeed, real maxSpeed, real lowAngle, real maxAngle) {
+		FlyingText.create(u, s, sizeMin, sizeBonus, timeLife, timeFade, zOffset, lowSpeed, maxSpeed, lowAngle, maxAngle, 500);
+	}
+
+	public function CreateCustomVelTextToUnit(unit target, string text, real lifespan, real size, real fadepoint, real velocity, real OffsetX, real OffsetY, real OffsetZ) {
+		CustomTextTag.create(target, text, lifespan, size, fadepoint, velocity, OffsetX, OffsetY, OffsetZ);
+	}
+
+	struct CustomTextTag {
+		texttag tag;
+
+		unit target;
+		string text;
+		real lifespan;
+		real size;
+		real fadepoint;
+		real velocity;
+		real OffsetX, OffsetY, OffsetZ;
+
+		real timeLife;
+		timer tm;
+
+		static real INTERVAL = 1./32.;
+
+		static method create(unit target, string text, real lifespan, real size, real fadepoint, real velocity, real OffsetX, real OffsetY, real OffsetZ) -> CustomTextTag {
+			CustomTextTag this = CustomTextTag.allocate();
+			this.tag = CreateTextTag();
+			this.target = target;
+			this.text = text;
+			this.lifespan = lifespan;
+			this.fadepoint = fadepoint;
+			this.velocity = velocity * 0.071 / 128;
+			this.OffsetX = OffsetX;
+			this.OffsetY = OffsetY;
+			this.OffsetZ = OffsetZ;
+
+			this.timeLife = lifespan;
+
+			SetTextTagText(tag, text, TextTagSize2Height(size));
+			SetTextTagPos(tag, GetUnitX(target) + OffsetX, GetUnitY(target) + OffsetY, OffsetZ + MaxReal(GetUnitFlyHeight(target) - 60., 0));
+			SetTextTagVelocity(tag, 0, 0);
+			SetTextTagAge(tag, 0);
+			SetTextTagPermanent(tag, false);
+			SetTextTagLifespan(tag, lifespan);
+			SetTextTagFadepointBJ(tag, fadepoint);
+			SetTextTagVisibility(tag, false);
+			if (!IsUnitFogged(target, GetLocalPlayer()) && IsUnitVisible(target, GetLocalPlayer()))
+				SetTextTagVisibility(tag, true);
+
+			this.tm = CreateTimer();
+			SaveHandleDataInt(this.tm, this);
+			TimerStart(this.tm, INTERVAL, true, function CustomTextTag.callback);
+
+			return this;
+		}
+
+		method destroy() {
+			DestroyTextTag(tag); tag = null;
+			target = null;
+			FlushTimer(tm); tm = null;
+			this.deallocate();
+		}
+
+		static method callback() {
+			CustomTextTag this = LoadHandleDataInt(GetExpiredTimer());
+			real p = 1 - timeLife / lifespan;
+			real vel = velocity * p;
+			timeLife = timeLife - INTERVAL;
+			SetTextTagVelocity(tag, 0, vel);
+			if (timeLife <= 0) {
+				this.destroy();
+			}
+		}
+
+	}
+
+	struct FlyingText {
+		texttag tt;
+		string s;
+		real sizeMin;
+		real sizeBonus;
+		real timeLife;
+		real timeLifeConst;
+		
+		timer tm;
+		
+		// New fields for parabolic motion
+		real startX;
+		real startY;
+		real startZ;
+		real speedX;
+		real speedY;
+		real speedZ;
+		real gravity;
+
+		static real INTERVAL = 0.03125;
+		static integer CK_HID = 1;
+		
+		static method create(unit u, string s, real sizeMin, real sizeBonus, real timeLife, real timeFade, real zOffset, real lowSpeed, real maxSpeed, real lowAngle, real maxAngle, real gravity) -> FlyingText {
+			FlyingText this = FlyingText.allocate();
+			real angle = GetRandomReal(lowAngle, maxAngle);
+			real speed = GetRandomReal(lowSpeed, maxSpeed);
+			this.tt = CreateTextTag();
+			this.s = s;
+			this.sizeMin = sizeMin;
+			this.sizeBonus = sizeBonus;
+			this.timeLife = timeLife;
+			this.timeLifeConst = timeLife;
+			SetTextTagVisibility(this.tt, false);
+			if (!IsUnitFogged(u, GetLocalPlayer()) && IsUnitVisible(u, GetLocalPlayer())) {
+				SetTextTagVisibility(tt, true);
+			}
+			
+			this.startX = GetUnitX(u) - 25.;
+			this.startY = GetUnitY(u);
+			this.startZ = zOffset + MaxReal(GetUnitFlyHeight(u) - 60., 0);
+			
+			this.speedX = speed * Cos(angle);
+			this.speedY = speed * Sin(angle);
+			this.speedZ = speed / 2; // Initial vertical speed
+			
+			this.gravity = gravity;
+			
+			SetTextTagPos(this.tt, this.startX, this.startY, this.startZ);
+			SetTextTagPermanent(this.tt, false);
+			SetTextTagLifespan(this.tt, timeLife);
+			SetTextTagFadepoint(this.tt, timeFade);
+			SetTextTagText(this.tt, s, TextTagSize2Height(sizeMin) + TextTagSize2Height(sizeBonus) * Sin(bj_PI*(timeLife / timeLifeConst)));
+			
+			this.tm = CreateTimer();
+			SaveInteger(HT, GetHandleId(this.tm), CK_HID, this);
+			TimerStart(this.tm, INTERVAL, true, function FlyingText.callback);
+			return this;
+		}
+		
+		method destroy() {
+			PauseTimer(tm); DestroyTimer(tm); tm = null;
+			DestroyTextTag(tt); tt = null;
+			s = null;
+			this.deallocate();
+		}
+		
+		static method callback() {
+			timer tm = GetExpiredTimer();
+			integer tmId = GetHandleId(tm);
+			FlyingText this = LoadInteger(HT, tmId, CK_HID);
+			real p, newX, newY, newZ, t;
+			
+			this.timeLife = this.timeLife - INTERVAL;
+			p = Sin(bj_PI*(this.timeLife / this.timeLifeConst));
+			
+			t = this.timeLifeConst - this.timeLife; // elapsed time
+			newX = this.startX + this.speedX * t;
+			newY = this.startY + this.speedY * t;
+			newZ = this.startZ + this.speedZ * t - 0.5 * this.gravity * t * t;
+			
+			SetTextTagPos(this.tt, newX, newY, newZ);
+			SetTextTagText(this.tt, this.s, TextTagSize2Height(this.sizeMin) + TextTagSize2Height(this.sizeBonus) * p);
+			
+			if (this.timeLife <= 0) {
+				this.destroy();
+			}
+			tm = null;
+		}
+	}
+	
+
+}

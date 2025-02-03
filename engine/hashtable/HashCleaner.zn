@@ -1,0 +1,62 @@
+library HashCleaner requires GameUtils {
+
+	// TO DO
+	struct ClearUnit {
+		unit u;
+		integer hashId;
+		timer tm;
+		integer count;
+		static integer CK_HID = 0;
+				
+		static method create(unit u) -> ClearUnit {
+			ClearUnit this = ClearUnit.allocate();
+			this.u = u;
+			this.hashId = GetHandleId(u);
+			this.tm = CreateTimer();
+			this.count = 0;
+			SaveInteger(HT, GetHandleId(this.tm), CK_HID, this);
+			TimerStart(this.tm, 1, true, function ClearUnit.check);
+			
+			RemoveUnitStun(u);
+			
+			return this;
+		}
+		
+		method destroy() {
+			PauseTimer(tm);
+			DestroyTimer(tm);
+			tm = null;
+			u = null;
+			this.deallocate();
+		}
+		
+		static method check() {
+			ClearUnit this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+			count = count + 1;
+			if (GetUnitTypeId(u) == 0 && !UnitAlive(u)) {
+				DestroyAllAurasByHashId(hashId);
+				DestroyAllBuffsByHashId(hashId);
+				DestroyAllModifiersByHashId(hashId);
+				DestroyAllMultiModifiersByHashId(hashId);
+				
+				FlushChildHashtable(HT, hashId);
+				FlushChildHashtable(udg_HT_GUI, hashId);
+				this.destroy();
+			} else if (count >= 100 || UnitAlive(u)) {
+				this.destroy();
+			}
+		}
+		
+	}
+	
+	function onInit() {
+		trigger t;
+		t = CreateTrigger();
+		TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_DEATH);
+		TriggerAddAction(t, function() {
+			ClearUnit.create(GetTriggerUnit());
+		});
+		t = null;
+	}
+	
+}

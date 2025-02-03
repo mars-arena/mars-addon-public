@@ -1,0 +1,18 @@
+library UniqueStaticModifiers requires Events {
+
+	function onInit() {
+		UniqueModifierAddAction(function() {
+			if (IsModifierAttack() && !IsUnitType(GetModifierAttackedUnit(), ConvertUnitType(20))) {
+				GetUnitMultiModifier(GetModifierAttackingUnit(), CRITICAL_ATTACK);
+				AddModifierCriticalRate(TypeMod, ValueMod3);
+
+				GetUnitMultiModifier(GetModifierAttackingUnit(), CHANCE_CRIT_PURE);
+				AddModifierCriticalDamage(TypeMod, ValueMod3);
+
+				GetUnitMultiModifier(GetModifierAttackingUnit(), CHANCE_BUSH);
+				AddModifierBash(TypeMod, ValueMod4, ValueMod3);
+			}
+		});
+	}
+
+}

@@ -1,0 +1,410 @@
+library Witcher requires Events
+{
+    
+    //Ведьмачье чутье\\
+    
+    //равкоды
+    constant integer IdAbility = 'A093';    //абилка героя
+    constant integer IdDetector = 'A095';   //абилка детектора невидимых
+    constant integer IdBoost = 'A1JS';      //абилка буста
+    constant integer IdBoostBuff = 'B06G';  //бафф абилки буста
+    constant integer IdTrace = 'e01B';      //юнит-след
+    constant integer IdTraceDead = 'e04X';      //юнит-смерть
+    
+    //параметры
+    constant real DurationAbility = 7.;      //время действия абилки героя
+    constant real DurationBoost = 3.;        //время дейсвтия буста
+    constant real DurationTraces = 45.;      //время жизни следов
+    constant real DistanceTraces = 50.;      //дистанция между следами
+    constant real VisibilityDistance = 900.; //дистанция видимости следов
+    constant real ExpFac = 2.5;               //множитель опыта за найденную смерть
+    //\\
+
+    key traces_hid;
+    key witcherQ_hid;
+    key id_hid;
+    unit Witcher;
+    group grTrace;
+    
+    public struct Traces
+    {
+        unit tracked;
+        real xT;
+        real yT;
+        timer tm;
+        group gr;
+        group grDead;
+        integer id = 0;
+        trigger trg;
+        group grKilled;
+        static integer CK_HID = 0;
+        static integer trace_hid = 1;
+                
+        static method create(unit tracked) -> Traces
+        {
+            Traces this = Traces.allocate();
+            GroupAddUnit(grTrace, tracked);
+            this.tracked = tracked;
+            SaveInteger(HT, GetHandleId(tracked), traces_hid, this);
+            this.gr = CreateGroup();
+            this.grDead = CreateGroup();
+            this.grKilled = CreateGroup();
+            this.trg = CreateTrigger();
+            this.xT = GetUnitX(this.tracked);
+            this.yT = GetUnitY(this.tracked);
+            this.tm = CreateTimer();
+            SaveInteger(HT, GetHandleId(this.tm), this.CK_HID, this);
+            TriggerRegisterUnitEvent(this.trg, this.tracked, EVENT_UNIT_DEATH);
+            TriggerAddAction(this.trg, function Traces.actionDead);
+            TimerStart(this.tm, 0.25, true, function Traces.action);
+            return this;
+        }
+        
+        method destroy()
+        {
+            ForGroup(this.gr, function() {
+                FlushChildHashtable(HT, GetHandleId(GetEnumUnit()));
+                KillUnit(GetEnumUnit());
+                if (GetLocalPlayer() != GetOwningPlayer(Witcher)) {
+                    SetUnitAnimation(GetEnumUnit(), "Stand Two");
+                }
+            });
+            RemoveSavedInteger(HT, GetHandleId(this.tracked), traces_hid);
+            FlushChildHashtable(HT, GetHandleId(tm));
+            DestroyGroup(this.gr);
+            this.gr = null;
+            DestroyGroup(this.grDead);
+            this.grDead = null;
+            DestroyGroup(this.grKilled);
+            this.grKilled = null;
+            DestroyTrigger(this.trg);
+            this.trg = null;
+            this.tracked = null;
+            PauseTimer(tm);
+            DestroyTimer(tm);
+            tm = null;
+            this.deallocate();
+        }
+        
+        static method action()
+        {
+            timer tm = GetExpiredTimer();
+            integer pk = GetHandleId(tm);
+            timer tmTrace;
+            unit trace;
+            Traces this = LoadInteger(HT, pk, CK_HID);
+            integer i;
+            if (!IsUnitInRangeXY(this.tracked, this.xT, this.yT, DistanceTraces) && UnitAlive(this.tracked) && !IsUnitAlly(this.tracked, GetOwningPlayer(Witcher))) {
+                this.xT = GetUnitX(this.tracked);
+                this.yT = GetUnitY(this.tracked);
+                this.id = this.id + 1;
+                trace = CreateUnit(Player(15), IdTrace, GetUnitX(this.tracked), GetUnitY(this.tracked), GetUnitFacing(this.tracked));
+                SetUnitAnimation(trace, "Stand Two");
+                SaveInteger(HT, GetHandleId(trace), id_hid, this.id);
+                GroupAddUnit(this.gr, trace);
+                tmTrace = CreateTimer();
+                SaveInteger(HT, GetHandleId(tmTrace), this.CK_HID, this);
+                SaveUnitHandle(HT, GetHandleId(tmTrace), trace_hid, trace);
+                TimerStart(tmTrace, DurationTraces, false, function() {
+                    timer tmTrace = GetExpiredTimer();
+                    integer pk = GetHandleId(tmTrace);
+                    Traces this = LoadInteger(HT, pk, CK_HID);
+                    unit trace = LoadUnitHandle(HT, GetHandleId(tmTrace), trace_hid);
+                    if (trace != null) {
+                        GroupRemoveUnit(this.gr, trace);
+                        FlushChildHashtable(HT, GetHandleId(trace));
+                        if (GetOwningPlayer(trace) == Player(15)) {
+                            KillUnit(trace);
+                            ShowUnit(trace, false);
+                        } else {
+                            GroupAddUnit(this.grKilled, trace);
+                            if (GetLocalPlayer() == GetOwningPlayer(Witcher)) {
+                                SetUnitAnimation(trace, "death");
+                                QueueUnitAnimation(trace, "Stand Two");
+                            }
+                        }
+                    }
+                    FlushChildHashtable(HT, GetHandleId(tmTrace));
+                    PauseTimer(tmTrace);
+                    DestroyTimer(tmTrace);
+                    trace = null;
+                    tmTrace = null;
+                });
+            }
+            
+            tmTrace = null;
+            tm = null;
+            trace = null;
+        }
+        
+        static method actionDead() {
+            Traces this = LoadInteger(HT, GetHandleId(GetTriggerUnit()), traces_hid);
+            unit traceDead;
+            timer tmTraceDead;
+            if (!IsUnitVisible(this.tracked, GetOwningPlayer(Witcher)) && !IsUnitAlly(this.tracked, GetOwningPlayer(Witcher))) {
+                this.xT = GetUnitX(this.tracked);
+                this.yT = GetUnitY(this.tracked);
+                traceDead = CreateUnit(Player(15), IdTraceDead, GetUnitX(this.tracked), GetUnitY(this.tracked), GetUnitFacing(this.tracked));
+                SetUnitAnimation(traceDead, "Stand Two");
+                GroupAddUnit(this.grDead, traceDead);
+                tmTraceDead = CreateTimer();
+                SaveInteger(HT, GetHandleId(tmTraceDead), this.CK_HID, this);
+                SaveUnitHandle(HT, GetHandleId(tmTraceDead), trace_hid, traceDead);
+                TimerStart(tmTraceDead, DurationTraces, false, function() {
+                        timer tmTraceDead = GetExpiredTimer();
+                        integer pk = GetHandleId(tmTraceDead);
+                        Traces this = LoadInteger(HT, pk, CK_HID);
+                        unit traceDead = LoadUnitHandle(HT, GetHandleId(tmTraceDead), trace_hid);
+                        if (traceDead != null) {
+                            GroupRemoveUnit(this.grDead, traceDead);
+                            FlushChildHashtable(HT, GetHandleId(traceDead));
+                            if (GetOwningPlayer(traceDead) == Player(15)) {
+                                KillUnit(traceDead);
+                                ShowUnit(traceDead, false);
+                            } else {
+                                GroupAddUnit(this.grKilled, traceDead);
+                                if (GetLocalPlayer() == GetOwningPlayer(Witcher)) {
+                                    SetUnitAnimation(traceDead, "death");
+                                    QueueUnitAnimation(traceDead, "Stand Two");
+                                }
+                            }
+                        }
+                        FlushChildHashtable(HT, GetHandleId(tmTraceDead));
+                        PauseTimer(tmTraceDead);
+                        DestroyTimer(tmTraceDead);
+                        traceDead = null;
+                        tmTraceDead = null;
+                });
+            }
+            
+            traceDead = null;
+            tmTraceDead = null;
+        }
+        
+    }
+    
+    struct WitcherQ
+    {
+        unit caster;
+        timer tmEnd;
+        timer tmCheck;
+        timer tmBoost;
+        boolean on;
+        boolean onBoost;
+        static integer CK_HID = 0;
+        
+        static method create(unit caster) -> WitcherQ
+        {
+            WitcherQ this = WitcherQ.allocate();
+            this.caster = caster;
+            this.tmEnd = CreateTimer();
+            this.tmCheck = CreateTimer();
+            this.tmBoost = CreateTimer();
+            SaveInteger(HT, GetHandleId(this.tmEnd), this.CK_HID, this);
+            SaveInteger(HT, GetHandleId(this.tmCheck), this.CK_HID, this);
+            SaveInteger(HT, GetHandleId(this.tmBoost), this.CK_HID, this);
+            SaveInteger(HT, GetHandleId(this.caster), witcherQ_hid, this);
+            return this;
+        }
+        
+        method destroy()
+        {
+            RemoveSavedInteger(HT, GetHandleId(this.caster), witcherQ_hid);
+            FlushChildHashtable(HT, GetHandleId(this.tmEnd));
+            FlushChildHashtable(HT, GetHandleId(this.tmCheck));
+            FlushChildHashtable(HT, GetHandleId(this.tmBoost));
+            PauseTimer(this.tmEnd);
+            DestroyTimer(this.tmEnd);
+            PauseTimer(this.tmCheck);
+            DestroyTimer(this.tmCheck);
+            PauseTimer(this.tmBoost);
+            DestroyTimer(this.tmBoost);
+            this.tmEnd = null;
+            this.tmBoost = null;
+            this.tmCheck = null;
+            this.caster = null;
+            this.deallocate();
+        }
+        
+        method start() {
+            if (!this.on) {
+                this.on = true;
+                
+                if (GetLocalPlayer() == GetOwningPlayer(this.caster)) {
+                    SetDayNightModels("war3mapImported\\DNCGreyTerrain.mdx", "Environment\\DNC\\DNCLordaeron\\DNCLordaeronUnit\\DNCLordaeronUnit.mdl");
+                    CinematicFilterGenericBJ( 1.00, BLEND_MODE_BLEND, "ReplaceableTextures\\CameraMasks\\DreamFilter_Mask.blp", 80, 80, 80, 100, 0, 0, 0, 0 );
+                }
+
+                UnitAddAbility(this.caster, IdDetector);
+                UnitMakeAbilityPermanent(this.caster, true, IdDetector);
+                UnitMakeAbilityPermanent(this.caster, true, 'A1V5');
+                SetPlayerAbilityAvailable(GetOwningPlayer(this.caster), IdDetector, false);
+                TimerStart(this.tmCheck, 0, false, function WitcherQ.check);
+                TimerStart(this.tmEnd, DurationAbility, false, function WitcherQ.end);
+                
+            } else {
+                PauseTimer(this.tmEnd);
+                TimerStart(this.tmEnd, DurationAbility, false, function WitcherQ.end);
+            }
+            
+        }
+        
+        static method end() {
+            WitcherQ this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+            group g = CreateGroup();
+            this.on = false;
+            if (GetLocalPlayer() == GetOwningPlayer(this.caster)) {
+                SetDayNightModels("Environment\\DNC\\DNCLordaeron\\DNCLordaeronTerrain\\DNCLordaeronTerrain.mdl", "Environment\\DNC\\DNCLordaeron\\DNCLordaeronUnit\\DNCLordaeronUnit.mdl");
+                CinematicFilterGenericBJ( 1.00, BLEND_MODE_BLEND, "ReplaceableTextures\\CameraMasks\\DreamFilter_Mask.blp", 0.00, 0.00, 0.00, 0.00, 50, 50, 50, 100.00 );
+            }
+            UnitRemoveAbility(this.caster, IdDetector);
+            TempUnit = this.caster;
+            ForGroup(grTrace, function() {
+                Traces this = LoadInteger(HT, GetHandleId(GetEnumUnit()), traces_hid);
+                ForGroup(this.gr, function() {
+                    SetUnitOwner(GetEnumUnit(), Player(15), true);
+                    SetUnitAnimation(GetEnumUnit(), "Stand Two");
+                    if (GetLocalPlayer() == GetOwningPlayer(TempUnit)) {
+                        SetUnitAnimation(GetEnumUnit(), "death");
+                        QueueUnitAnimation(GetEnumUnit(), "Stand Two");
+                    }
+                });
+                ForGroup(this.grDead, function() {
+                    SetUnitOwner(GetEnumUnit(), Player(15), true);
+                    SetUnitAnimation(GetEnumUnit(), "Stand Two");
+                    if (GetLocalPlayer() == GetOwningPlayer(TempUnit)) {
+                        SetUnitAnimation(GetEnumUnit(), "death");
+                        QueueUnitAnimation(GetEnumUnit(), "Stand Two");
+                    }
+                });
+                ForGroup(this.grKilled, function() {
+                    KillUnit(GetEnumUnit());
+                    ShowUnit(GetEnumUnit(), false);
+                });
+            });
+            
+            PauseTimer(this.tmCheck);
+        }
+        
+        static method check() {
+            WitcherQ this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+            TempUnit = this.caster;
+            ForGroup(grTrace, function() {
+                Traces this = LoadInteger(HT, GetHandleId(GetEnumUnit()), traces_hid);
+                This = this;
+                ForGroup(this.gr, function() {
+                    WitcherQ witc;
+                    Traces traces = This;
+                    unit trace = GetEnumUnit();
+                    Index = LoadInteger(HT, GetHandleId(trace), id_hid);
+                    if (IsUnitInRange(TempUnit, trace, VisibilityDistance) && GetOwningPlayer(trace) != GetOwningPlayer(TempUnit)) {
+                        SetUnitOwner(trace, GetOwningPlayer(TempUnit), true);
+                        SetUnitAnimation(trace, "Stand Two");
+                        if (GetLocalPlayer() == GetOwningPlayer(TempUnit)) {
+                            SetUnitAnimation(trace, "birth");
+                            QueueUnitAnimation(trace, "Stand");
+                        }
+                    }
+                    if (IsUnitInRange(TempUnit, trace, 150.)) {
+                        witc = LoadInteger(HT, GetHandleId(TempUnit), witcherQ_hid);
+                        if (!witc.onBoost) {
+                            UnitAddAbility(witc.caster, IdBoost);
+                            UnitMakeAbilityPermanent(witc.caster, true, IdBoost);
+                            witc.onBoost = true;
+                            TimerStart(witc.tmBoost, DurationBoost, false, function WitcherQ.boost);
+                        } else {
+                            PauseTimer(witc.tmBoost);
+                            TimerStart(witc.tmBoost, DurationBoost, false, function WitcherQ.boost);
+                        }
+                        GroupRemoveUnit(traces.gr, trace);
+                        FlushChildHashtable(HT, GetHandleId(trace));
+                        KillUnit(trace);
+                        if (GetLocalPlayer() != GetOwningPlayer(Witcher)) {
+                            SetUnitAnimation(trace, "Stand Two");
+                        }
+                        if (GetOwningPlayer(trace) == Player(15)) ShowUnit(trace, false);
+                        ForGroup(traces.gr, function() {
+                            Traces this = This;
+                            if (LoadInteger(HT, GetHandleId(GetEnumUnit()), id_hid) < Index) {
+                                GroupRemoveUnit(this.gr, GetEnumUnit());
+                                FlushChildHashtable(HT, GetHandleId(GetEnumUnit()));
+                                KillUnit(GetEnumUnit());
+                                if (GetLocalPlayer() != GetOwningPlayer(Witcher)) {
+                                    SetUnitAnimation(GetEnumUnit(), "Stand Two");
+                                }
+                                if (GetOwningPlayer(GetEnumUnit()) == Player(15)) ShowUnit(GetEnumUnit(), false);
+                            }
+                        });
+                    }
+                    trace = null;
+                });
+                This = this;
+                ForGroup(this.grDead, function() {
+                    WitcherQ witc;
+                    Traces traces = This;
+                    unit traceDead = GetEnumUnit();
+                    if (IsUnitInRange(TempUnit, traceDead, VisibilityDistance) && GetOwningPlayer(traceDead) != GetOwningPlayer(TempUnit)) {
+                        SetUnitOwner(traceDead, GetOwningPlayer(TempUnit), true);
+                        SetUnitAnimation(traceDead, "Stand Two");
+                        if (GetLocalPlayer() == GetOwningPlayer(TempUnit)) {
+                            SetUnitAnimation(traceDead, "birth");
+                            QueueUnitAnimation(traceDead, "Stand");
+                        }
+                    }
+                    if (IsUnitInRange(TempUnit, traceDead, 150.)) {
+                        AddHeroXP(TempUnit, R2I(ExpFac * GetHeroInt(TempUnit, true) * (1.00 + ( GetHeroInt(TempUnit, true) / udg_Hero_XP_PercInt ) / 100.00 + udg_Hero_XP_Percent[GetConvertedPlayerId(GetOwningPlayer(TempUnit))])), true);
+                        GroupRemoveUnit(traces.grDead, traceDead);
+                        KillUnit(traceDead);
+                        if (GetLocalPlayer() != GetOwningPlayer(Witcher)) {
+                            QueueUnitAnimation(traceDead, "Stand Two");
+                        }
+                    }
+                });
+            });
+            TimerStart(this.tmCheck, 0.5, false, function WitcherQ.check);
+        }
+        
+        static method boost() {
+            WitcherQ this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+            this.onBoost = false;
+            UnitRemoveAbility(this.caster, IdBoost);
+            UnitRemoveAbility(this.caster, IdBoostBuff);
+        }
+        
+    }
+    
+    public function StartTrackedForWitcher(unit witcher) {
+        group gr = CreateGroup();
+        Witcher = witcher;
+        GroupEnumUnitsInRect(gr, bj_mapInitialPlayableArea, Condition(function() -> boolean {
+            return IsUnitType(GetFilterUnit(), UNIT_TYPE_HERO) && !IsUnitAlly(GetFilterUnit(), GetOwningPlayer(Witcher)) && !IsUnitType(GetFilterUnit(), UNIT_TYPE_UNDEAD);
+        }));
+        ForGroup(gr, function() {
+            Traces t = Traces.create(GetEnumUnit());
+        });
+        
+        EnterAddAction(function() {
+            if (IsUnitType(GetTriggerUnit(), UNIT_TYPE_HERO) && !IsUnitAlly(GetTriggerUnit(), GetOwningPlayer(Witcher)) && !IsUnitType(GetTriggerUnit(), UNIT_TYPE_UNDEAD)) {
+                Traces.create(GetTriggerUnit());
+            }
+        });
+        
+        DestroyGroup(gr);
+        gr = null;
+    }
+    
+    function onInit() {
+        grTrace = CreateGroup();
+        SpellEffectAddAction(function() {
+            WitcherQ Q;
+            if (GetSpellAbilityId() == IdAbility) {
+                if (LoadInteger(HT, GetHandleId(GetTriggerUnit()), witcherQ_hid) == 0) {
+                    Q = WitcherQ.create(GetTriggerUnit());
+                } else {
+                    Q = LoadInteger(HT, GetHandleId(GetTriggerUnit()), witcherQ_hid);
+                }
+                Q.start();
+            }
+        });
+    }
+}

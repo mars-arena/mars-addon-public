@@ -1,0 +1,67 @@
+library Constants {
+
+	// вкл/выкл возможность дебага
+	public boolean DEBUG_ENABLED = true;
+
+	// максимальное количество игроков
+	public constant integer MAX_PLAYERS = 16;
+
+	// DamageEventEngine
+	public constant integer BUFF_1_ID = 'B06H';
+	public constant integer BUFF_2_ID = 'B06I';
+	public constant integer BUFF_S1_ID = 'B02P';	// специальная атака (автокаст)
+	public constant integer BUFF_S2_ID = 'sat2';
+
+	public constant integer KVINSHPAGA_ID = 'I051';
+	public constant integer SFERA_EDEMA_ID = 'I01Y';
+	public constant integer FOX_MISSABILITY_ID = 'A04Z';
+
+	// NegateDamage
+	public constant integer MAX_LIFE_BONUS_ABILITY = 'A08F';
+	public constant integer MAX_LIFE_BONUS = 10000;
+
+	// AntiMH
+	// public constant rect ANTI_MH_RECT = gg_rct________________038;
+	public constant integer ANTI_MH_UNIT_ID = 'h00R';
+
+	// StunSystem
+	public constant integer STUN_ABILITY_ID = 'A21Y';
+	public constant integer STUN_BUFF_ID = 'B08Q';
+	public constant integer IMMUN_STUN_ABILITY_ID = 'A1S0';
+
+	// Illusions
+	public constant integer ILLUSION_ABILITY_ID = 'A1GP';
+
+	// Invulnerability
+	public constant integer INVUL_ABILITY_ID = 'A22H';
+
+	// Disarm
+	public constant integer DISARM_BUFF_ID = 'A1YH';
+
+	// ModifierEngine
+	public constant real INC_OUT_HEAL_BY_INT = 0.000;		//увеличение INC_OUT_HEAL за 1 инт.
+	public constant real INC_ENTER_HEAL_BY_STR = 0.000;		//увеличение INC_ENTER_HEAL за 1 силу
+	public constant real INC_LIFESTEAL_BY_STR = 0.001;		//увеличение INC_LIFESTEAL за 1 силу
+
+	// TechUtils
+	public constant integer INV_ID = 'AInv';
+
+	// Hex
+	public constant integer MAX_HEXES = 2;
+	public constant integer HEX_FROG_ABILITY_ID = 'A01Y';
+	public constant integer HEX_FROG_BUFF_ID = 'BOhx';
+	public constant integer HEX_SNOWMAN_ABILITY_ID = 'A0QY';
+	public constant integer HEX_SNOWMAN_BUFF_ID = 'B028';
+
+	// даммики
+	public constant integer DUMMY_EFF_ID = 'h00O';
+	public constant integer DUMMY_ID = 'h00N';
+	public constant integer DUMMY_ATC_ID = 'o00Z';
+	public constant integer DUMMY_VSN_300 = 'e001';
+	public constant integer DUMMY_VSN_500 = 'e02E';
+	public constant integer DUMMY_VSN_500l = 'e04O';
+	public constant integer DUMMY_VSN_600 = 'e03F';
+
+	public constant integer MEFISTO_ID = 'B04D';
+
+}

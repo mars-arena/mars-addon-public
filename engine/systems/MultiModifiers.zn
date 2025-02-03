@@ -1,0 +1,325 @@
+library MultiModifiers requires MultiModifiersList {
+
+	public integer TypeMod;     //тип конкретного модификатора
+	public real ValueMod2;      //шанс прока  (обычно)
+	public real ValueMod3;      //главное значение (если модификатор не стакается именно это значение влияет на то, какой модификатор будет приоритетнее)
+	public real ValueMod4;
+	public real ValueMod5;
+	public real ValueMod6;
+	
+	integer arr[200];
+	real maxValue[200];
+	
+	public function AddUnitMultiModifier(unit u, integer modifier, integer typeModifier, real value2, real value3, real value4, real value5, real value6) {
+		location locMod;
+		location locType;
+		location locValue2;
+		location locValue3;
+		location locValue4;
+		location locValue5;
+		location locValue6;
+		integer countMod;
+		locMod = LoadLocationHandle(HT, GetHandleId(u), modifier);
+		locType = LoadLocationHandle(HT, GetHandleId(locMod), 1);
+		locValue2 = LoadLocationHandle(HT, GetHandleId(locMod), 2);
+		locValue3 = LoadLocationHandle(HT, GetHandleId(locMod), 3);
+		locValue4 = LoadLocationHandle(HT, GetHandleId(locMod), 4);
+		locValue5 = LoadLocationHandle(HT, GetHandleId(locMod), 5);
+		locValue6 = LoadLocationHandle(HT, GetHandleId(locMod), 6);
+		if (locMod == null) {
+			locMod = Location(0, 0);
+			SaveLocationHandle(HT, GetHandleId(u), modifier, locMod);
+			SaveInteger(HT, GetHandleId(locMod), 0, 0);
+			locType = Location(0, 0);
+			locValue2 = Location(0, 0);
+			locValue3 = Location(0, 0);
+			locValue4 = Location(0, 0);
+			locValue5 = Location(0, 0);
+			locValue6 = Location(0, 0);
+			SaveLocationHandle(HT, GetHandleId(locMod), 1, locType);
+			SaveLocationHandle(HT, GetHandleId(locMod), 2, locValue2);
+			SaveLocationHandle(HT, GetHandleId(locMod), 3, locValue3);
+			SaveLocationHandle(HT, GetHandleId(locMod), 4, locValue4);
+			SaveLocationHandle(HT, GetHandleId(locMod), 5, locValue5);
+			SaveLocationHandle(HT, GetHandleId(locMod), 6, locValue6);
+		}
+		countMod = LoadInteger(HT, GetHandleId(locMod), 0) + 1;
+		SaveInteger(HT, GetHandleId(locMod), 0, countMod);
+		SaveInteger(HT, GetHandleId(locType), countMod, typeModifier);
+		SaveReal(HT, GetHandleId(locValue2), countMod, value2);
+		SaveReal(HT, GetHandleId(locValue3), countMod, value3);
+		SaveReal(HT, GetHandleId(locValue4), countMod, value4);
+		SaveReal(HT, GetHandleId(locValue5), countMod, value5);
+		SaveReal(HT, GetHandleId(locValue6), countMod, value6);
+		locMod = null;
+		locType = null;
+		locValue2 = null;
+		locValue3 = null;
+		locValue4 = null;
+		locValue5 = null;
+		locValue6 = null;
+	}
+	
+	public function SubUnitMultiModifier(unit u, integer modifier, integer typeModifier, real value2, real value3, real value4, real value5, real value6) -> boolean {
+		location locMod;
+		location locType;
+		location locValue2;
+		location locValue3;
+		location locValue4;
+		location locValue5;
+		location locValue6;
+		integer countMod;
+		integer i;
+		boolean sub = false;
+		locMod = LoadLocationHandle(HT, GetHandleId(u), modifier);
+		locType = LoadLocationHandle(HT, GetHandleId(locMod), 1);
+		locValue2 = LoadLocationHandle(HT, GetHandleId(locMod), 2);
+		locValue3 = LoadLocationHandle(HT, GetHandleId(locMod), 3);
+		locValue4 = LoadLocationHandle(HT, GetHandleId(locMod), 4);
+		locValue5 = LoadLocationHandle(HT, GetHandleId(locMod), 5);
+		locValue6 = LoadLocationHandle(HT, GetHandleId(locMod), 6);
+		if (locMod == null) {
+			dbgT("Error MME1:" + GetUnitName(u) + " Невозможно удалить значение для не инициализированного модификатора (" + I2S(modifier) + ").");
+			return false;
+		}
+		countMod = LoadInteger(HT, GetHandleId(locMod), 0);
+		for (1 <= i <= countMod) {
+			if (LoadInteger(HT, GetHandleId(locType), i) == typeModifier &&
+				LoadReal(HT, GetHandleId(locValue2), i) == value2 &&
+				LoadReal(HT, GetHandleId(locValue3), i) == value3 &&
+				LoadReal(HT, GetHandleId(locValue4), i) == value4 &&
+				LoadReal(HT, GetHandleId(locValue5), i) == value5 &&
+				LoadReal(HT, GetHandleId(locValue6), i) == value6
+			) {
+				SaveInteger(HT, GetHandleId(locType), i, LoadInteger(HT, GetHandleId(locType), countMod));
+				SaveReal(HT, GetHandleId(locValue2), i, LoadReal(HT, GetHandleId(locValue2), countMod));
+				SaveReal(HT, GetHandleId(locValue3), i, LoadReal(HT, GetHandleId(locValue3), countMod));
+				SaveReal(HT, GetHandleId(locValue4), i, LoadReal(HT, GetHandleId(locValue4), countMod));
+				SaveReal(HT, GetHandleId(locValue5), i, LoadReal(HT, GetHandleId(locValue5), countMod));
+				SaveReal(HT, GetHandleId(locValue6), i, LoadReal(HT, GetHandleId(locValue6), countMod));
+				SaveInteger(HT, GetHandleId(locMod), 0, countMod - 1);
+				sub = true;
+				break;
+			}
+		}
+		if (!sub) {
+			dbgT("Error MME2:" + GetUnitName(u) + " Невозможно удалить неинициализированное значение модификатора (" + I2S(modifier) + ").");
+		}
+		locMod = null;
+		locType = null;
+		locValue2 = null;
+		locValue3 = null;
+		locValue4 = null;
+		locValue5 = null;
+		locValue6 = null;
+		return sub;
+	}
+	
+	public function DestroyUnitMultiModifier(integer hashId, integer modifier) -> boolean {
+		location locMod;
+		location locType;
+		location locValue2;
+		location locValue3;
+		location locValue4;
+		location locValue5;
+		location locValue6;
+		integer countMod;
+		integer i;
+		locMod = LoadLocationHandle(HT, hashId, modifier);
+		locType = LoadLocationHandle(HT, GetHandleId(locMod), 1);
+		locValue2 = LoadLocationHandle(HT, GetHandleId(locMod), 2);
+		locValue3 = LoadLocationHandle(HT, GetHandleId(locMod), 3);
+		locValue4 = LoadLocationHandle(HT, GetHandleId(locMod), 4);
+		locValue5 = LoadLocationHandle(HT, GetHandleId(locMod), 5);
+		locValue6 = LoadLocationHandle(HT, GetHandleId(locMod), 6);
+		if (locMod == null) {
+			return false;
+		}
+		FlushChildHashtable(HT, GetHandleId(locMod));
+		FlushChildHashtable(HT, GetHandleId(locType));
+		FlushChildHashtable(HT, GetHandleId(locValue2));
+		FlushChildHashtable(HT, GetHandleId(locValue3));
+		FlushChildHashtable(HT, GetHandleId(locValue4));
+		FlushChildHashtable(HT, GetHandleId(locValue5));
+		FlushChildHashtable(HT, GetHandleId(locValue6));
+		RemoveLocation(locMod);
+		RemoveLocation(locType);
+		RemoveLocation(locValue2);
+		RemoveLocation(locValue3);
+		RemoveLocation(locValue4);
+		RemoveLocation(locValue5);
+		RemoveLocation(locValue6);
+		RemoveSavedHandle(HT, hashId, modifier);    
+		locMod = null;
+		locType = null;
+		locValue2 = null;
+		locValue3 = null;
+		locValue4 = null;
+		locValue5 = null;
+		locValue6 = null;
+		return true;
+	}
+	
+	public function GetUnitMultiModifier(unit u, integer modifier) -> boolean {
+		location locMod;
+		location locType;
+		location locValue2;
+		location locValue3;
+		location locValue4;
+		location locValue5;
+		location locValue6;
+		integer countMod;
+		integer i = 0;
+		integer j = 0;
+		integer k = 0;
+		integer n = 0;
+		TypeMod = 0;
+		ValueMod2 = 0;
+		ValueMod3 = 0;
+		ValueMod4 = 0;
+		ValueMod5 = 0;
+		ValueMod6 = 0;
+		locMod = LoadLocationHandle(HT, GetHandleId(u), modifier);
+		locType = LoadLocationHandle(HT, GetHandleId(locMod), 1);
+		locValue2 = LoadLocationHandle(HT, GetHandleId(locMod), 2);
+		locValue3 = LoadLocationHandle(HT, GetHandleId(locMod), 3);
+		locValue4 = LoadLocationHandle(HT, GetHandleId(locMod), 4);
+		locValue5 = LoadLocationHandle(HT, GetHandleId(locMod), 5);
+		locValue6 = LoadLocationHandle(HT, GetHandleId(locMod), 6);
+		if (locMod == null) {
+			return false;
+		}
+		countMod = LoadInteger(HT, GetHandleId(locMod), 0);
+		if (IsMultiModifierNonStackType(modifier)) {
+			n = countMod;
+			for (1 <= i <= n) {
+				arr[i] = LoadInteger(HT, GetHandleId(locType), i);
+			}
+			for (1 <= i <= n) {
+				for (i + 1 <= j <= n) {
+					if (arr[i] == arr[j]) {
+						for (j <= k <= n - 1) {
+							arr[k] = arr[k + 1];
+						}
+						n = n - 1;
+					}
+				}
+			}
+			for (1 <= i <= n) {
+				maxValue[i] = 0;
+				for (1 <= j <= countMod) {
+					if (maxValue[i] < LoadReal(HT, GetHandleId(locValue2), j) &&
+						arr[i] ==  LoadInteger(HT, GetHandleId(locType), j)
+					) {
+						maxValue[i] = LoadReal(HT, GetHandleId(locValue2), j);
+					}
+				}
+			}
+			for (1 <= i <= n) {
+				ValueMod2 = ValueMod2 + maxValue[i];
+			}
+		} else if (IsMultiModifierNonStacking(modifier)) {
+			for (1 <= i <= countMod) {
+				if (
+					(GetRandomReal(0, 1) < LoadReal(HT, GetHandleId(locValue2), i) || (IsMultiModifierAbsolute(modifier) && GetUnitTypeId(u) == ABSOLUTE_FORM))
+					&& !(IsMultiModifierTypeModRange(LoadInteger(HT, GetHandleId(locType), i)) && IsUnitType(u, UNIT_TYPE_MELEE_ATTACKER))
+					&& ValueMod3 < LoadReal(HT, GetHandleId(locValue3), i)
+				) {
+					TypeMod = LoadInteger(HT, GetHandleId(locType), i);
+					ValueMod2 = LoadReal(HT, GetHandleId(locValue2), i);
+					ValueMod3 = LoadReal(HT, GetHandleId(locValue3), i);
+					ValueMod4 = LoadReal(HT, GetHandleId(locValue4), i);
+					ValueMod5 = LoadReal(HT, GetHandleId(locValue5), i);
+					ValueMod6 = LoadReal(HT, GetHandleId(locValue6), i);
+				}
+			}
+		} else {
+			for (1 <= i <= countMod) {
+				if (GetRandomReal(0, 1) < LoadReal(HT, GetHandleId(locValue2), i)) {
+					if (LoadInteger(HT, GetHandleId(locType), i) > 0)
+						TypeMod = LoadInteger(HT, GetHandleId(locType), i);
+					ValueMod2 = ValueMod2 + LoadReal(HT, GetHandleId(locValue2), i);
+					ValueMod3 = ValueMod3 + LoadReal(HT, GetHandleId(locValue3), i);
+					ValueMod4 = ValueMod4 + LoadReal(HT, GetHandleId(locValue4), i);
+					ValueMod5 = ValueMod5 + LoadReal(HT, GetHandleId(locValue5), i);
+					ValueMod6 = ValueMod6 + LoadReal(HT, GetHandleId(locValue6), i);
+				}
+			}
+		}
+		
+		locMod = null;
+		locType = null;
+		locValue2 = null;
+		locValue3 = null;
+		locValue4 = null;
+		locValue5 = null;
+		locValue6 = null;
+		return true;
+	}
+	
+	public function GetUnitCountMultiModifier(unit u, integer modifier) -> integer {
+		return LoadInteger(HT, GetHandleId(LoadLocationHandle(HT, GetHandleId(u), modifier)), 0);
+	}
+	
+	public function GetUnitMultiModifierById(unit u, integer modifier, integer id) -> boolean {
+		location locMod;
+		location locType;
+		location locValue2;
+		location locValue3;
+		location locValue4;
+		location locValue5;
+		location locValue6;
+		TypeMod = 0;
+		ValueMod2 = -1.;
+		ValueMod3 = -1.;
+		ValueMod4 = -1.;
+		ValueMod5 = -1.;
+		ValueMod6 = -1.;
+		locMod = LoadLocationHandle(HT, GetHandleId(u), modifier);
+		locType = LoadLocationHandle(HT, GetHandleId(locMod), 1);
+		locValue2 = LoadLocationHandle(HT, GetHandleId(locMod), 2);
+		locValue3 = LoadLocationHandle(HT, GetHandleId(locMod), 3);
+		locValue4 = LoadLocationHandle(HT, GetHandleId(locMod), 4);
+		locValue5 = LoadLocationHandle(HT, GetHandleId(locMod), 5);
+		locValue6 = LoadLocationHandle(HT, GetHandleId(locMod), 6);
+		if (locMod == null) {
+			return false;
+		}
+		TypeMod = LoadInteger(HT, GetHandleId(locType), id);
+		ValueMod2 = LoadReal(HT, GetHandleId(locValue2), id);
+		ValueMod3 = LoadReal(HT, GetHandleId(locValue3), id);
+		ValueMod4 = LoadReal(HT, GetHandleId(locValue4), id);
+		ValueMod5 = LoadReal(HT, GetHandleId(locValue5), id);
+		ValueMod6 = LoadReal(HT, GetHandleId(locValue6), id);
+		locMod = null;
+		locType = null;
+		locValue2 = null;
+		locValue3 = null;
+		locValue4 = null;
+		locValue5 = null;
+		locValue6 = null;
+		return true;
+	}
+
+	public function DestroyAllMultiModifiersByHashId(integer hashId) {
+		DestroyUnitMultiModifier(hashId, CHANCE_PURE);
+		DestroyUnitMultiModifier(hashId, CHANCE_MAGIC);
+		DestroyUnitMultiModifier(hashId, CHANCE_PHYS);
+	
+		DestroyUnitMultiModifier(hashId, CHANCE_CLEAVE);
+		DestroyUnitMultiModifier(hashId, CHANCE_SPLASH);
+
+		DestroyUnitMultiModifier(hashId, CRITICAL_ATTACK);
+		DestroyUnitMultiModifier(hashId, CHANCE_CRIT_PURE);
+		DestroyUnitMultiModifier(hashId, CHANCE_CRIT_STR);
+		DestroyUnitMultiModifier(hashId, CHANCE_BUSH);
+	
+		DestroyUnitMultiModifier(hashId, CHANCE_PIERCE);
+	
+		DestroyUnitMultiModifier(hashId, CHANCE_BLOCK_MELEE_DMG);
+		DestroyUnitMultiModifier(hashId, CHANCE_BLOCK_RANGE_DMG);
+		DestroyUnitMultiModifier(hashId, CHANCE_BLOCK_ANY_DMG);
+		DestroyUnitMultiModifier(hashId, CHANCE_PT_BLOCK_ANY_DMG);
+	}
+	
+}

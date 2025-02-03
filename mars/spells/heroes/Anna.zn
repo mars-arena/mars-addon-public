@@ -1,0 +1,192 @@
+library Anna requires Fox {
+
+	constant integer ABILITY_ID = 'A23Z';
+	constant real ANIMATION_TIME = 1.0; // Длительность анимации (в секундах)
+	constant real CAST_TIME = 1.8; // Длительность заклинания (в секундах)
+
+	constant real CIRCLES_COUNT = 6; // Количество кругов
+	constant real CIRCLES_COUNT_MEFISTO = 9; // Количество кругов с мефисто
+	constant real DELAY = 0.7; // Задержка первого круга
+	constant real RANGE = 90; // Радиус попадания стрел (без учета физ размера к сожалению (мб потом исправлю))
+	constant real DMG = 500; // Урон
+
+	constant real BASE_RADIUS = 50.0; // Базовый радиус для стрел
+	constant integer BASE_ARROWS = 8; // Количество стрел в первом круге
+	constant real RADIUS_INCREMENT = 60.0; // Уменьшение радиуса между кругами (еще уменьшено)
+	constant real LIFESPAN = 2.0; // Время жизни даммика (в секундах)
+
+	key ARROWS_HID;
+
+	public struct Arrows {
+		unit owner;
+		real x, y;
+
+		integer maxCircles = 0;
+		integer processedCircles = 0;
+		boolean isEnded = false;
+
+		timer tmArrow;
+		timer tmCircle;
+		trigger trgInterrupt;
+
+		real interval;
+
+		static method create(unit owner, real x, real y) -> Arrows {
+			Arrows this = Arrows.allocate();
+			this.owner = owner;
+			this.x = x;
+			this.y = y;
+
+			this.interval = CAST_TIME / CIRCLES_COUNT;
+			if (UnitHasMefisto(owner)) {this.interval = CAST_TIME / CIRCLES_COUNT_MEFISTO;}
+
+			SetUnitTimeScale(owner, ANIMATION_TIME / interval);
+
+			this.tmArrow = CreateTimer();
+			SaveHandleDataInt(tmArrow, this);
+			TimerStart(tmArrow, 0, true, function Arrows.onAction);
+
+			this.tmCircle = CreateTimer();
+			SaveHandleDataInt(tmCircle, this);
+			TimerStart(tmCircle, DELAY, false, function Arrows.onHit);
+
+			this.trgInterrupt = CreateTrigger();
+			TriggerRegisterUnitEvent(trgInterrupt, owner, EVENT_UNIT_SPELL_ENDCAST);
+			SaveHandleDataInt(trgInterrupt, this);
+			TriggerAddCondition(trgInterrupt, Condition(function() -> boolean {
+				return GetSpellAbilityId() == ABILITY_ID;
+			}));
+			TriggerAddAction(trgInterrupt, function() {
+				Arrows this = LoadHandleDataInt(GetTriggeringTrigger());
+				isEnded = true;
+				SetUnitTimeScale(owner, 1);
+				FlushTrigger(trgInterrupt);
+				trgInterrupt = null;
+			});
+
+			return this;
+		}
+
+		method destroy() {
+			if (!isEnded) {
+				SetUnitTimeScale(owner, 1);
+			}
+
+			TempTimer = CreateTimer();
+			SaveHandleDataInt(TempTimer, this);
+			TimerStart(TempTimer, 2.0, false, function() {
+				Arrows this = LoadHandleDataInt(GetExpiredTimer());
+				FlushTimer(GetExpiredTimer());
+				owner = null;
+				if (trgInterrupt != null) {
+					FlushTrigger(trgInterrupt);
+					trgInterrupt = null;
+				}
+				FlushTimer(tmArrow); tmArrow = null;
+				FlushTimer(tmCircle); tmCircle = null;
+				this.deallocate();
+			});
+		}
+
+		static method onAction() {
+			Arrows this = LoadHandleDataInt(GetExpiredTimer());
+
+			if (isEnded || maxCircles >= CIRCLES_COUNT) {
+				return;
+			}
+
+			maxCircles += 1;
+
+			TempUnit = CreateUnit(GetOwningPlayer(owner), DUMMY_EFF_ID, GetUnitX(owner), GetUnitY(owner), 360.);
+			AddSpecialEffectTarget("war3mapImported\\Anna_Ult3.mdx", TempUnit, "origin");
+			UnitApplyTimedLife(TempUnit, 'BTLF', LIFESPAN);
+			TimerStart(tmArrow, interval, false, function Arrows.onAction);
+		}
+
+		static method onHit() {
+			Arrows this = LoadHandleDataInt(GetExpiredTimer());
+			real radius;
+			real angle;
+			integer arrows;
+			group grArrows;
+
+			if (processedCircles >= maxCircles) {
+				this.destroy();
+				return;
+			}
+
+			radius = BASE_RADIUS + (processedCircles * RADIUS_INCREMENT);
+			arrows = R2I(BASE_ARROWS * Pow(1.30, processedCircles));
+
+			processedCircles = processedCircles + 1;
+
+			grArrows = CreateGroup();
+			angle = 0;
+			while(angle < 360) {
+				TempUnit = CreateUnit(GetOwningPlayer(owner), DUMMY_EFF_ID, x + radius * Cos(angle * bj_DEGTORAD), y + radius * Sin(angle * bj_DEGTORAD), angle);
+				AddSpecialEffectTarget("war3mapImported\\ArrowVolleyV2_Portrait.mdx", TempUnit, "origin");
+				UnitApplyTimedLife(TempUnit, 'BTLF', LIFESPAN);
+				GroupAddUnit(grArrows, TempUnit);
+				angle = angle + (360.0 / arrows);
+			}
+
+			TempTimer = CreateTimer();
+			SaveHandleDataInt(TempTimer, this);
+			SaveHandleDataReal(TempTimer, radius);
+			SaveHandleDataGroup(TempTimer, grArrows);
+			TimerStart(TempTimer, 0.8, false, function() {
+				timer expiredTimer = GetExpiredTimer();
+				Arrows this = LoadHandleDataInt(expiredTimer);
+				real radius = LoadHandleDataReal(expiredTimer);
+				group grArrows = LoadHandleDataGroup(expiredTimer);
+				
+				FlushTimer(expiredTimer);
+				TempGroup = CreateGroup();
+				GroupEnumUnitsInRangeFiz(TempGroup, x, y, radius, ConditionWithOwner(function FilterEnemyNotImmune, owner));
+				EnumUnit = FirstOfGroup(grArrows);
+				while (EnumUnit != null) {
+					This = this;
+					ForGroup(TempGroup, function() {
+						Arrows this = This;
+						unit enumUnit = GetEnumUnit();
+						if (DistanceBetweenWidgets(enumUnit, EnumUnit) <= RANGE) {
+							
+							UnitAttackToTarget(owner, enumUnit, DMG + GetHeroAttackValue(owner), ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, false, false, true, false, false);
+						}
+						enumUnit = null;
+					});
+
+					GroupRemoveUnit(grArrows, EnumUnit);
+					EnumUnit = FirstOfGroup(grArrows);
+				}
+
+
+				DestroyGroup(grArrows);
+				grArrows = null;
+				expiredTimer = null;
+			});
+
+			TimerStart(tmCircle, interval, false, function Arrows.onHit);
+			grArrows = null;
+		}
+
+	}
+
+	function onInit() {
+		SpellEffectAddAction(function() {
+			if (GetSpellAbilityId() == ABILITY_ID) {
+				Arrows.create(GetTriggerUnit(), GetSpellTargetX(), GetSpellTargetY());
+			}
+		});
+
+		// УВОРОТ
+		DodgeModifierAddAction(function() {
+			if (IsModifierAttack() &&
+				GetBuffOwnerUnit(GetUnitBuffByType(GetModifierAttackedUnit(), anna4buff_tid)) == GetModifierAttackingUnit()
+			) {
+				AddModifierTrueStrikeChance(1.0);
+			}
+		});
+	}
+
+}

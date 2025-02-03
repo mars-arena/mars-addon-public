@@ -1,0 +1,72 @@
+library Debug requires Math {
+
+	public function dbgXY(string s, real x, real y) {
+		texttag tt;
+		if (!DEBUG_ENABLED) {
+			return;
+		}
+		tt = CreateTextTagLocBJ(s, null, 0, 10, GetRandomInt(50, 100), GetRandomInt(50, 100), GetRandomInt(50, 100), GetRandomInt(0, 10));
+		SetTextTagPos(tt, x + GetRandomReal(-25, 25), y + GetRandomReal(-25, 25), 20.);
+		SetTextTagPermanent(tt, false);
+		SetTextTagLifespan(tt, 1.60);
+		SetTextTagFadepoint(tt, 0.80);
+		SetTextTagVelocityBJ(tt ,GetRandomInt(70, 90), GetRandomInt(80,110));
+		tt = null;
+	}
+	
+	public function dbgT(string msg) {
+		integer i;
+		if (!DEBUG_ENABLED) {
+			return;
+		}
+		for (0 <= i <= bj_MAX_PLAYERS) {
+			DisplayTimedTextToPlayer(Player(i), 0, 0, 20, msg);
+		}
+	}
+
+	function onInit() {
+		trigger t;
+			
+		if (DEBUG_ENABLED) {
+			t = CreateTrigger();
+			TriggerRegisterPlayerChatEvent(t, Player(0), "-debugmode", true);
+			TriggerAddAction(t, function() {
+				DEBUG_ENABLED = !DEBUG_ENABLED;
+				dbgT("DEBUG = " + GetBooleanValue(DEBUG_ENABLED));
+			});
+
+			t = CreateTrigger();
+			TriggerRegisterPlayerChatEvent(t, Player(0), "-debugdmg", true);
+			TriggerAddCondition(t, Condition(function() -> boolean {
+				return DEBUG_ENABLED;
+			}));
+			TriggerAddAction(t, function() {
+				DebugDmg = !DebugDmg;
+				dbgT("DEBUG_DMG = " + GetBooleanValue(DebugDmg));
+			});
+		
+			t = CreateTrigger();
+			TriggerRegisterPlayerChatEvent(t, Player(0), "-debugstun", true);
+			TriggerAddCondition(t, Condition(function() -> boolean {
+				return DEBUG_ENABLED;
+			}));
+			TriggerAddAction(t, function() {
+				DebugStun = !DebugStun;
+				dbgT("DEBUG_STUN = " + GetBooleanValue(DebugStun));
+			});
+
+			t = CreateTrigger();
+			TriggerRegisterPlayerChatEvent(t, Player(0), "-debughero", true);
+			TriggerAddCondition(t, Condition(function() -> boolean {
+				return DEBUG_ENABLED;
+			}));
+			TriggerAddAction(t, function() {
+				DebugHero = !DebugHero;
+				dbgT("DEBUG_HERO = " + GetBooleanValue(DebugHero));
+			});
+		}
+
+		t = null;
+	}
+
+}

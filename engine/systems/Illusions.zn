@@ -1,0 +1,236 @@
+library Illusions requires Events {
+
+	/* Modified illusion system by Flux
+	 *
+	 * CREDITS:
+	 * Flux - original author
+	 */
+
+// Constants
+
+	constant player DUMMY_OWNER = Player(PLAYER_NEUTRAL_PASSIVE);
+
+// Variables
+
+	// Getters Variables
+	Illusion LAST_CREATED_ILLUSION_GET;
+
+	public Illusion TempIllusion;
+
+// API
+
+	// Создает иллюзию для указанного игрока на основе юнита.
+	//
+	// * @arg player `owner` владелец иллюзии.
+	// * @arg unit `source` юнит, на основе которого создается иллюзия.
+	// * @arg real `x` координата X для создания иллюзии.
+	// * @arg real `y` координата Y для создания иллюзии.
+	// * @arg real `facing` угол поворота иллюзии.
+	// * @return Illusion объект иллюзии.
+	public function CreateIllusion(player owner, unit source, real x, real y, real facing) -> Illusion {
+		return Illusion.create(owner, source, x, y, facing);
+	}
+
+	// Возвращает последний созданный объект иллюзии.
+	//
+	// * @return Illusion объект иллюзии.
+	public function GetLastCreatedIllusion() -> Illusion {
+		return LAST_CREATED_ILLUSION_GET;
+	}
+
+	// Возвращает объект иллюзии юнита.
+	//
+	// * @arg unit `u` юнит иллюзии.
+	// * @return Illusion объект иллюзии.
+	public function GetUnitIllusion(unit u) -> Illusion {
+		return Illusion.load(u);
+	}
+
+	// Возвращает юнита объекта иллюзии.
+	//
+	// * @arg Illusion `illusion` объект юнита иллюзии.
+	// * @return юнит иллюзии.
+	public function GetIllusionUnit(Illusion illusion) -> unit {
+		return illusion.unit;
+	}
+
+	// Проверяет, является ли указанный юнит расширенной иллюзией.
+	//
+	// * @arg unit `u` проверяемый юнит.
+	// * @return boolean `true`, если юнит является иллюзией, иначе `false`.
+	public function IsUnitIllusionEx(unit u) -> boolean {
+		return IsSet(Illusion.load(u));
+	}
+
+	// Устанавливает оставшееся время жизни для указанной иллюзии.
+	//
+	// * @arg Illusion `illusion` иллюзия, для которой устанавливается время жизни.
+	// * @arg real `time` время жизни в секундах.
+	// * @return boolean `true`, если время жизни успешно установлено, иначе `false`.
+	public function SetIllusionRemainingTime(Illusion illusion, real time) -> boolean {
+		if (IsSet(illusion)) {
+			illusion.duration = time;
+			return true;
+		}
+		return false;
+	}
+
+	// Устанавливает количество получаемого урона для указанной иллюзии.
+	//
+	// * @arg Illusion `illusion` иллюзия, для которой устанавливается получаемый урон.
+	// * @arg real `damageTaken` количество получаемого урона.
+	// * @return boolean `true`, если получаемый урон успешно установлен, иначе `false`.
+	public function SetIllusionDamageTaken(Illusion illusion, real damageTaken) -> boolean {
+		if (IsSet(illusion)) {
+			illusion.damageTaken = damageTaken;
+			return true;
+		}
+		return false;
+	}
+
+	// Устанавливает количество наносимого урона для указанной иллюзии.
+	//
+	// * @arg Illusion `illusion` иллюзия, для которой устанавливается наносимый урон.
+	// * @arg real `damageGiven` количество наносимого урона.
+	// * @return boolean `true`, если наносимый урон успешно установлен, иначе `false`.
+	public function SetIllusionDamageGiven(Illusion illusion, real damageGiven) -> boolean {
+		if (IsSet(illusion)) {
+			illusion.damageGiven = damageGiven;
+			return true;
+		}
+		return false;
+	}
+
+	// Возвращает количество получаемого урона для указанной иллюзии.
+	//
+	// * @arg Illusion `illusion` иллюзия, для которой возвращается получаемый урон.
+	// * @return real количество получаемого урона.
+	public function GetIllusionDamageTaken(Illusion illusion) -> real {
+		return illusion.damageTaken;
+	}
+
+	// Возвращает количество наносимого урона для указанной иллюзии.
+	//
+	// * @arg Illusion `illusion` иллюзия, для которой возвращается наносимый урон.
+	// * @return real количество наносимого урона.
+	public function GetIllusionDamageGiven(Illusion illusion) -> real {
+		return illusion.damageGiven;
+	}
+
+// Structures
+
+	// Instance Structure
+	public struct Illusion {
+		unit unit;
+		real damageTaken;
+		real damageGiven;
+
+		static unit Dummy;
+		static unit EnteredIllusion;
+
+		static key ILLUSION_HID;
+
+		static method create(player owner, unit source, real x, real y, real facing) -> Illusion {
+			Illusion this;
+			EnteredIllusion = null;
+
+			if (source != null && UnitAlive(source)) {
+				SetUnitX(Dummy, GetUnitX(source));
+				SetUnitY(Dummy, GetUnitY(source));
+				SetUnitOwner(Dummy, GetOwningPlayer(source), false);
+				if (IssueTargetOrderById(Dummy, 852274, source)) {
+					if (EnteredIllusion != null) {
+						SetUnitOwner(EnteredIllusion, owner, true);
+						if (IsUnitType(source, UNIT_TYPE_STRUCTURE)) {
+							SetUnitPosition(EnteredIllusion, x, y);
+						} else if (x != 0. || y != 0.) {
+							SetUnitX(EnteredIllusion, x);
+							SetUnitY(EnteredIllusion, y);
+							SetUnitFacing(EnteredIllusion, facing);
+						}
+					} else {
+						dbgT("Error I1: Не удалось создать иллюзию для объекта(" + GetUnitName(source) + ").");
+						SetUnitOwner(Dummy, DUMMY_OWNER, false);
+						return 0;
+					}
+				} else {
+					dbgT("Error I2: Не удалось создать иллюзию для объекта(" + GetUnitName(source) + "). Приказ невозможно выполнить.");
+					return 0;
+				}
+			} else {
+				dbgT("Error I3: Не удалось создать иллюзию для объекта(" + GetUnitName(source) + "). Нет источника или он мертв.");
+				return 0;
+			}
+
+			this = Illusion.allocate();
+			this.unit = EnteredIllusion;
+			this.damageTaken = 1.0;
+			this.damageGiven = 1.0;
+			SetUnitAnimation(EnteredIllusion, "stand");
+			SaveInteger(HT, GetHandleId(unit), ILLUSION_HID, this);
+			EnteredIllusion = null;
+
+			LAST_CREATED_ILLUSION_GET = this;
+			return this;
+		}
+
+		static method load(unit u) -> Illusion {
+			return LoadInteger(HT, GetHandleId(u), ILLUSION_HID);
+		}
+
+		method destroy() {
+			if (UnitAlive(unit)) {
+				KillUnit(unit);
+			}
+
+			RemoveSavedInteger(HT, GetHandleId(unit), ILLUSION_HID);
+
+			unit = null;
+			this.deallocate();
+		}
+
+		static method onDeath() {
+			Illusion this = Illusion.load(GetTriggerUnit());
+			if (IsSet(this))
+				this.destroy();
+		}
+
+		method operator duration=(real time) {
+			UnitApplyTimedLife(unit, 'BTLF', time);
+		}
+
+		static method onDamage() {
+			Illusion attacking;
+			Illusion attacked;
+
+			attacking = Illusion.load(GetModifierAttackingUnit());
+			attacked = Illusion.load(GetModifierAttackedUnit());
+			if (IsSet(attacking) && IsModifierAttack()) {
+				SetModifierDMGAmplifier(DAMAGE_MULTIPLIER, GetModifierDMGAmplifier(DAMAGE_MULTIPLIER) * attacking.damageGiven);
+			}
+			if (IsSet(attacked)) {
+				SetModifierDMGAmplifier(DAMAGE_MULTIPLIER, GetModifierDMGAmplifier(DAMAGE_MULTIPLIER) * attacking.damageTaken);
+			}
+		}
+
+		static method onSummmon() -> boolean {
+			if (GetSummoningUnit() == Illusion.Dummy) {
+				EnteredIllusion = GetSummonedUnit();
+			}
+			return false;
+		}
+
+	}
+
+	// Init Function
+	function onInit() {
+		trigger trg = CreateTrigger();
+		Illusion.Dummy = CreateUnit(DUMMY_OWNER, DUMMY_ID, 0, 0, 0);
+		TriggerRegisterAnyUnitEventBJ(trg, EVENT_PLAYER_UNIT_SUMMON); // ref EVENT_UNIT_SUMMON - broken
+		TriggerAddCondition(trg, Condition(function Illusion.onSummmon));
+		UnitAddAbility(Illusion.Dummy, ILLUSION_ABILITY_ID);
+
+		PrecedingModifierAddAction(function Illusion.onDamage);
+		DeathAddAction(function Illusion.onDeath);
+	}
+}

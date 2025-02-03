@@ -1,0 +1,420 @@
+library Stuns requires Modifiers {
+
+// Constants
+
+	// @const максимальное количество типов оглушений, которые могут действовать на одну цель.
+	constant integer MAX_COUNT_STUN_TYPES = 10;
+
+	// @const cобытия начала и конца оглушения любого юнита любого типа (исключая `LOST_CONTROL_STUN`).
+	constant string TRIG_EVENT_STUN = "EventStun";
+
+	hashtable HTInternal = InitHashtable();
+
+	// @const идентификаторы типов оглушения
+	public {
+		constant integer NORMAL_STUN = 1;
+		constant integer LOST_CONTROL_STUN = 2;
+		constant integer FROST_STUN = 3;
+		constant integer CHAINS_STUN = 4;
+		constant integer AQUA_STUN = 5;
+        constant integer STANLEY_STUN = 6;
+        constant integer GOLD_STUN = 7;
+        constant integer ILLIDAN_STUN = 8;
+        constant integer BOLA_STUN = 9;
+		constant integer ARTHAS_STUN = 10;
+	}
+
+// Variables
+
+	// Debug Variables
+	public boolean DebugStun = false;
+
+	// Getters Variables
+	Stun OBJECT_GET;
+	unit STUNNING_UNIT_GET;
+	unit STUNNED_UNIT_GET;
+	integer TYPE_ID_GET;
+	real DURATION_GET;
+	boolean IS_ENTER_GET;
+	boolean IS_OUT_GET;
+	boolean IS_FIRST_GET;
+
+	// Setting Variables
+	string StunEffect[MAX_COUNT_STUN_TYPES];
+	string StunAttach[MAX_COUNT_STUN_TYPES];
+
+	integer index;
+
+// Tech Functions
+
+	function dbg(string msg) {
+		if (DebugStun) dbgT(msg);
+	}
+
+	function Save(unit stunned, integer typeId, Stun stun) {
+		SaveInteger(HTInternal, GetHandleId(stunned), typeId, stun);
+	}
+
+	function Remove(unit stunned, integer typeId) {
+		RemoveSavedInteger(HTInternal, GetHandleId(stunned), typeId);
+	}
+
+	function Load(unit stunned, integer typeId) -> Stun {
+		return LoadInteger(HTInternal, GetHandleId(stunned), typeId);
+	}
+
+	function SaveDummy(unit stunned, unit dummy) {
+		SaveUnitHandle(HTInternal, GetHandleId(stunned), 0, dummy);
+	}
+
+	function RemoveDummy(unit stunned) {
+		RemoveSavedHandle(HTInternal, GetHandleId(stunned), 0);
+	}
+
+	function LoadDummy(unit stunned) -> unit {
+		return LoadUnitHandle(HTInternal, GetHandleId(stunned), 0);
+	}
+
+
+// API
+
+	// Event Getters
+	public function GetTriggerStun() -> Stun {return OBJECT_GET;}
+	public function GetStunningUnit() -> unit {return STUNNING_UNIT_GET;}
+	public function GetStunnedUnit() -> unit {return STUNNED_UNIT_GET;}
+	public function GetStunTypeId() -> integer {return TYPE_ID_GET;}
+	public function GetStunDuration() -> real {return DURATION_GET;}
+	public function GetStunIsEnter() -> boolean {return IS_ENTER_GET;}
+	public function GetStunIsOut() -> boolean {return IS_OUT_GET;}
+	public function GetStunIsFirst() -> boolean {return IS_FIRST_GET;}
+
+	// Object Getters
+
+	// Возвращает оставшееся время оглушения.
+	//
+	// * @arg Stun `whichStun` оглушение.
+	// * @return real время оглушения.
+	public function GetStunRemainingTime(Stun whichStun) -> real {
+		if (whichStun.isStarted)
+			return TimerGetRemaining(whichStun.tmDuration);
+		else
+			return whichStun.duration;
+	}
+
+	// Functions
+
+	// Возвращает оставшееся время оглушения указанного типа оглушения для юнита.
+	//
+	// * @arg unit `stunned` оглушенный юнит.
+	// * @arg integer `typeId` тип оглушения.
+	// * @return real время оглушения.
+	public function GetStunRemainingTimeByType(unit stunned, integer typeId) -> real {
+		Stun stun = Load(stunned, typeId);
+
+		if (stun.isStarted)
+			return TimerGetRemaining(stun.tmDuration);
+
+		return stun.duration;
+	}
+
+	// Проверяет, оглушен ли юнит исключая указанный тип оглушения.
+	//
+	// * @arg unit `stunned` оглушенный юнит.
+	// * @arg integer `typeId` исключаемый тип оглушения.
+	// * @return boolean `true` - если юнит оглушен исключая указанный тип, иначе - `false`.
+	public function IsUnitStunnedExceptType(unit stunned, integer typeId) -> boolean {
+		Stun stun = 0;
+
+		for (1 <= index <= MAX_COUNT_STUN_TYPES) {
+			stun = Load(stunned, index);
+			if (stun.typeId != typeId && IsSet(stun))
+				return true;
+		}
+
+		return false;
+	}
+
+	// Проверяет, оглушен ли юнит указанным типом оглушения.
+	//
+	// * @arg unit `stunned` проверяемый юнит.
+	// * @arg integer `typeId` указанный тип оглушения.
+	// * @return boolean `true`, если юнит оглушен указанным типом, иначе `false`.
+	public function IsUnitStunnedByType(unit stunned, integer typeId) -> boolean {
+		return IsSet(Load(stunned, typeId));
+	}
+
+	// Проверяет, оглушен ли юнит.
+	//
+	// * @arg unit `stunned` оглушенный юнит.
+	// * @return boolean `true` - если юнит оглушен, иначе - `false`.
+	public function IsUnitStunned(unit stunned) -> boolean {
+		for (1 <= index <= MAX_COUNT_STUN_TYPES)
+			if (IsSet(Load(stunned, index)))
+				return true;
+
+		return false;
+	}
+
+	// Проверяет, реально оглушен ли юнит.
+	//
+	// * @arg unit `stunned` оглушенный юнит.
+	// * @return boolean `true` - если юнит оглушен, иначе - `false`.
+	public function IsUnitActuallyStunned(unit stunned) -> boolean {
+		return UnitHasAbility(stunned, STUN_BUFF_ID);
+	}
+
+	// Удаляет оглушение указанного типа у юнита.
+	//
+	// * @arg unit `stunned` юнит, у которого нужно удалить оглушение.
+	// * @arg integer `typeId` тип оглушения для удаления.
+	public function RemoveUnitStunByType(unit stunned, integer typeId) {
+		Stun stun = Load(stunned, typeId);
+
+		if (IsSet(stun))
+			stun.destroy();
+	}
+
+	// Удаляет все оглушения у юнита.
+	//
+	// * @arg unit `stunned` юнит, у которого нужно удалить все оглушения.
+	public function RemoveUnitStun(unit stunned) {
+		Stun stun = 0;
+
+		for (1 <= index <= MAX_COUNT_STUN_TYPES) {
+			stun = Load(stunned, index);
+			if (IsSet(stun))
+				stun.destroy();
+		}
+	}
+
+	// Возвращает объект оглушения указанного типа для юнита.
+	//
+	// * @arg unit `stunned` юнит, у которого нужно получить оглушение.
+	// * @arg integer `typeId` тип оглушения который нужно получить.
+	// * @return object|0, `Stun` - оглушение указанного типа, или 0 - если такого оглушения нет.
+	public function GetUnitStunByType(unit stunned, integer typeId) -> Stun {
+		return Load(stunned, typeId);
+	}
+
+	function executeEvent(
+		Stun stunObject,
+		unit stunningUnit,
+		unit stunnedUnit,
+		integer typeId,
+		real duration,
+		boolean isEnter,
+		boolean isOut,
+		boolean isFirst
+	) {
+		if (typeId != LOST_CONTROL_STUN) {
+			STUNNING_UNIT_GET = stunningUnit;
+			STUNNED_UNIT_GET = stunnedUnit;
+			TYPE_ID_GET = typeId;
+			DURATION_GET = duration;
+			OBJECT_GET = stunObject;
+			IS_ENTER_GET = isEnter;
+			IS_OUT_GET = isOut;
+			IS_FIRST_GET = isFirst;
+			TriggerExecute(StunTrg);
+			ExecuteFunc("Trig_" + TRIG_EVENT_STUN + "_Actions");
+			STUNNING_UNIT_GET = null;
+			STUNNED_UNIT_GET = null;
+			TYPE_ID_GET = 0;
+			DURATION_GET = 0.;
+			OBJECT_GET = 0;
+			IS_ENTER_GET = false;
+			IS_OUT_GET = false;
+			IS_FIRST_GET = false;
+		}
+	}
+
+// Main Function
+
+	// Оглушает юнита на указанное время с учетом различных условий и модификаторов.
+	// 
+	// * @arg unit `stunningUnit` юнит, инициировавший оглушение.
+	// * @arg unit `stunnedUnit` целевой юнит, который нужно оглушить.
+	// * @arg integer `typeId` тип оглушения.
+	// * @arg real `duration` длительность оглушения.
+	// * @return object|0, `Stun` - возвращает объект оглушения, созданный или обновленный в результате выполнения функции, или 0 при отсутствии оглушения.
+	// 
+	// Функция проверяет жив ли целевой юнит, имеет ли он иммунитет к оглушению и соответствует ли длительность нового оглушения текущему оглушению. Основываясь на этих проверках, функция либо создает новый объект оглушения, либо обновляет существующий.
+	public function StunUnit(
+		unit stunningUnit,
+		unit stunnedUnit,
+		integer typeId,
+		real duration
+	) -> Stun {
+		Stun object = 0;
+		unit dummy = null;
+
+		if (
+			UnitAlive(stunnedUnit) &&
+			(GetUnitAbilityLevel(stunnedUnit, IMMUN_STUN_ABILITY_ID) <= 0 ||
+				typeId == LOST_CONTROL_STUN ||
+         		typeId == GOLD_STUN ||
+				typeId == AQUA_STUN ||
+            	typeId == CHAINS_STUN
+			)
+		) {
+			if (typeId != LOST_CONTROL_STUN && typeId != GOLD_STUN && typeId != AQUA_STUN && typeId != CHAINS_STUN) {
+				duration = duration *
+					GetUnitModifier(stunnedUnit, DEC_ENTER_STUN_TIME) * 
+					GetUnitModifier(stunnedUnit, INC_ENTER_STUN_TIME) * 
+					GetUnitModifier(stunningUnit, DEC_OUT_STUN_TIME) *
+					GetUnitModifier(stunningUnit, INC_OUT_STUN_TIME);
+			}
+			if (duration > GetStunRemainingTimeByType(stunnedUnit, typeId)) {
+				dbg("stun " + GetUnitName(stunnedUnit) + " " + R2S(duration) + " > " + R2S(GetStunRemainingTimeByType(stunnedUnit, typeId)));
+
+				if (IsUnitStunned(stunnedUnit)) {
+
+					object = GetUnitStunByType(stunnedUnit, typeId);
+					if (object != 0) {
+						object.restart(stunningUnit, duration);
+						dbg("end restart");
+						executeEvent(object, stunningUnit, stunnedUnit, typeId, duration, true, false, false);
+					} else {
+						object = Stun.create(stunningUnit, stunnedUnit, typeId, duration);
+						Save(stunnedUnit, typeId, object);
+						dbg("end without stun");
+						object.start();
+						executeEvent(object, stunningUnit, stunnedUnit, typeId, duration, true, false, true);
+					}
+
+				} else {
+					dummy = CreateUnit(GetOwningPlayer(stunnedUnit), DUMMY_ID, GetUnitX(stunnedUnit), GetUnitY(stunnedUnit), 360.);
+					UnitAddAbility(dummy, STUN_ABILITY_ID);
+					SetUnitAbilityLevel(dummy, STUN_ABILITY_ID, 1);
+					if (IssueTargetOrder(dummy, "magicleash", stunnedUnit)) {
+						object = Stun.create(stunningUnit, stunnedUnit, typeId, duration);
+						Save(stunnedUnit, typeId, object);
+						SaveDummy(stunnedUnit, dummy);
+						object.start();
+						dbg("end with stun");
+						executeEvent(object, stunningUnit, stunnedUnit, typeId, duration, true, false, true);
+					} else {
+						dbg("not " + GetUnitName(stunnedUnit) + " can't magicleash " + R2S(duration));
+						return object;
+					}
+
+				}
+
+			} else {
+				dbg("not " + GetUnitName(stunnedUnit) + " " + R2S(duration) + " < " + R2S(GetStunRemainingTimeByType(stunnedUnit, typeId)));
+				executeEvent(GetUnitStunByType(stunnedUnit, typeId), stunningUnit, stunnedUnit, typeId, duration, true, false, false);
+			}
+		} else {
+			dbg("not " + GetUnitName(stunnedUnit) + " is dead or immun " + R2S(duration));
+		}
+
+		dummy = null;
+		return object;
+	}
+
+// Structures
+
+	// Object Structure
+	struct Stun {
+		unit stunningUnit;
+		unit stunnedUnit;
+		integer typeId;
+		real duration;
+
+		effect eff;
+
+		boolean isStarted;
+		timer tmDuration;
+
+		static integer CK_HID = 0;
+
+		static method create(
+			unit stunningUnit,
+			unit stunnedUnit,
+			integer typeId,
+			real duration)
+			-> Stun
+		{
+			Stun this = Stun.allocate();
+
+			this.stunningUnit = stunningUnit;
+			this.stunnedUnit = stunnedUnit;
+			this.typeId = typeId;
+			this.duration = duration;
+			this.isStarted = false;
+
+			this.eff = AddSpecialEffectTarget(StunEffect[typeId], this.stunnedUnit, StunAttach[typeId]);
+
+			this.tmDuration = CreateTimer();
+			SaveInteger(HT, GetHandleId(this.tmDuration), CK_HID, this);
+
+			Save(stunnedUnit, typeId, this);
+
+			return this;
+		}
+
+		method destroy() {
+			executeEvent(this, stunningUnit, stunnedUnit, typeId, duration, false, true, false);
+
+			if (!IsUnitStunnedExceptType(stunnedUnit, typeId)) {
+				UnitRemoveAbility(stunnedUnit, STUN_BUFF_ID);
+				KillUnit(LoadDummy(stunnedUnit)); RemoveDummy(stunnedUnit);
+			}
+
+			Remove(stunnedUnit, typeId);
+
+			DestroyEffect(eff);
+			eff = null;
+			stunningUnit = null;
+			stunnedUnit = null;
+			FlushChildHashtable(HT, GetHandleId(tmDuration));
+			PauseTimer(tmDuration);
+			DestroyTimer(tmDuration);
+			tmDuration = null;
+			this.deallocate();
+		}
+
+		method restart(unit stunningUnit, real duration) {
+			this.duration = duration;
+			this.stunningUnit = stunningUnit;
+			if (isStarted) TimerStart(this.tmDuration, this.duration, false, function Stun.expired);
+		}
+
+		method start() {
+			isStarted = true;
+			TimerStart(tmDuration, duration, false, function Stun.expired);
+		}
+
+		static method expired() {
+			Stun this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+			dbg("expired " + GetUnitName(stunnedUnit) + " " + R2S(duration));
+			this.destroy();
+		}
+
+	}
+
+	// Init Function
+	function onInit() {
+		StunEffect[NORMAL_STUN] = "Abilities\\Spells\\Human\\Thunderclap\\ThunderclapTarget.mdl";
+		StunAttach[NORMAL_STUN] = "overhead";
+		StunEffect[LOST_CONTROL_STUN] = "";
+		StunAttach[LOST_CONTROL_STUN] = "";
+		StunEffect[FROST_STUN] = "Abilities\\Spells\\Undead\\FreezingBreath\\FreezingBreathTargetArt.mdl";
+		StunAttach[FROST_STUN] = "origin";
+		StunEffect[CHAINS_STUN] = "war3mapImported\\Chain Prison.mdx";
+		StunAttach[CHAINS_STUN] = "origin";
+		StunEffect[AQUA_STUN] = "war3mapImported\\az_xiaonajia01_e2.mdx";
+		StunAttach[AQUA_STUN] = "origin";
+		StunEffect[STANLEY_STUN] = "Abilities\\Spells\\Human\\Thunderclap\\ThunderclapTarget.mdl";
+		StunAttach[STANLEY_STUN] = "overhead";
+		StunEffect[GOLD_STUN] = "";
+		StunAttach[GOLD_STUN] = "";
+		StunEffect[ILLIDAN_STUN] = "Abilities\\Spells\\Human\\Thunderclap\\ThunderclapTarget.mdl";
+		StunAttach[ILLIDAN_STUN] = "overhead";
+		StunEffect[BOLA_STUN] = "Abilities\\Spells\\Orc\\Ensnare\\ensnare_AirTarget.mdl";
+		StunAttach[BOLA_STUN] = "chest";
+		StunEffect[ARTHAS_STUN] = "war3mapImported\\Bondage Gold SD.mdx";
+		StunAttach[ARTHAS_STUN] = "chest";
+	}
+}
+

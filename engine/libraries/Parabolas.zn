@@ -1,0 +1,59 @@
+library Parabolas requires Points {
+
+	public struct Parabola {
+		Point2D start;
+		Point2D end;
+		real apsis;
+
+		static method create(Point2D start, Point2D end, real apsis) -> Parabola {
+			return Parabola.allocate().setAt(start, end, apsis);
+		}
+
+		method destroy() {
+			this.start.destroy();
+			this.end.destroy();
+			this.deallocate();
+		}
+
+		method setAt(Point2D start, Point2D end, real apsis) -> Parabola {
+			this.start = start;
+			this.end = end;
+			this.apsis = apsis;
+			return this;
+		}
+
+		method setStart(Point2D start) -> Parabola {
+			this.start.copy(start);
+			return this;
+		}
+
+		method setEnd(Point2D end) -> Parabola {
+			this.end.copy(end);
+			return this;
+		}
+
+		method setapsis(real apsis) -> Parabola {
+			this.apsis = apsis;
+			return this;
+		}
+	
+		method calculateZ(Point2D current, real startOffsetZ, real endOffsetZ) -> real {
+			real startHeight = start.getTerrainZ() + startOffsetZ;
+			real endHeight = end.getTerrainZ() + endOffsetZ;
+			real totalDistance = start.distTo(end);
+			real currentDistance = start.distTo(current);
+			real apsis = MaxReal(startHeight, endHeight) + apsis;
+			return ParabolaZ2(startHeight, endHeight, apsis, totalDistance, currentDistance);
+		}
+
+		method calculateZMaxHeight(Point2D current, real startOffsetZ, real endOffsetZ, real maxHeight) -> real {
+			real startHeight = start.getTerrainZ() + startOffsetZ;
+			real endHeight = MinReal(end.getTerrainZ() + endOffsetZ, start.getTerrainZ() + startOffsetZ + maxHeight);
+			real totalDistance = start.distTo(end);
+			real currentDistance = start.distTo(current);
+			real maxApsis = MaxReal(startHeight, endHeight) + apsis;
+			return ParabolaZ2(startHeight, endHeight, maxApsis, totalDistance, currentDistance);
+		}
+	}
+
+}

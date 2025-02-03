@@ -1,0 +1,688 @@
+library Auras requires GameUtils {
+
+	// Constants
+	constant integer MAX_COUNT_AURAS_TARGET = 100; //Максимальное количество аур, которые могут действовать на одну цель
+	constant integer MAX_COUNT_AURAS_OWNER = 100; //Максимальное количество аур, которые может излучать один юнит
+	constant real MAX_COLLISION_SIZE = 100;
+	
+	// Rudimentary
+	public Aura TempAura;
+
+	// Getters Variables
+	Aura OBJECT_GET;
+	unit OWNER_UNIT_GET;
+	unit TARGET_UNIT_GET;
+	boolean IS_ENTER_GET;
+	boolean IS_OUT_GET;
+	boolean IS_INTERVAL_GET;
+	integer ACTIONS_ID_GET;
+
+	// Hash Variables
+	key AURA_TARGET_HID;
+	key AURA_OWNER_HID;
+	
+	struct Aura {
+		unit ownerUnit;
+		integer typeId;
+		item itemAura;
+		boolean multiAurasToTarget;
+		integer priority;
+		boolean multiAurasForOwner;
+		boolean refreshOutEnter;
+		boolean rudiment;
+		integer actionsId;
+		boolexpr filter;
+		real rangeMax;
+		real outDuration;
+		boolean isIntervalEvent;
+		real interval;
+
+		integer itemAuraType;
+		real range;
+		real x;
+		real y;
+		
+		timer tmRegistration;
+		timer tmIntervalEvent;
+		group grEnter;
+		group grOut;
+		boolean on;
+
+		static integer CK_HID = 0;
+		static integer unit_hid = 1;
+		static group groupTemp = CreateGroup();
+		
+		static method create(
+			unit ownerUnit,
+			integer typeId,
+			item itemAura,
+			boolean multiAurasToTarget,
+			integer priority,
+			boolean multiAurasForOwner,
+			boolean refreshOutEnter,
+			boolean rudiment,
+			integer actionsId,
+			boolexpr filter,
+			real rangeMax,
+			real outDuration,
+			boolean isIntervalEvent, 
+			real interval
+		) -> Aura {
+			Aura this = Aura.allocate();
+
+			this.ownerUnit = ownerUnit;
+			this.typeId = typeId;
+			this.itemAura = itemAura;
+			this.multiAurasToTarget = multiAurasToTarget;
+			this.priority = priority;
+			this.multiAurasForOwner = multiAurasForOwner;
+			this.refreshOutEnter = refreshOutEnter;
+			this.actionsId = actionsId;
+			this.filter = filter;
+			this.rangeMax = rangeMax;
+			this.outDuration = outDuration;
+			this.isIntervalEvent = isIntervalEvent;
+			this.interval = interval;
+
+			this.itemAuraType = GetItemTypeId(itemAura);
+			this.range = rangeMax;
+			this.x = GetUnitX(ownerUnit);
+			this.y = GetUnitY(ownerUnit);
+
+			this.on = false;
+			this.grEnter = CreateGroup();
+			this.grOut = CreateGroup();
+			this.tmRegistration = CreateTimer();
+
+			SaveInteger(HT, GetHandleId(this.tmRegistration), CK_HID, this);
+			TimerStart(this.tmRegistration, 0., false, function Aura.registration);
+
+			if (isIntervalEvent && interval > 0) {
+				this.tmIntervalEvent = CreateTimer();
+				SaveInteger(HT, GetHandleId(this.tmIntervalEvent), CK_HID, this);
+				TimerStart(this.tmIntervalEvent, this.interval, true, function Aura.intervalEvent);
+			}
+
+			return this;
+		}
+		
+		method destroy() {
+			unit target;
+
+			target = FirstOfGroup(grEnter);
+			while (target != null) {
+				AuraTarget.UnRegAuraForUnit(target, this);
+				if (refreshOutEnter || !AuraTarget.IsAddedTypeAura(target, this)) this.execOutEvent(target);
+				GroupRemoveUnit(grEnter, target);
+				target = FirstOfGroup(grEnter);
+			}
+
+			target = FirstOfGroup(grOut);
+			while (target != null) {
+				AuraTarget.UnRegAuraForUnit(target, this);
+				if (refreshOutEnter || !AuraTarget.IsAddedTypeAura(target, this)) this.execOutEvent(target);
+				GroupRemoveUnit(grOut, target);
+				target = FirstOfGroup(grOut);
+			}
+
+			ownerUnit = null;
+			itemAura = null;
+			//DestroyBoolExpr(filter);
+			filter = null;
+			DestroyGroup(grEnter);
+			DestroyGroup(grOut);
+			grEnter = null;
+			grOut = null;
+			FlushChildHashtable(HT, GetHandleId(tmRegistration));
+			FlushChildHashtable(HT, GetHandleId(tmIntervalEvent));
+			PauseTimer(tmRegistration);
+			DestroyTimer(tmRegistration);
+			PauseTimer(tmIntervalEvent);
+			DestroyTimer(tmIntervalEvent);
+			tmRegistration = null;
+			tmIntervalEvent = null;
+			this.deallocate();
+		}
+
+		static method load(timer tm) -> Aura {
+			return LoadInteger(HT, GetHandleId(tm), CK_HID);
+		}
+
+		static method rudimentary() {
+			AuraOwnerUnit = OWNER_UNIT_GET;
+			AuraTargetUnit = TARGET_UNIT_GET;
+			IsEntered = IS_ENTER_GET;
+			IsOut = IS_OUT_GET;
+			IsActions = IS_INTERVAL_GET;
+			ActionsId = ACTIONS_ID_GET;
+		}
+
+		method execEvent(unit target, boolean isEnter, boolean isOut, boolean isInterval) {
+			OBJECT_GET = this;
+			OWNER_UNIT_GET = ownerUnit;
+			TARGET_UNIT_GET = target;
+			IS_ENTER_GET = isEnter;
+			IS_OUT_GET = isOut;
+			IS_INTERVAL_GET = isInterval;
+			ACTIONS_ID_GET = actionsId;
+			Aura.rudimentary();
+			ExecuteFunc("Trig_AurasActions_Actions");
+			OBJECT_GET = 0;
+			OWNER_UNIT_GET = null;
+			TARGET_UNIT_GET = null;
+			IS_ENTER_GET = false;
+			IS_OUT_GET = false;
+			IS_INTERVAL_GET = false;
+			ACTIONS_ID_GET = actionsId;
+		}
+
+		method execEnterEvent(unit target) {
+			this.execEvent(target, true, false, false);
+		}
+
+		method execOutEvent(unit target) {
+			this.execEvent(target, false, true, false);
+		}
+
+		method execIntervalEvent(unit target) {
+			this.execEvent(target, false, false, true);
+		}
+		
+		
+		static method intervalEvent() {
+			Aura this = Aura.load(GetExpiredTimer());
+			This = this;
+			ForGroup(grEnter, function() {
+				Aura this = This;
+				this.execIntervalEvent(GetEnumUnit());
+			});
+			ForGroup(grOut, function() {
+				Aura this = This;
+				this.execIntervalEvent(GetEnumUnit());
+			});
+		}
+		
+		static method registration() {
+			Aura this = Aura.load(GetExpiredTimer());
+			
+			x = GetUnitX(ownerUnit);
+			y = GetUnitY(ownerUnit);
+			
+			if (!multiAurasForOwner && itemAura != null && !IsUnitIllusion(ownerUnit) && !UnitHasItemType(ownerUnit, itemAuraType)) {
+				AuraOwner.UnRegAuraForUnit(ownerUnit, this);
+				return;
+			}
+			
+			if (multiAurasForOwner && itemAura != null && !IsUnitIllusion(ownerUnit) && !UnitHasItem(ownerUnit, itemAura)) {
+				AuraOwner.UnRegAuraForUnit(ownerUnit, this);
+				return;
+			}
+
+			if (!UnitAlive(ownerUnit) && IsUnitIllusion(ownerUnit)) {
+				AuraOwner.UnRegAuraForUnit(ownerUnit, this);
+				return;
+			}
+
+			
+			GroupClear(groupTemp);
+			AuraOwnerUnit = ownerUnit; //rudimentary
+			OWNER_UNIT_GET = ownerUnit;
+			GroupEnumUnitsInRange(groupTemp, x, y, range, filter);
+			OWNER_UNIT_GET = null;
+			
+			if (!multiAurasToTarget) {
+				This = this;
+				ForGroup(groupTemp, function() {
+					Aura this = This;
+					unit target = GetEnumUnit();
+					if (priority > 0) {
+						AuraTarget.RemoveAurasBelowPriority(target, this);
+					}
+					if (AuraTarget.IsAddedTypeAura(target, this)) {
+						GroupRemoveUnit(groupTemp, target);
+						GroupRemoveUnit(grOut, target);
+					}
+					target = null;
+				}); 
+			}
+			
+			This = this;
+			ForGroup(grEnter, function() {
+				Aura this = This;
+				unit target = GetEnumUnit();
+				timer tm;
+				if (!IsUnitInGroup(target, groupTemp)) {
+					if (IsUnitInRangeXY(target, x, y, range)) {
+						GroupRemoveUnit(grEnter, target);
+						GroupRemoveUnit(grOut, target);
+						AuraTarget.UnRegAuraForUnit(target, this);
+						if (refreshOutEnter || !AuraTarget.IsAddedTypeAura(target, this)) this.execOutEvent(target);
+					} else if (!IsUnitInGroup(target, grOut)){
+						GroupRemoveUnit(grEnter, target);
+						GroupAddUnit(grOut, target);
+						tm = CreateTimer();
+						SaveInteger(HT, GetHandleId(tm), CK_HID, this);
+						SaveUnitHandle(HT, GetHandleId(tm), unit_hid, target);
+						TimerStart(tm, outDuration, false, function() {
+							timer tm = GetExpiredTimer();
+							integer tmId = GetHandleId(tm);
+							Aura this = LoadInteger(HT, tmId, CK_HID);
+							unit target = LoadUnitHandle(HT, tmId, unit_hid);
+							if (grOut != null && target != null && IsUnitInGroup(target, grOut)) {
+								if (IsUnitInRangeXY(target, GetUnitX(ownerUnit), GetUnitY(ownerUnit), range)){
+									GroupRemoveUnit(grOut, target);
+									GroupAddUnit(grEnter, target);
+								} else {
+									GroupRemoveUnit(grOut, target);
+									AuraTarget.UnRegAuraForUnit(target, this);
+									if (refreshOutEnter || !AuraTarget.IsAddedTypeAura(target, this)) this.execOutEvent(target);
+								}
+							}
+							FlushChildHashtable(HT, tmId);
+							PauseTimer(tm);
+							DestroyTimer(tm);
+							target = null;
+							tm = null;
+						});
+					}
+				}
+				tm = null;
+				target = null;
+			});
+			
+			
+			This = this;
+			ForGroup(groupTemp, function() {
+				Aura this = This;
+				unit target = GetEnumUnit();
+				if (!IsUnitInGroup(target, grEnter) && !IsUnitInGroup(target, grOut)) {
+					GroupAddUnit(grEnter, target);
+					if (refreshOutEnter || !AuraTarget.IsAddedTypeAura(target, this)) {
+						this.execEnterEvent(target);
+					}
+					AuraTarget.RegAuraForUnit(target, this);
+				}
+				target = null;
+			});
+			if (on == false) {
+				on = true;
+				TimerStart(this.tmRegistration, 0.1, true, function Aura.registration);
+			}
+		}
+		
+	}
+	
+	struct[60000] AuraTarget
+	{
+		unit targetUnit;
+		Aura auras[MAX_COUNT_AURAS_TARGET];
+		integer countAuras = 0;
+		
+		static method create(unit targetUnit) -> AuraTarget {
+			AuraTarget this = AuraTarget.allocate();
+			this.targetUnit = targetUnit;
+			return this;
+		}
+		
+		method destroy() {
+			RemoveSavedInteger(HT, GetHandleId(targetUnit), AURA_TARGET_HID);
+			targetUnit = null;
+			this.deallocate();
+		}
+		
+		static method RegAuraForUnit(unit u, Aura aura) {
+			AuraTarget aTarget;
+			integer i = 0;
+			if (LoadInteger(HT, GetHandleId(u), AURA_TARGET_HID) <= 0) {
+				aTarget = aTarget.create(u);
+				SaveInteger(HT, GetHandleId(u), AURA_TARGET_HID, aTarget);
+			} else {
+				aTarget = LoadInteger(HT, GetHandleId(u), AURA_TARGET_HID);
+			}
+			for (1 <= i <= aTarget.countAuras) {
+				if (aTarget.auras[i] == aura) {
+					dbgT("Error AT1: Регистрация уже зарегестрированной ауры для объекта(" + GetUnitName(u) + ").");
+					return;
+				}
+			}
+			aTarget.countAuras = aTarget.countAuras + 1;
+			aTarget.auras[aTarget.countAuras] = aura;
+		
+		}
+		
+		static method UnRegAuraForUnit(unit u, Aura aura) {
+			AuraTarget aTarget = LoadInteger(HT, GetHandleId(u), AURA_TARGET_HID);
+			integer i = 0;
+			if (aTarget == 0) {
+				dbgT("Error AT2: Удаление ауры для не существующего объекта(" + GetUnitName(u) + ").");
+				return;
+			}
+			
+			for (1 <= i <= aTarget.countAuras) {
+				if (aTarget.auras[i] == aura) {
+					aTarget.auras[i] = aTarget.auras[aTarget.countAuras];
+					aTarget.auras[aTarget.countAuras] = 0;
+					aTarget.countAuras = aTarget.countAuras - 1;
+				}
+			}
+				
+			if (aTarget.countAuras == 0) {
+				aTarget.destroy();
+				return;
+			}
+			
+		}
+		
+		static method RefreshOutEnter(unit u, Aura aura) {
+			AuraTarget aTarget = LoadInteger(HT, GetHandleId(u), AURA_TARGET_HID);
+			integer i = 0;
+			if (aTarget == 0) {
+				return;
+			}
+			
+			for (1 <= i <= aTarget.countAuras) {
+				if (aTarget.auras[i].typeId == aura.typeId) {
+					aTarget.auras[i].execOutEvent(u);
+					aTarget.auras[i].execEnterEvent(u);
+				}
+			}
+		}
+		
+		static method IsAddedTypeAura(unit u, Aura aura) -> boolean {
+			AuraTarget aTarget = LoadInteger(HT, GetHandleId(u), AURA_TARGET_HID);
+			integer i = 0;
+			if (aTarget == 0) {
+				return false;
+			}
+			
+			for (1 <= i <= aTarget.countAuras) {
+				if (aTarget.auras[i].typeId == aura.typeId && aTarget.auras[i] != aura) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		static method RemoveAurasBelowPriority(unit u, Aura aura) {
+			AuraTarget aTarget = LoadInteger(HT, GetHandleId(u), AURA_TARGET_HID);
+			integer i = 0;
+			if (aTarget == 0) {
+				return;
+			}
+			
+			i = 1;
+			while(i <= aTarget.countAuras) {
+				if (aTarget.auras[i].typeId == aura.typeId && aTarget.auras[i] != aura && aTarget.auras[i].priority < aura.priority && aTarget.auras[i] != 0) {
+					aTarget.auras[i].execOutEvent(u);
+					AuraTarget.UnRegAuraForUnit(u, aTarget.auras[i]);
+					i = 1;
+				} else {
+					i = i + 1;
+				}
+			}
+		}
+		
+	}
+	
+	struct AuraOwner
+	{
+		unit ownerUnit;
+		Aura auras[MAX_COUNT_AURAS_OWNER];
+		integer countAuras = 0;
+		
+		static method create(unit ownerUnit) -> AuraOwner {
+			AuraOwner this = AuraOwner.allocate();
+			this.ownerUnit = ownerUnit;
+			return this;
+		}
+		
+		method destroy() {
+			RemoveSavedInteger(HT, GetHandleId(ownerUnit), AURA_OWNER_HID);
+			ownerUnit = null;
+			this.deallocate();
+		}
+		
+		static method RegAuraForUnit(unit u, Aura aura) {
+			AuraOwner aOwner;
+			integer i = 0;
+			if (LoadInteger(HT, GetHandleId(u), AURA_OWNER_HID) <= 0) {
+				aOwner = aOwner.create(u);
+				SaveInteger(HT, GetHandleId(u), AURA_OWNER_HID, aOwner);
+			} else {
+				aOwner = LoadInteger(HT, GetHandleId(u), AURA_OWNER_HID);
+			}
+			for (1 <= i <= aOwner.countAuras) {
+				if (aOwner.auras[i] == aura) {
+					dbgT("Error AO1: Регистрация уже зарегестрированной ауры для объекта(" + GetUnitName(u) + ").");
+					return;
+				}
+			}
+			aOwner.countAuras = aOwner.countAuras + 1;
+			aOwner.auras[aOwner.countAuras] = aura;
+		
+		}
+		
+		static method UnRegAuraForUnit(unit u, Aura aura) {
+			AuraOwner aOwner = LoadInteger(HT, GetHandleId(u), AURA_OWNER_HID);
+			integer i = 0;
+			Aura BuferAura;
+			if (aOwner == 0) {
+				dbgT("Error AO2: Удаление регистрации ауры для не существующего объекта(" + GetUnitName(u) + ").");
+				return;
+			}
+			for (1 <= i <= aOwner.countAuras) {
+				if (aOwner.auras[i] == aura) {
+					BuferAura = aOwner.auras[i];
+					aOwner.auras[i] = aOwner.auras[aOwner.countAuras];
+					aOwner.auras[aOwner.countAuras] = 0;
+					aOwner.countAuras = aOwner.countAuras - 1;
+					BuferAura.destroy();
+				}
+			}
+				
+			if (aOwner.countAuras == 0) {
+				aOwner.destroy();
+			}
+		}
+		
+		static method UnRegAuraForHashId(integer hashId, Aura aura) {
+			AuraOwner aOwner = LoadInteger(HT, hashId, AURA_OWNER_HID);
+			integer i = 0;
+			Aura BuferAura;
+			if (aOwner == 0) {
+				return;
+			}
+			for (1 <= i <= aOwner.countAuras) {
+				if (aOwner.auras[i] == aura) {
+					BuferAura = aOwner.auras[i];
+					aOwner.auras[i] = aOwner.auras[aOwner.countAuras];
+					aOwner.auras[aOwner.countAuras] = 0;
+					aOwner.countAuras = aOwner.countAuras - 1;
+					BuferAura.destroy();
+				}
+			}
+				
+			if (aOwner.countAuras == 0) {
+				aOwner.destroy();
+			}
+		}
+	}
+
+
+	
+/*----------------Functions---------------------------------------------------------------------------------------------------------------------------------- */
+
+	public function GetTargetAuraByType(unit u, integer typeId) -> Aura {
+		AuraTarget aTarget = LoadInteger(HT, GetHandleId(u), AURA_TARGET_HID);
+		integer i = 0;
+		if (aTarget == 0) {
+			return 0;
+		}
+		
+		for (1 <= i <= aTarget.countAuras) {
+			if (aTarget.auras[i].typeId == typeId) {
+				return aTarget.auras[i];
+			}
+		}
+		return 0;
+	}
+	
+	public function GetOwnerAuraByType(unit u, integer typeId) -> Aura {
+	//	AuraTarget aOwner = LoadInteger(HT, GetHandleId(u), AURA_OWNER_HID);
+		integer i = 0;
+		if (aOwner == 0) {
+			return 0;
+		}
+		
+		for (1 <= i <= aOwner.countAuras) {
+			if (aOwner.auras[i].typeId == typeId) {
+				return aOwner.auras[i];
+			}
+		}
+		return 0;
+	}
+	
+	public function GetUnitOwnerForTargetAuraByType(unit u, integer typeId) -> unit {
+		AuraTarget aTarget = LoadInteger(HT, GetHandleId(u), AURA_TARGET_HID);
+		integer i = 0;
+		if (aTarget == 0) {
+			return null;
+		}
+		
+		for (1 <= i <= aTarget.countAuras) {
+			if (aTarget.auras[i].typeId == typeId) {
+				return aTarget.auras[i].ownerUnit;
+			}
+		}
+		return null;
+	}
+
+	public function IsUnitTargetAddedTypeAura(unit u, integer typeId) -> boolean {
+		AuraTarget aTarget = LoadInteger(HT, GetHandleId(u), AURA_TARGET_HID);
+		integer i = 0;
+		if (aTarget == 0) {
+			return false;
+		}
+		
+		for (1 <= i <= aTarget.countAuras) {
+			if (aTarget.auras[i].typeId == typeId) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public function IsUnitOwnerAddedTypeAura(unit u, integer typeId) -> boolean {
+		AuraOwner aOwner = LoadInteger(HT, GetHandleId(u), AURA_OWNER_HID);
+		integer i = 0;
+		if (aOwner == 0) {
+			return false;
+		}
+		
+		for (1 <= i <= aOwner.countAuras) {
+			if (aOwner.auras[i].typeId == typeId) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public function DestroyUnitAurasByType(unit u, integer typeId, boolean AllowMultiType) {
+		AuraOwner aOwner = LoadInteger(HT, GetHandleId(u), AURA_OWNER_HID);
+		integer i = 0;
+		if (aOwner == 0) {
+			return;
+		}
+		
+		if (AllowMultiType) {
+			i = 1;
+			while(i <= aOwner.countAuras) {
+				if (aOwner.auras[i].typeId == typeId && !aOwner.auras[i].multiAurasForOwner && aOwner.auras[i] != 0) {
+					AuraOwner.UnRegAuraForUnit(u, aOwner.auras[i]);
+					i = 1;
+				} else {
+					i = i + 1;
+				}
+			}
+		} else {
+			i = 1;
+			while(i <= aOwner.countAuras) {
+				if (aOwner.auras[i].typeId == typeId && aOwner.auras[i] != 0) {
+					AuraOwner.UnRegAuraForUnit(u, aOwner.auras[i]);
+					i = 1;
+				} else {
+					i = i + 1;
+				}
+			}
+		}
+	}
+	
+	public function DestroyAllAurasByHashId(integer hashId) {
+		AuraOwner aOwner = LoadInteger(HT, hashId, AURA_OWNER_HID);
+		integer i = 0;
+		if (aOwner == 0) {
+			return;
+		}
+		
+		i = 1;
+		while(i <= aOwner.countAuras) {
+			if (aOwner.auras[i] != 0) {
+				AuraOwner.UnRegAuraForHashId(hashId, aOwner.auras[i]);
+				i = 1;
+			} else {
+				i = i + 1;
+			}
+		}
+	}
+	
+	public function AddAuraToUnit(
+		unit ownerUnit,
+		integer typeId,
+		item itemAura,
+		boolean multiAurasToTarget,
+		integer priority,
+		boolean multiAurasForOwner,
+		boolean refreshOutEnter,
+		boolean rudiment,
+		integer actionsId,
+		boolexpr filter,
+		real rangeMax,
+		real outDuration,
+		boolean isIntervalEvent,
+		real interval)
+		-> Aura
+	{
+		Aura aura;
+		if (!multiAurasForOwner) {
+			DestroyUnitAurasByType(ownerUnit, typeId, true);
+		}
+		aura = Aura.create(ownerUnit, typeId, itemAura, multiAurasToTarget, priority, multiAurasForOwner, refreshOutEnter, rudiment, actionsId, filter, rangeMax, outDuration, isIntervalEvent, interval);
+		AuraOwner.RegAuraForUnit(ownerUnit, aura);
+		return aura;
+	}
+
+	public function AddAuraToUnitGUI() -> Aura {
+		unit ownerUnit = udg_AS_AuraUnit;
+		integer typeId = udg_AS_TypeId;
+		item itemAura = udg_AS_ItemAura;
+		boolean multiAurasToTarget = udg_AS_MultiAurasToTarget;
+		integer priority = udg_AS_Priority;
+		boolean multiAurasForOwner = udg_AS_MultiAurasForOwner;
+		boolean refreshOutEnter = udg_AS_RefreshOutEnter;
+		boolean rudiment = udg_AS_HardRefresh;
+		integer actionsId = udg_AS_ActionsId;
+		boolexpr filter = udg_AS_Filter;
+		real rangeMax = udg_AS_RadiusMax;
+		real outDuration = udg_AS_EndDuration;
+		boolean isIntervalEvent = udg_AS_PeriodActions;
+		real interval = udg_AS_Period;
+		Aura aura;
+		if (!multiAurasForOwner) {
+			DestroyUnitAurasByType(ownerUnit, typeId, true);
+		}
+		aura = Aura.create(ownerUnit, typeId, itemAura, multiAurasToTarget, priority, multiAurasForOwner, refreshOutEnter, rudiment, actionsId, filter, rangeMax, outDuration, isIntervalEvent, interval);
+		AuraOwner.RegAuraForUnit(ownerUnit, aura);
+		return aura;
+	}
+
+}
