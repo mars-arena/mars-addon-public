@@ -7,45 +7,45 @@ mars-addon
 │  ├─ AreaSpellsList.md
 │  ├─ AurasList_old.md
 │  ├─ BuffsList_old.md
-│  ├─ GameFuncList_old.j
+│  ├─ GameFuncList_old.vj
 │  ├─ HeroesList.md
-│  ├─ ModifierList.j
-│  ├─ SpellsList.j
+│  ├─ ModifierList.vj
+│  ├─ SpellsList.vj
 │  ├─ StunsList.md
 │  ├─ TechFuncList.md
-│  └─ TexttagList.j
+│  └─ TexttagList.vj
 ├─ cjass
 │  └─ BJHooked.cj
 ├─ config
 │  ├─ dev_kane
 │  │  ├─ constants.zn
-│  │  └─ header.j
+│  │  └─ header.vj
 │  └─ origin
 │     ├─ constants.zn
-│     └─ header.j
+│     └─ header.vj
 ├─ engine
 │  ├─ functions
-│  │  ├─ CoordUtils.j
+│  │  ├─ CoordUtils.vj
 │  │  ├─ GameUtils.zn
-│  │  ├─ TechUtils.j
+│  │  ├─ TechUtils.vj
 │  │  └─ TexttagUtils.zn
 │  ├─ hashtable
 │  │  ├─ HashCleaner.zn
 │  │  └─ HashId.zn
 │  ├─ libraries
-│  │  ├─ AntiMH.j
-│  │  ├─ Armor.j
+│  │  ├─ AntiMH.vj
+│  │  ├─ Armor.vj
 │  │  ├─ Debug.zn
 │  │  ├─ FloatingText.zn
 │  │  ├─ JumpToPoint.zn
-│  │  ├─ Math.j
-│  │  ├─ NegateDamage.j
+│  │  ├─ Math.vj
+│  │  ├─ NegateDamage.vj
 │  │  ├─ Parabolas.zn
 │  │  ├─ Points.zn
 │  │  ├─ Rectangle.zn
-│  │  ├─ SetUnitMaxState.j
-│  │  ├─ UnitDamaged.j
-│  │  ├─ UnitUnstuck.j
+│  │  ├─ SetUnitMaxState.vj
+│  │  ├─ UnitDamaged.vj
+│  │  ├─ UnitUnstuck.vj
 │  │  ├─ Vector.zn
 │  │  └─ VectorAPI.zn
 │  ├─ systems
@@ -64,8 +64,8 @@ mars-addon
 │  │  └─ Stuns.zn
 │  └─ tests
 │     └─ AurasTest.zn
-├─ main.j
-├─ main_dev_kane.j
+├─ main.vj
+├─ main_dev_kane.vj
 └─ mars
    ├─ auras
    │  ├─ AurasActions.zn
@@ -91,15 +91,15 @@ mars-addon
       │  │  └─ ArthasJump.zn
       │  ├─ Fox.zn
       │  ├─ Gordon.zn
-      │  ├─ Hope.j
+      │  ├─ Hope.vj
       │  ├─ Hort.zn
       │  ├─ James.zn
-      │  ├─ Nomi.j
+      │  ├─ Nomi.vj
       │  ├─ Stanley
       │  │  ├─ StanleyMissiles.zn
       │  │  └─ StanleyPiro.zn
       │  ├─ Witcher.zn
-      │  └─ Wormy.j
+      │  └─ Wormy.vj
       ├─ items
       │  └─ HiruzenSpear.zn
       └─ others

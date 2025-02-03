@@ -3,23 +3,23 @@
 
 	// engine
 
-	//! import vjass    "./config/dev_kane/header.j"
+	//! import vjass    "./config/dev_kane/header.vj"
 	//! import zinc     "./config/dev_kane/constants.zn"
 
-	//! import vjass    "./engine/functions/CoordUtils.j"
+	//! import vjass    "./engine/functions/CoordUtils.vj"
 	//! import zinc     "./engine/functions/GameUtils.zn"
-	//! import vjass    "./engine/functions/TechUtils.j"
+	//! import vjass    "./engine/functions/TechUtils.vj"
 	//! import zinc     "./engine/functions/TexttagUtils.zn"
 
 	//! import zinc     "./engine/hashtable/HashCleaner.zn"
 	//! import zinc     "./engine/hashtable/HashId.zn"
 
-	//! import vjass    "./engine/libraries/Armor.j"
-	//! import vjass    "./engine/libraries/Math.j"
-	//! import vjass    "./engine/libraries/NegateDamage.j"
-	//! import vjass    "./engine/libraries/SetUnitMaxState.j"
-	//! import vjass    "./engine/libraries/UnitDamaged.j"
-	//! import vjass    "./engine/libraries/UnitUnstuck.j"
+	//! import vjass    "./engine/libraries/Armor.vj"
+	//! import vjass    "./engine/libraries/Math.vj"
+	//! import vjass    "./engine/libraries/NegateDamage.vj"
+	//! import vjass    "./engine/libraries/SetUnitMaxState.vj"
+	//! import vjass    "./engine/libraries/UnitDamaged.vj"
+	//! import vjass    "./engine/libraries/UnitUnstuck.vj"
 	//! import zinc     "./engine/libraries/Debug.zn"
 	//! import zinc     "./engine/libraries/Parabolas.zn"
 	//! import zinc     "./engine/libraries/Points.zn"
@@ -29,7 +29,7 @@
 	//! import zinc     "./engine/libraries/FloatingText.zn"
 	//! import zinc     "./engine/libraries/Vector.zn"
 	//! import zinc     "./engine/libraries/VectorAPI.zn"
-//	//!  import vjass    "./engine/libraries/AntiMH.j"
+//	//!  import vjass    "./engine/libraries/AntiMH.vj"
 
 	//! import zinc     "./engine/systems/AreaSpells.zn"
 	//! import zinc     "./engine/systems/Auras.zn"
@@ -72,16 +72,16 @@
 	//! import zinc     "./mars/spells/heroes/Stanley/StanleyPiro.zn"
 	//! import zinc     "./mars/spells/heroes/Malefic/MaleficWisp.zn"
 	//! import zinc     "./mars/spells/heroes/Witcher.zn"
-	//! import vjass    "./mars/spells/heroes/Wormy.j"
-	//! import vjass    "./mars/spells/heroes/Nomi.j"
-	//! import vjass    "./mars/spells/heroes/Hope.j"
+	//! import vjass    "./mars/spells/heroes/Wormy.vj"
+	//! import vjass    "./mars/spells/heroes/Nomi.vj"
+	//! import vjass    "./mars/spells/heroes/Hope.vj"
 	//! import zinc     "./mars/spells/heroes/Gordon.zn"
 	//! import zinc     "./mars/spells/heroes/James.zn"
 	//! import zinc     "./mars/spells/heroes/Fox.zn"
 	//! import zinc     "./mars/spells/heroes/Forg.zn"
 	//! import zinc     "./mars/spells/heroes/DebugSpell.zn"
 	//! import zinc     "./mars/spells/heroes/Anna.zn"
-//	//! import vjass    "./mars/spells/heroes/Anna.j"
+//	//! import vjass    "./mars/spells/heroes/Anna.vj"
 
 	//! import zinc     "./mars/spells/items/HiruzenSpear.zn"
 
