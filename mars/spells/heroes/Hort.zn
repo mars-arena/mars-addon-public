@@ -110,7 +110,7 @@ library HortArena requires Events {
 			interval = interval + TM_INTERVAL;
 			if (target != null && interval >= INTERVAL) {
 				interval = 0.;
-				UnitDamageToTarget(arena, target, GetHeroAgi(owner, true) * DAMAGE_RATIO, ATTACK_TYPE_CHAOS, DAMAGE_TYPE_UNIVERSAL, true, false, false, false, false);
+				UnitDamagePureToTarget(arena, target, GetHeroAgi(owner, true) * DAMAGE_RATIO);
 				DestroyEffect(AddSpecialEffectTarget(EFFECT_PATH, target, EFFECT_ATTACH));
 			}
 		

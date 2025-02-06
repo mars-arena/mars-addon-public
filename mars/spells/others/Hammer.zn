@@ -102,7 +102,7 @@ library Hammer requires SpellGetters, Filters {
 			if (isAttack) {
 				UnitAttackToTarget(owner, target, dmg, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, isSpec, false, false, false, true);
 			} else {
-				UnitDamageToTarget(owner, target, dmg, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, true, false, false, false, true);
+				UnitDamagePhysToTarget(owner, target, dmg);
 			}
 
 			if (countTargets <= 0) {

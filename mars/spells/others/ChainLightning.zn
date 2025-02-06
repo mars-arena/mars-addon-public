@@ -44,7 +44,7 @@ library ChainLightning requires SpellGetters, Filters {
 
 		method action(unit target1, unit target2) {
 			CreateUnitLightningTarget(target1, target2, "CLPB", "", "", "Abilities\\Weapons\\Bolt\\BoltImpact.mdl", "origin", 1.4, 10000, 50., 0.75, true);
-			UnitDamageToTarget(caster, target2, value, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+			UnitDamageMagicToTarget(caster, target2, value);
 			value = value - (value * reduction);
 			countTargets = countTargets - 1;
 			GroupAddUnit(grTargetsUnits, target2);

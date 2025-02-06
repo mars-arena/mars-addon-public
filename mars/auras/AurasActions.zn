@@ -255,7 +255,7 @@ library AurasActions requires Auras, Filters, StaticProjectiles {
 			}
 			if (isActions) {
 				if (UnitHasMefisto(udg_Hero[GetPlayerId(GetOwningPlayer(ownerUnit)) + 1])) {
-					UnitDamageToTarget(ownerUnit, targetUnit, GetUnitState(targetUnit, UNIT_STATE_LIFE) * 0.005, ATTACK_TYPE_CHAOS, DAMAGE_TYPE_UNIVERSAL, true, false, false, false, true);
+					UnitDamagePureToTarget(ownerUnit, targetUnit, GetUnitState(targetUnit, UNIT_STATE_LIFE) * 0.005);
 				}
 				if (UnitHasAbility(targetUnit, 'B08Z') == false) {
 					ApplyAbilityToUnit(ownerUnit, targetUnit, 'A237', 1, "soulburn");

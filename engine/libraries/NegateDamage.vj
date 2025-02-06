@@ -9,6 +9,29 @@ library NegateDamageLib
 		return GetUnitState(u, UNIT_STATE_MAX_LIFE) - GetUnitAbilityLevel(u, MAX_LIFE_BONUS_ABILITY) * MAX_LIFE_BONUS
 	endfunction
 
+	function GetUnitStateHook takes unit u, unitstate state returns real
+        if state == UNIT_STATE_MAX_LIFE then
+            return GetUnitMaxLife(u)
+        endif
+        return GetUnitState(u, state)
+    endfunction
+        
+    function GetUnitStatePercentHook takes unit whichUnit, unitstate whichState, unitstate whichMaxState returns real
+        local real value    = GetUnitStateHook(whichUnit, whichState)
+        local real maxValue = GetUnitStateHook(whichUnit, whichMaxState)
+    
+        // Return 0 for null units.
+        if (whichUnit == null) or (maxValue == 0) then
+            return 0.0
+        endif
+    
+        return value / maxValue * 100.0
+    endfunction
+        
+    function GetUnitLifePercentHook takes unit whichUnit returns real
+        return GetUnitStatePercentHook(whichUnit, UNIT_STATE_LIFE, UNIT_STATE_MAX_LIFE)
+    endfunction
+
 	private function ProcessUnits takes nothing returns nothing
 		local unit u
 		local real life2set

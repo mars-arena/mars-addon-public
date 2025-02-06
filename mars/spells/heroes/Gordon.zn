@@ -73,18 +73,7 @@ library Gordon requires Events {
 
 			EnumUnit = FirstOfGroup(TempGroup);
 			while (EnumUnit != null) {
-				UnitDamageToTarget(
-					owner,
-					EnumUnit,
-					DMG * (1 - ((1 - MIN_FACTOR) / SPLASH_RANGE * DistanceBetweenWidgets(EnumUnit, obj.projectile))),
-					ATTACK_TYPE_NORMAL,
-					DAMAGE_TYPE_MAGIC,
-					true,
-					false,
-					false,
-					false,
-					false
-				);
+				UnitDamageMagicToTarget(owner, EnumUnit, DMG * (1 - ((1 - MIN_FACTOR) / SPLASH_RANGE * DistanceBetweenWidgets(EnumUnit, obj.projectile))));
 				AddBuffToUnit(
 					owner,
 					EnumUnit,

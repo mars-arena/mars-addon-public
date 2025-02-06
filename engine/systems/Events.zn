@@ -7,19 +7,30 @@ library Events requires SpellGetters {
 	trigger DeathTrg = CreateTrigger();
 	trigger ReviveTrg = CreateTrigger();
 	trigger EscTrg = CreateTrigger();
-	public trigger StunTrg = CreateTrigger();
+
+	public trigger StunEventTrg = CreateTrigger();
+
 	public trigger DodgeModifierTrg = CreateTrigger();
 	public trigger PrecedingModifierTrg = CreateTrigger();
 	public trigger UniqueModifierTrg = CreateTrigger();
-	public trigger DamageTrg = CreateTrigger();
+	public trigger DamageEventTrg = CreateTrigger();
+	public trigger PostDamageModifierTrg[INDEX_ORDER_AMOUNT];
+
 	public trigger BuffTrg = CreateTrigger();
+
+	public trigger HealModifierTrg = CreateTrigger();
+	public trigger HealEventTrg = CreateTrigger();
+
+	public trigger LifestealModifierTrg = CreateTrigger();
+	public trigger LifestealEventTrg = CreateTrigger();
+
+	public trigger RestoreModifierTrg = CreateTrigger();
+	public trigger RestoreEventTrg = CreateTrigger();
 
 	// @const индекс порядка запуска
 	public constant integer INDEX_ORDER_DAMAGE = 1;
 	public constant integer INDEX_ORDER_PERCENT = 2;
 	public constant integer INDEX_ORDER_AMOUNT = 3;
-
-	public trigger PostDamageModifierTrg[INDEX_ORDER_AMOUNT];
 
 	// EVENT_PLAYER_UNIT_SPELL_ENDCAST
 	//
@@ -94,11 +105,11 @@ library Events requires SpellGetters {
 	// GetStunIsOut() -> boolean
 	// GetStunIsFirst() -> boolean
 	public function StunAddAction(code action) -> triggeraction {
-		return TriggerAddAction(StunTrg, action);
+		return TriggerAddAction(StunEventTrg, action);
 	}
 
 	public function StunRemoveAction(triggeraction action) {
-		TriggerRemoveAction(StunTrg, action);
+		TriggerRemoveAction(StunEventTrg, action);
 	}
 
 	// Событие модификатора уворота
@@ -223,8 +234,32 @@ library Events requires SpellGetters {
 	// GetDamageIsSimulate() -> boolean
 	// GetDamageIsSpecAttack() -> boolean
 	// GetDamageLifeAttackedUnit() -> real
-	public function DamageAddAction(code action) -> triggeraction {
-		return TriggerAddAction(DamageTrg, action);
+	public function DamageEventAddAction(code action) -> triggeraction {
+		return TriggerAddAction(DamageEventTrg, action);
+	}
+
+	public function HealModifierAddAction(code action) -> triggeraction {
+		return TriggerAddAction(HealModifierTrg, action);
+	}
+
+	public function HealEventAddAction(code action) -> triggeraction {
+		return TriggerAddAction(HealEventTrg, action);
+	}
+
+	public function LifestealModifierAddAction(code action) -> triggeraction {
+		return TriggerAddAction(LifestealModifierTrg, action);
+	}
+
+	public function LifestealEventAddAction(code action) -> triggeraction {
+		return TriggerAddAction(LifestealEventTrg, action);
+	}
+
+	public function RestoreModifierAddAction(code action) -> triggeraction {
+		return TriggerAddAction(RestoreModifierTrg, action);
+	}
+
+	public function RestoreEventAddAction(code action) -> triggeraction {
+		return TriggerAddAction(RestoreEventTrg, action);
 	}
 
 	// Событие баффа

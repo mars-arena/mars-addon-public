@@ -1,4 +1,4 @@
-library ArthasJump requires Events {
+library ArthasJump requires HealLifestealRestore {
 
 	constant integer ABILITY_ID = 'A24D';			//равкод способности
 	constant integer ABILITY_SLAM_ID = 'A24E';		//равкод способности при ударе молотом
@@ -213,9 +213,9 @@ library ArthasJump requires Events {
 				EnumUnit = FirstOfGroup(TempGroup);
 				while (EnumUnit != null) {
 					if (UnitHasTalent(caster, TALENT_CHANCE_ID)) {
-						UnitDamageToTarget(caster, EnumUnit, DMG_CHANCE_ID, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+						UnitDamageMagicToTarget(caster, EnumUnit, DMG_CHANCE_ID);
 					} else {
-						UnitDamageToTarget(caster, EnumUnit, DMG, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+						UnitDamageMagicToTarget(caster, EnumUnit, DMG);
 					}
 					StunUnit(caster, EnumUnit, NORMAL_STUN, DURATION_STUN);
 					GroupRemoveUnit(TempGroup, EnumUnit);
@@ -228,7 +228,7 @@ library ArthasJump requires Events {
 					EnumUnit = FirstOfGroup(TempGroup);
 					while (EnumUnit != null) {
 						if (!IsUnitAlly(EnumUnit, GetOwningPlayer(caster))) {
-							UnitDamageToTarget(caster, EnumUnit, DMG_HOLY, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+							UnitDamageMagicToTarget(caster, EnumUnit, DMG_HOLY);
 						} else {
 							HealUnit(caster, EnumUnit, HEAL_HOLY);
 						}

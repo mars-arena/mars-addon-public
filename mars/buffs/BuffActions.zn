@@ -394,7 +394,7 @@ library BuffActions requires Buffs, SetUnitMaxState {
 				UnitRemoveAbility(targetUnit, 'B038'); // buff
 			}
 			if (isActions) {
-				UnitDamageToTarget(ownerUnit, targetUnit, GetBuffDataReal(buffId), ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, true);	
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, GetBuffDataReal(buffId));	
 				SetBuffDataReal(buffId, GetBuffDataReal(buffId) + 10);
 			}
 		}
@@ -479,7 +479,7 @@ library BuffActions requires Buffs, SetUnitMaxState {
 				UnitRemoveAbility(targetUnit, 'B080'); // buff
 			}
 			if (isActions) {
-				UnitDamageToTarget(ownerUnit, targetUnit, GetUnitMaxLife(targetUnit) * 0.01, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, true);	
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, GetUnitMaxLife(targetUnit) * 0.01);	
 			}
 		}
 
@@ -512,7 +512,7 @@ library BuffActions requires Buffs, SetUnitMaxState {
 				UnitRemoveAbility(targetUnit, 'B01K'); // buff
 			}
 			if (isActions) {
-				UnitDamageToTarget(ownerUnit, targetUnit, 50 * (1.0 + udg_Witcher_SignPower[GetUnitUserData(ownerUnit)] + udg_Arrow_Bonus_Damage[GetUnitUserData(ownerUnit)]), ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, true);	
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, 50 * (1.0 + udg_Witcher_SignPower[GetUnitUserData(ownerUnit)] + udg_Arrow_Bonus_Damage[GetUnitUserData(ownerUnit)]));	
 			}
 		}
 
@@ -1579,7 +1579,7 @@ library BuffActions requires Buffs, SetUnitMaxState {
 				UnitRemoveAbility(targetUnit, 'BEer'); // buff
 			}
 			if (isActions) {
-				UnitDamagePureToTarget(ownerUnit, targetUnit, 50);
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, 50);
 			}
 		}
 
@@ -1918,6 +1918,19 @@ library BuffActions requires Buffs, SetUnitMaxState {
 			if (isOut) {
 				UnitRemoveAbility(targetUnit, 'A25B');
 				UnitRemoveAbility(targetUnit, 'B09B'); // buff
+			}
+		}
+
+		if (actionsId == megagun2_tid) { // Megagun 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A25I');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A25I');
+				UnitRemoveAbility(targetUnit, 'B09C'); // buff
+			}
+			if (isActions) {
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, 200);
 			}
 		}
 

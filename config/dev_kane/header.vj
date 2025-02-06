@@ -40,6 +40,7 @@ globals
 	group bGroup = CreateGroup()
 
 	// фейк переменная
+	force udg_Observers
 	unit array udg_Talent_Tree
 	integer udg_Hero_XP_PercInt
 	integer array udg_Hero_XP_Percent

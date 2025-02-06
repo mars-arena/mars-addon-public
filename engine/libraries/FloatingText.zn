@@ -7,7 +7,7 @@ library FloatingText requires TechUtils {
 	public constant boolean FLOATING_DMG_ON_UNITS = true;
 
 	// @const время при котором значение нового текста суммируется с предыдущем (0.25 думаю лучше будет)
-	constant real ADD_UP_TIME = 0.25;
+	constant real ADD_UP_TIME = 0.2;
 
 	// @const задержка набирания скорости плавающим текстом
 	constant real VELOCITY_DELAY = 0.1;
@@ -25,11 +25,11 @@ library FloatingText requires TechUtils {
 
 	// @const цвета урона
 	public constant string CRITICAL_STRIKE_COLOR = "|cffff0303";
-	public constant string CRITICAL_MAGIC_COLOR = "|cffac2e79";
-	public constant string CRITICAL_PURE_COLOR = "|cffff8623";
+	public constant string CRITICAL_MAGIC_COLOR = "|cffeb2a74";
+	public constant string CRITICAL_PURE_COLOR = "|cffff8420";
 	//public constant string CRITICAL_DMG_COLOR ="|cffd33933";
-	public constant string PURE_DMG_COLOR = "|cfffbff23";
-	public constant string MAGICAL_DMG_COLOR = "|cff8c3ad8";
+	public constant string PURE_DMG_COLOR = "|cfff5f82b";
+	public constant string MAGICAL_DMG_COLOR = "|cffb76bff";
 
 	constant real S2V = 0.071 / 128.;
 
@@ -39,6 +39,8 @@ library FloatingText requires TechUtils {
 	public constant integer BLOCK_TEXT = 3;
 	public constant integer DMG_TEXT = 4;
 	public constant integer REGULAR_TEXT = 5;
+	
+	
 
 	string Prefix[MAX_COUNT_TYPE_TEXTS];
 	string Postfix[MAX_COUNT_TYPE_TEXTS];
@@ -110,7 +112,7 @@ library FloatingText requires TechUtils {
 
 	}
 
-	struct SummativeText {
+	public struct SummativeText {
 		VelocityTextTag vtag;
 		player owner;
 		unit target;
@@ -169,6 +171,37 @@ library FloatingText requires TechUtils {
 		method showToPlayer(player participant) -> SummativeText {
 			if (!IsUnitFogged(target, participant) && IsUnitVisible(target, participant) && GetLocalPlayer() == participant)
 				SetTextTagVisibility(this.vtag.tag, true);
+			return this;
+		}
+
+		method hideToPlayer(player participant) -> SummativeText {
+			if (!IsUnitFogged(target, participant) && IsUnitVisible(target, participant) && GetLocalPlayer() == participant)
+				SetTextTagVisibility(this.vtag.tag, false);
+			return this;
+		}
+
+		method showToAll() -> SummativeText {
+			SetTextTagVisibility(this.vtag.tag, true);
+			return this;
+			 
+		}
+
+		method showToObservers() -> SummativeText {
+			if (IsPlayerInForce(owner, udg_Observers)) {
+				SetTextTagVisibility(this.vtag.tag, false);
+				return this;
+			}
+
+			This = this;
+			ForForce(udg_Observers, function() {
+				SummativeText this = This;
+				if (!IsUnitFogged(target, GetEnumPlayer()) &&
+					IsUnitVisible(target, GetEnumPlayer()) &&
+					GetLocalPlayer() == GetEnumPlayer()
+				) {
+					SetTextTagVisibility(this.vtag.tag, true);
+				}
+			});
 			return this;
 		}
 

@@ -2,6 +2,9 @@ library Damage requires Buffs {
 	
 	public boolean DebugDmg = false;
 
+	mapcontrol TempControl = null;
+	SummativeText TempText = 0;
+
 	trigger DamageTrigger = CreateTrigger();
 
 	integer Index = 0;
@@ -277,6 +280,27 @@ library Damage requires Buffs {
 		this.run();
 	}
 
+	// Физический урон
+	public function UnitDamagePhysToTarget(
+		unit whichUnit,
+		unit target,
+		real value
+	) {
+		DamageEvent this = DamageEvent.create();
+		this.whichUnit = whichUnit;
+		this.target = target;
+		this.value = value; 
+		this.attackType = ATTACK_TYPE_HERO; 
+		this.damageType = DAMAGE_TYPE_NORMAL; 
+		this.isHide = false;
+		this.onTrigger = true;
+		this.withOrigin = true;
+		this.wantDelay = WantDelay;
+		WantDelay = false;
+
+		this.run();
+	}
+
 	public function DisableDetectDamage() {
 		DisableTrigger(DamageTrigger);
 	}
@@ -454,7 +478,7 @@ library Damage requires Buffs {
 			this.onTrigger = false;
 			this.wantDelay = false;
 			this.withOrigin = false;
-			return DamageEvent.allocate();
+			return this;
 		}
 
 		method run() {
@@ -563,7 +587,7 @@ library Damage requires Buffs {
 			isSimulate = false;
 			isSpecAttack = false;
 			lifeAttackedUnit = 0.0;
-			return DamagePass.allocate();
+			return this;
 		}
 
 		method run() {
@@ -597,7 +621,7 @@ library Damage requires Buffs {
 				ATTACKED_UNIT_GET = attackedUnit;
 				ATTACKING_UNIT_GET = attackingUnit;
 
-				TriggerExecute(DamageTrg);
+				TriggerExecute(DamageEventTrg);
 
 				IsRunPass = false;
 
@@ -723,7 +747,7 @@ library Damage requires Buffs {
 						IsDodge = true;
 						IsTrueStrike = false;
 						NegateDamage(AttackedUnit, DMGCaptured);
-						CreateCustomTextToUnit(AttackedUnit, "|cffff0303" + "miss", 9, 15, 1.2, 0.2, 60., 75., 85., 95., -60);
+						CreateCustomTextToUnit(AttackedUnit, "|cffff0303" + "промах", 9, 15, 1.2, 0.2, 60., 75., 85., 95., -60);
 						DMGGiven = 0.00;
 						DMGTaken = 0.00;
 					}      
@@ -846,7 +870,10 @@ library Damage requires Buffs {
 				}
 				//отображаем циферки блока
 				if (DMGBlocked > 1) {
-					ShowSummativeTextToPlayer(AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackedUnit), AttackedUnit, BLOCK_TEXT, DMGBlocked + 0.5, ""), GetOwningPlayer(AttackingUnit));
+					TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackedUnit), AttackedUnit, BLOCK_TEXT, DMGBlocked + 0.5, "");
+					TempText.showToPlayer(GetOwningPlayer(AttackingUnit));
+					if (IsMapDuel())
+						TempText.showToObservers();
 				}
 			}
 
@@ -861,45 +888,36 @@ library Damage requires Buffs {
 			
 			// ОТОБРАЖЕНИЕ УРОНА
 			if (!IsDodge && DMGCaptured > 0.0) {
+				TempControl = GetPlayerController(GetOwningPlayer(AttackingUnit));
 				// физический критический урон
-				if (IsCritical && !IsHide && !IsMagical && !IsPure)
+				if (IsCritical && !IsMagical && !IsPure) {
 					CreateFlyingTextToUnit(AttackedUnit, CRITICAL_STRIKE_COLOR + I2S(R2I(DMGMax + 0.5)) + "‼|r", CRITICAL_INIT_SIZE, CRITICAL_BONUS_SIZE, CRITICAL_TIME_LIFE, CRITICAL_TIME_FADE, CRITICAL_OFFSET_Z, CRITICAL_MIN_SPEED, CRITICAL_MAX_SPEED, CRITICAL_MIN_ANGLE, CRITICAL_MAX_ANGLE);
 
 				// магический критический урон
-				else if (IsCritical && !IsHide && IsMagical)
+				} else if (IsCritical && IsMagical) {
 					CreateFlyingTextToUnit(AttackedUnit, CRITICAL_MAGIC_COLOR + I2S(R2I(DMGMax + 0.5)) + "‼|r", CRITICAL_INIT_SIZE, CRITICAL_BONUS_SIZE, CRITICAL_TIME_LIFE, CRITICAL_TIME_FADE, CRITICAL_OFFSET_Z, CRITICAL_MIN_SPEED, CRITICAL_MAX_SPEED, CRITICAL_MIN_ANGLE, CRITICAL_MAX_ANGLE);
 
 				// чистый критический урон
-				else if (IsCritical && !IsHide && IsPure)
+				} else if (IsCritical && IsPure) {
 					CreateFlyingTextToUnit(AttackedUnit, CRITICAL_PURE_COLOR + I2S(R2I(DMGMax + 0.5)) + "‼|r", CRITICAL_INIT_SIZE, CRITICAL_BONUS_SIZE, CRITICAL_TIME_LIFE, CRITICAL_TIME_FADE, CRITICAL_OFFSET_Z, CRITICAL_MIN_SPEED, CRITICAL_MAX_SPEED, CRITICAL_MIN_ANGLE, CRITICAL_MAX_ANGLE);
 
 				// обычный чистый урон
-				else if (!IsHide && IsPure)
-					AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, REGULAR_TEXT, DMGMax, PURE_DMG_COLOR);
+				} else if (IsPure && TempControl == MAP_CONTROL_USER) {
+					TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, REGULAR_TEXT, DMGMax, PURE_DMG_COLOR);
+					if (IsMapDuel())
+						TempText.showToObservers();
 
 				// обычный магический урон
-				else if (!IsHide && IsMagical)
-					AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, REGULAR_TEXT, DMGMax, MAGICAL_DMG_COLOR);
+				} else if (IsMagical && TempControl == MAP_CONTROL_USER) {
+					TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, REGULAR_TEXT, DMGMax, MAGICAL_DMG_COLOR);
+					if (IsMapDuel())
+						TempText.showToObservers();
+				}
 
-				if (DMGGiven > 0.00 && (FLOATING_DMG_ON_UNITS || IsUnitType(AttackedUnit, UNIT_TYPE_HERO))) {
-
-					// обычный чистый урон
-					//if (IsPure && !IsHide) {
-					//	AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, DMG_TEXT, DMGGiven, PURE_DMG_COLOR);
-
-					// обычный магический урон
-					//} else if (IsMagical && !IsHide) {
-					//	AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, DMG_TEXT, DMGGiven, MAGICAL_DMG_COLOR);
-
-					// обычный критический урон
-					//} else if (IsCritical && !IsHide) {
-					//	AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, DMG_TEXT, DMGGiven, CRITICAL_DMG_COLOR);
-
-					// обычный урон
-					//} else {
-						AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, DMG_TEXT, DMGGiven, "");
-					//}
-
+				if (DMGGiven > 0.00 && TempControl == MAP_CONTROL_USER && (FLOATING_DMG_ON_UNITS || IsUnitType(AttackedUnit, UNIT_TYPE_HERO))) {
+					TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, DMG_TEXT, DMGGiven, "");
+					if (IsMapDuel())
+						TempText.showToObservers();
 				}
 			}
 

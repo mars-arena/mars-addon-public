@@ -225,6 +225,7 @@ library BuffTypes requires GameUtils {
     public key bluepotion_tid;
     public key blademail_tid;
     public key megagun_tid;
+    public key megagun2_tid;
     public key manachargebuff_tid;
     public key manacharge2buff_tid;
     public key enspeed1_tid;

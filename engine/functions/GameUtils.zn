@@ -13,55 +13,8 @@ library GameUtils requires Modifiers, Stuns {
 	public integer BuffId;
 	public timer BuffStack;
 
-	real EVENT_OVER_HEAL_GET;
-	
 	//local constants
 	constant real TIMER_PERIOD = 0.03125;
-	
-	public function GetEventOverHeal() -> real {
-		return EVENT_OVER_HEAL_GET;
-	}
-
-	//Исцеление
-	public function HealUnit(unit whichUnit, unit targetUnit, real value) {
-		real valueTrue = value * GetUnitModifier(whichUnit, INC_OUT_HEAL) * GetUnitModifier(whichUnit, DEC_OUT_HEAL) * GetUnitModifier(targetUnit, INC_ENTER_HEAL) * GetUnitModifier(targetUnit, DEC_ENTER_HEAL);
-		if (valueTrue > 0) {
-			CasterUnit = whichUnit;
-			TargetUnit = targetUnit;
-			Value = valueTrue;
-			EVENT_OVER_HEAL_GET = MaxReal(0, valueTrue - (GetUnitMaxLife(targetUnit) - GetUnitState(targetUnit, UNIT_STATE_LIFE)));
-			SetUnitState(targetUnit, UNIT_STATE_LIFE, GetUnitState(targetUnit, UNIT_STATE_LIFE) + valueTrue);
-			TriggerExecute(gg_trg_HealEvent);
-			EVENT_OVER_HEAL_GET = 0;
-		}
-	}
-
-	//Восстановление маны
-	public function RestoreManaUnit(unit whichUnit, unit targetUnit, real value) {
-		real valueTrue = value * GetUnitModifier(whichUnit, INC_OUT_MANA) * GetUnitModifier(whichUnit, DEC_OUT_MANA) * GetUnitModifier(targetUnit, INC_ENTER_MANA) * GetUnitModifier(targetUnit, DEC_ENTER_MANA);
-		SetUnitState(targetUnit, UNIT_STATE_MANA, GetUnitState(targetUnit, UNIT_STATE_MANA) + valueTrue);
-		if (valueTrue > 0) {
-			CasterUnit = whichUnit;
-			TargetUnit = targetUnit;
-			Value = valueTrue;
-
-			TriggerExecute(gg_trg_RestoreEvent);
-
-		}
-	}
-	
-	//Исцеление вампиризмом    
-	public function HealUnitLifesteal(unit whichUnit, real value) {
-		real valueTrue = value * GetUnitModifier(whichUnit, INC_LIFESTEAL);
-		if (value > 0) {
-			OwnerUnit = whichUnit;
-			Value = valueTrue;
-			EVENT_OVER_HEAL_GET = MaxReal(0, value - (GetUnitMaxLife(whichUnit) - GetUnitState(whichUnit, UNIT_STATE_LIFE)));
-			SetUnitState(whichUnit, UNIT_STATE_LIFE, GetUnitState(whichUnit, UNIT_STATE_LIFE) + value);
-			TriggerExecute(gg_trg_HealLifestealEvent);
-			EVENT_OVER_HEAL_GET = 0;
-		}
-	}
 	
 	//Создание молнии\\
 	

@@ -56,7 +56,7 @@ library StanleyMissiles requires Events {
 			group gr = CreateGroup();
 
 			if (UnitAlive(target) && GetSpellIsFocused()) {
-				UnitDamageToTarget(owner, target, dmg, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+				UnitDamageMagicToTarget(owner, target, dmg);
 			}
 
 			This = this;
@@ -76,7 +76,7 @@ library StanleyMissiles requires Events {
 			ForGroup(gr, function() {
 				Missile this = This;
 				unit selected = GetEnumUnit();
-				UnitDamageToTarget(owner, selected, dmg * (1 - ((1 - MIN_FACTOR_DMG)/SPLASH_RANGE * DistanceBetweenCoords(TempX, TempY, GetWidgetX(selected), GetWidgetY(selected)))), ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+				UnitDamageMagicToTarget(owner, selected, dmg * (1 - ((1 - MIN_FACTOR_DMG)/SPLASH_RANGE * DistanceBetweenCoords(TempX, TempY, GetWidgetX(selected), GetWidgetY(selected)))));
 				selected = null;
 			});
 				

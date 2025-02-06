@@ -6,29 +6,6 @@ library BJHooked uses NegateDamageLib, Filters
     endglobals
 
     //! nocjass
-        
-     function GetUnitStateHook takes unit u, unitstate state returns real
-        if state == UNIT_STATE_MAX_LIFE then
-            return GetUnitMaxLife(u)
-        endif
-        return GetUnitState(u, state)
-    endfunction
-        
-    function GetUnitStatePercentHook takes unit whichUnit, unitstate whichState, unitstate whichMaxState returns real
-        local real value    = GetUnitStateHook(whichUnit, whichState)
-        local real maxValue = GetUnitStateHook(whichUnit, whichMaxState)
-    
-        // Return 0 for null units.
-        if (whichUnit == null) or (maxValue == 0) then
-            return 0.0
-        endif
-    
-        return value / maxValue * 100.0
-    endfunction
-        
-    function GetUnitLifePercentHook takes unit whichUnit returns real
-        return GetUnitStatePercentHook(whichUnit, UNIT_STATE_LIFE, UNIT_STATE_MAX_LIFE)
-    endfunction
 
     function UnitDamageTargetHook takes unit whichUnit, unit targetUnit, real value, attacktype attackType, damagetype damageType returns nothing
        call  UnitDamageToTarget(whichUnit, targetUnit, value, attackType, damageType, true, false, false, false, false)

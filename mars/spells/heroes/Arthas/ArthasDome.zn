@@ -347,7 +347,7 @@ library ArthasDome requires BuffActions {
 						unit enum = LoadHandleDataUnit(expiredTimer);
 						FlushTimer(expiredTimer);
 						if (!IsUnitAlly(enum, GetOwningPlayer(caster))) {
-							UnitDamageToTarget(dome, enum, DMG_PULSE, ATTACK_TYPE_CHAOS, DAMAGE_TYPE_UNIVERSAL, true, false, false, false, false);
+							UnitDamagePureToTarget(dome, enum, DMG_PULSE);
 							EffectApplyTimedLife(AddSpecialEffectTarget(EFF_DMG_PULSE, enum, "origin"), 2);
 						} else if (IsUnitAlly(enum, GetOwningPlayer(caster))) {
 							HealUnit(caster, enum, HEAL_PULSE);
@@ -358,7 +358,7 @@ library ArthasDome requires BuffActions {
 					});
 				} else {
 					if (!IsUnitAlly(EnumUnit, GetOwningPlayer(caster))) {
-						UnitDamageToTarget(dome, EnumUnit, DMG_PULSE, ATTACK_TYPE_CHAOS, DAMAGE_TYPE_UNIVERSAL, true, false, false, false, false);
+						UnitDamagePureToTarget(dome, EnumUnit, DMG_PULSE);
 						EffectApplyTimedLife(AddSpecialEffectTarget(EFF_DMG_PULSE, EnumUnit, "origin"), 2);
 					} else if (IsUnitAlly(EnumUnit, GetOwningPlayer(caster))) {
 						HealUnit(caster, EnumUnit, HEAL_PULSE);

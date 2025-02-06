@@ -35,6 +35,7 @@
 	//! import zinc     "./engine/systems/Auras.zn"
 	//! import zinc     "./engine/systems/Buffs.zn"
 	//! import zinc     "./engine/systems/Damage.zn"
+	//! import zinc     "./engine/systems/HealLifestealRestore.zn"
 	//! import zinc     "./engine/systems/Heroes.zn"
 	//! import zinc     "./engine/systems/Modifiers.zn"
 	//! import zinc     "./engine/systems/MultiModifiers.zn"
@@ -64,6 +65,7 @@
 	//! import zinc     "./mars/modifiers/PrecedingStaticModifiers.zn"
 	//! import zinc     "./mars/modifiers/UniqueStaticModifiers.zn"
 	//! import zinc     "./mars/modifiers/PostStaticModifiers.zn"
+	//! import zinc     "./mars/modifiers/HLRStaticModifiers.zn"
 
 	//! import zinc     "./mars/spells/heroes/Arthas/ArthasJump.zn"
 	//! import zinc     "./mars/spells/heroes/Arthas/ArthasDome.zn"

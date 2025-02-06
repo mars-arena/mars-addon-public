@@ -16,7 +16,7 @@ library Lightning requires SpellGetters, Filters {
 		GroupEnumUnitsInRange(gr, x, y, radius, ConditionParameters(function FilterLightning, caster, target, angle));
 		i = countTargets;
 		CreateUnitLightningTarget(caster, target, "FORK", "", "", "Abilities\\Weapons\\Bolt\\BoltImpact.mdl", "origin", 1.4, 10000, 50., 0.75, true);
-		UnitDamageToTarget(caster, target, value, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+		UnitDamageMagicToTarget(caster, target, value);
 		GroupRemoveUnit(gr, target);
 		i = i - 1;
 		while (i > 0 && FirstOfGroup(gr) != null) {
@@ -31,7 +31,7 @@ library Lightning requires SpellGetters, Filters {
 				}
 			});
 			CreateUnitLightningTarget(caster, FilteredUnit, "FORK", "", "", "Abilities\\Weapons\\Bolt\\BoltImpact.mdl", "origin", 1.4, 10000, 50., 0.75, true);
-			UnitDamageToTarget(caster, FilteredUnit, value, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, true, false, false, false, false);
+			UnitDamageMagicToTarget(caster, FilteredUnit, value);
 			GroupRemoveUnit(gr, FilteredUnit);
 			i = i - 1;
 		}
