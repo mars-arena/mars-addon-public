@@ -1,0 +1,26 @@
+library HiruzenSpear requires Doubles {
+
+	constant integer ABILITY_ID = 'A22T';
+
+	function onInit() {
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_SPELL_ENDCAST), function() {
+			if (GetSpellAbilityId() == ABILITY_ID) {
+				Doubles.Count = 2;
+
+				Doubles.Range = 150.;
+				Doubles.Speed = 1000.;
+				Doubles.Delay = 0.25;
+
+				Doubles.RemainingTime = 20.;
+				Doubles.DamageGiven = 0.33;
+				Doubles.DamageTaken = 3.;
+		
+				Doubles.EffInit = "Abilities\\Spells\\Orc\\MirrorImage\\MirrorImageCaster.mdx";
+				Doubles.EffMissile = "Abilities\\Spells\\Orc\\MirrorImage\\MirrorImageMissile.mdx";
+
+				Doubles.start(GetTriggerUnit(), HIRUZENSPEAR_HID);
+			}
+		});
+	}
+
+}

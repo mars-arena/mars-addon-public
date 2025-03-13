@@ -49,10 +49,7 @@ globals
 	boolean udg_Mode_Team = false
 	boolean udg_Rev_Duel = false
 	boolean udg_Rev_End = false
-	//trigger gg_trg_HealEvent = CreateTrigger()
-	//trigger gg_trg_HealLifestealEvent = CreateTrigger()
 	trigger gg_trg_Debuff_Strong = CreateTrigger()
-	//trigger gg_trg_RestoreEvent = CreateTrigger()
 	hashtable udg_HT_GUI = InitHashtable()
 	unit udg_AS_AuraUnit = null
 	integer udg_AS_TypeId = 0
@@ -87,8 +84,6 @@ globals
 	boolean udg_BS_PierceDeath = false 
 	boolean udg_BS_PeriodActions = false 
 	real udg_BS_Period = 0
-	//unit udg_AttackingUnit = null
-	//unit udg_AttackedUnit = null
 	real array udg_Smart_Real
 	unit udg_Debuff_Caster_Strong = null
 endglobals

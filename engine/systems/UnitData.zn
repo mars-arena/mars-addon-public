@@ -1,0 +1,98 @@
+library UnitData requires Modifiers {
+
+// Variables
+
+	// Hash Variables
+	key UNIT_EX_HID;
+
+// API Functions
+
+	public function Unit(unit whichUnit) -> UnitData {
+		return UnitData.get(whichUnit);
+	}
+
+	public function Arrow(unit whichUnit) -> ArrowData {
+		if (!IsSet(UnitData.get(whichUnit).arrow))
+			UnitData.get(whichUnit).arrow = ArrowData.create();
+		return UnitData.get(whichUnit).arrow;
+	}
+
+// Structures
+
+	public struct UnitData {
+		unit u;
+
+		real movespeed = 0.;
+		ArrowData arrow = 0;
+
+		static method create(unit whichUnit) -> UnitData {
+			UnitData this = UnitData.allocate();
+			this.u = whichUnit;
+			return this;
+		}
+
+		method destroy() {
+			RemoveSavedInteger(HT, GetHandleId(u), UNIT_EX_HID);
+			if (IsSet(arrow))
+				arrow.destroy();
+			u = null;
+			this.deallocate();
+		}
+
+		static method load(integer hashId) -> UnitData {
+			return LoadInteger(HT, hashId, UNIT_EX_HID);
+		}
+
+		static method get(unit whichUnit) -> UnitData {
+			UnitData this = UnitData.load(GetHandleId(whichUnit)); 
+			if (!IsSet(this))
+				return UnitData.create(whichUnit);
+			return this;
+		}
+
+		//method operator arrow() -> ArrowData {
+		//	if (!IsSet(arrow))
+		//		arrow = ArrowData.create();
+		//	return arrow;
+		//}
+	}
+
+	public struct ArrowData {
+		unit simulateType = null;
+		unit caster = null;
+		real damage = 0.;
+		real distance = 0.;
+		real distanceTravel = 0.;
+		real scale = 0.;
+		real finalScale = 0.;
+		real scaleSpeed = 0.;
+		real speed = 0.;
+		real angle = 0.;
+		real zScale = 0.;
+		damagetype damageType = null;
+		attacktype attackType = null;
+		boolean pierce = false;
+		group unitGroup = null;
+
+		static method create() -> ArrowData {
+			ArrowData this = ArrowData.allocate();
+			this.unitGroup = CreateGroup();
+			return this;
+		}
+
+		//method operator unitGroup() -> ArrowData {
+		//	if (!IsSet(unitGroup))
+		//		unitGroup = ArrowData.create();
+		//	return unitGroup;
+		//}
+
+		method destroy() {
+			simulateType = null;
+			damageType = null;
+			attackType = null;
+			DestroyGroup(unitGroup); unitGroup = null;
+			this.deallocate();
+		}
+	}
+
+}

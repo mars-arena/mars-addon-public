@@ -209,7 +209,7 @@ library Illusions requires Events {
 				SetModifierDMGAmplifier(DAMAGE_MULTIPLIER, GetModifierDMGAmplifier(DAMAGE_MULTIPLIER) * attacking.damageGiven);
 			}
 			if (IsSet(attacked)) {
-				SetModifierDMGAmplifier(DAMAGE_MULTIPLIER, GetModifierDMGAmplifier(DAMAGE_MULTIPLIER) * attacking.damageTaken);
+				SetModifierDMGAmplifier(DAMAGE_MULTIPLIER, GetModifierDMGAmplifier(DAMAGE_MULTIPLIER) * attacked.damageTaken);
 			}
 		}
 
@@ -224,13 +224,11 @@ library Illusions requires Events {
 
 	// Init Function
 	function onInit() {
-		trigger trg = CreateTrigger();
 		Illusion.Dummy = CreateUnit(DUMMY_OWNER, DUMMY_ID, 0, 0, 0);
-		TriggerRegisterAnyUnitEventBJ(trg, EVENT_PLAYER_UNIT_SUMMON); // ref EVENT_UNIT_SUMMON - broken
-		TriggerAddCondition(trg, Condition(function Illusion.onSummmon));
 		UnitAddAbility(Illusion.Dummy, ILLUSION_ABILITY_ID);
 
-		PrecedingModifierAddAction(function Illusion.onDamage);
-		DeathAddAction(function Illusion.onDeath);
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_SUMMON), function Illusion.onSummmon); // reforge EVENT_UNIT_SUMMON - broken
+		RegisterAction(EVENT_PRECEDING_MODIFIER, function Illusion.onDamage);
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DEATH), function Illusion.onDeath);
 	}
 }

@@ -25,5 +25,6 @@ library HashIdGUI {
 	public key JAMESILLUSIONS_HID;
 	public key BLOOPAURA_HID;
 	public key ARTHAS_PAS_HID;
+	public key MEGAGUN_HID;
 
 }

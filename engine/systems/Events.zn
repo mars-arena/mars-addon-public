@@ -1,98 +1,6 @@
-library Events requires SpellGetters {
+library Events requires Heroes {
 
-	trigger SpellEffectTrg = CreateTrigger();
-	trigger SpellEndcCastTrg = CreateTrigger();
-	trigger LevelTrg = CreateTrigger();
-	trigger EnterTrg = CreateTrigger();
-	trigger DeathTrg = CreateTrigger();
-	trigger ReviveTrg = CreateTrigger();
-	trigger EscTrg = CreateTrigger();
-
-	public trigger StunEventTrg = CreateTrigger();
-
-	public trigger DodgeModifierTrg = CreateTrigger();
-	public trigger PrecedingModifierTrg = CreateTrigger();
-	public trigger UniqueModifierTrg = CreateTrigger();
-	public trigger DamageEventTrg = CreateTrigger();
-	public trigger PostDamageModifierTrg[INDEX_ORDER_AMOUNT];
-
-	public trigger BuffTrg = CreateTrigger();
-
-	public trigger HealModifierTrg = CreateTrigger();
-	public trigger HealEventTrg = CreateTrigger();
-
-	public trigger LifestealModifierTrg = CreateTrigger();
-	public trigger LifestealEventTrg = CreateTrigger();
-
-	public trigger RestoreModifierTrg = CreateTrigger();
-	public trigger RestoreEventTrg = CreateTrigger();
-
-	// @const индекс порядка запуска
-	public constant integer INDEX_ORDER_DAMAGE = 1;
-	public constant integer INDEX_ORDER_PERCENT = 2;
-	public constant integer INDEX_ORDER_AMOUNT = 3;
-
-	// EVENT_PLAYER_UNIT_SPELL_ENDCAST
-	//
-	// GetSpellAbilityUnit() -> unit
-	// GetSpellAbility() -> ability
-	// GetSpellAbilityId -> integer
-	// GetSpellTargetUnit() -> unit
-	// GetSpellTargetDestructable -> destructable
-	// GetSpellTargetItem -> item
-	// GetSpellTargetX -> real
-	// GetSpellTargetY -> real
-	public function SpellEffectAddAction(code action) -> triggeraction {
-		return TriggerAddAction(SpellEffectTrg, action);
-	}
-
-	// EVENT_PLAYER_UNIT_SPELL_ENDCAST
-	//
-	// GetSpellAbilityUnit() -> unit
-	// GetSpellAbility() -> ability
-	// GetSpellAbilityId -> integer
-	// GetSpellTargetUnit() -> unit
-	// GetSpellTargetDestructable -> destructable
-	// GetSpellTargetItem -> item
-	// GetSpellTargetX -> real
-	// GetSpellTargetY -> real
-	public function SpellEndAddAction(code action) -> triggeraction {
-		return TriggerAddAction(SpellEndcCastTrg, action);
-	}
-
-	public function EscAddAction(code action) -> triggeraction {
-		return TriggerAddAction(EscTrg, action);
-	}
-
-	// EVENT_PLAYER_HERO_LEVEL
-	//
-	// GetLevelingUnit() -> unit
-	public function LevelAddAction(code action) -> triggeraction {
-		return TriggerAddAction(LevelTrg, action);
-	}
-
-	// EVENT_GAME_ENTER_REGION
-	//
-	// GetTriggeringRegion() -> region
-	// GetEnteringUnit() -> unit
-	public function EnterAddAction(code action) -> triggeraction {
-		return TriggerAddAction(EnterTrg, action);
-	}
-
-	// EVENT_PLAYER_UNIT_DEATH
-	//
-	// GetDyingUnit() -> unit
-	// GetKillingUnit() -> unit
-	public function DeathAddAction(code action) -> triggeraction {
-		return TriggerAddAction(DeathTrg, action);
-	}
-
-	// EVENT_PLAYER_UNIT_DEATH
-	//
-	// GetRevivingUnit -> unit
-	public function ReviveAddAction(code action) -> triggeraction {
-		return TriggerAddAction(ReviveTrg, action);
-	}
+	trigger EVENT_TRIGGERS[500];
 
 	// Событие оглушения юнита
 	//
@@ -104,13 +12,7 @@ library Events requires SpellGetters {
 	// GetStunIsEnter() -> boolean
 	// GetStunIsOut() -> boolean
 	// GetStunIsFirst() -> boolean
-	public function StunAddAction(code action) -> triggeraction {
-		return TriggerAddAction(StunEventTrg, action);
-	}
-
-	public function StunRemoveAction(triggeraction action) {
-		TriggerRemoveAction(StunEventTrg, action);
-	}
+	public constant integer EVENT_STUN = 301;
 
 	// Событие модификатора уворота
 	//
@@ -126,9 +28,7 @@ library Events requires SpellGetters {
 	// SetModifierDodgeChance(real dodgeChance)
 	// SetModifierMissChance(real missChance)
 	// SetModifierTrueStrikeChance(real trueStrikeChance)
-	public function DodgeModifierAddAction(code action) -> triggeraction {
-		return TriggerAddAction(DodgeModifierTrg, action);
-	}
+	public constant integer EVENT_DODGE_MODIFIER = 302;
 
 	// Событие предществующего модификатора урона
 	//
@@ -156,9 +56,7 @@ library Events requires SpellGetters {
 	// AddModifierDMGAmplifier(integer typeAmplifier, real dmgAmplifier)
 	// GetModifierDMGAmplifier(integer typeAmplifier) -> real
 	// SetModifierDMGAmplifier(integer typeAmplifier, real dmgAmplifier)
-	public function PrecedingModifierAddAction(code action) -> triggeraction {
-		return TriggerAddAction(PrecedingModifierTrg, action);
-	}
+	public constant integer EVENT_PRECEDING_MODIFIER = 303;
 
 	// Событие уникальных модификаторов (работает один из)
 	//
@@ -179,9 +77,7 @@ library Events requires SpellGetters {
 	// AddModifierCriticalRate(integer typeId, real criticalRate)
 	// GetModifierCriticalType() -> integer
 	// PlusModifierCriticalRate(real criticalRate)
-	public function UniqueModifierAddAction(code action) -> triggeraction {
-		return TriggerAddAction(UniqueModifierTrg, action);
-	}
+	public constant integer EVENT_UNIQUE_MODIFIER = 304;
 
 	// Событие пост модификатора урона
 	//
@@ -209,9 +105,10 @@ library Events requires SpellGetters {
 	//
 	// GetModifierDamageMax() -> real
 	// SetModifierDamageMax(real dmgMax)
-	public function PostDamageModifierAddAction(integer orderIndex, code action) -> triggeraction {
-		return TriggerAddAction(PostDamageModifierTrg[orderIndex], action);
-	}
+	public constant integer EVENT_POST_MODIFIER_INDEX_DAMAGE = 305;
+	public constant integer EVENT_POST_MODIFIER_INDEX_PERCENT = 306;
+	public constant integer EVENT_POST_MODIFIER_INDEX_AMOUNT = 307;
+	public constant integer EVENT_POST_MODIFIER_INDEX_PASS = 308;
 
 	// Событие любого урона
 	//
@@ -234,35 +131,10 @@ library Events requires SpellGetters {
 	// GetDamageIsSimulate() -> boolean
 	// GetDamageIsSpecAttack() -> boolean
 	// GetDamageLifeAttackedUnit() -> real
-	public function DamageEventAddAction(code action) -> triggeraction {
-		return TriggerAddAction(DamageEventTrg, action);
-	}
-
-	public function HealModifierAddAction(code action) -> triggeraction {
-		return TriggerAddAction(HealModifierTrg, action);
-	}
-
-	public function HealEventAddAction(code action) -> triggeraction {
-		return TriggerAddAction(HealEventTrg, action);
-	}
-
-	public function LifestealModifierAddAction(code action) -> triggeraction {
-		return TriggerAddAction(LifestealModifierTrg, action);
-	}
-
-	public function LifestealEventAddAction(code action) -> triggeraction {
-		return TriggerAddAction(LifestealEventTrg, action);
-	}
-
-	public function RestoreModifierAddAction(code action) -> triggeraction {
-		return TriggerAddAction(RestoreModifierTrg, action);
-	}
-
-	public function RestoreEventAddAction(code action) -> triggeraction {
-		return TriggerAddAction(RestoreEventTrg, action);
-	}
+	public constant integer EVENT_DAMAGE = 309;
 
 	// Событие баффа
+	//
 	// GetTriggerBuffOwner() -> unit
 	// GetTriggerBuffTarget() -> unit
 	// GetTriggerBuffIsEntered() -> boolean
@@ -272,20 +144,76 @@ library Events requires SpellGetters {
 	// GetTriggerBuffActionsId() -> integer
 	// GetTriggerBuffId() -> integer
 	// GetTriggerBuffStack() -> timer
-	public function BuffAddAction(code action) -> triggeraction {
-		return TriggerAddAction(BuffTrg, action);
+	public constant integer EVENT_BUFF = 310;
+
+	public constant integer EVENT_HEAL_MODIFIER = 311;
+
+	public constant integer EVENT_HEAL = 312;
+
+	public constant integer EVENT_LIFESTEAL_MODIFIER = 313;
+
+	public constant integer EVENT_LIFESTEAL = 314;
+
+	public constant integer EVENT_RESTORE_MODIFIER = 315;
+
+	public constant integer EVENT_RESTORE = 316;
+
+	public constant integer EVENT_ENTER = 317;
+
+	public function RegisterAction(integer eventId, code action) -> triggeraction {
+		if (EVENT_TRIGGERS[eventId] == null) {
+			// GAME EVENTS
+			if (eventId >= GetHandleId(EVENT_GAME_VICTORY) && eventId <= GetHandleId(EVENT_GAME_BUILD_SUBMENU) ||
+				eventId >= GetHandleId(EVENT_GAME_LOADED) && eventId <= GetHandleId(EVENT_GAME_SAVE)
+			) {
+				EVENT_TRIGGERS[eventId] = CreateTrigger();
+				TriggerRegisterGameEvent(EVENT_TRIGGERS[eventId], ConvertGameEvent(eventId));
+			} else
+
+			// PLAYER EVENTS
+			if (eventId >= GetHandleId(EVENT_PLAYER_STATE_LIMIT) && eventId <= GetHandleId(EVENT_PLAYER_END_CINEMATIC) ||
+				eventId >= GetHandleId(EVENT_PLAYER_ARROW_LEFT_DOWN) && eventId <= GetHandleId(EVENT_PLAYER_ARROW_UP_UP)
+			) {
+				EVENT_TRIGGERS[eventId] = CreateTrigger();
+				for (0 <= Index < bj_MAX_PLAYER_SLOTS) {
+					TriggerRegisterPlayerEvent(EVENT_TRIGGERS[eventId], Player(Index), ConvertPlayerEvent(eventId));
+				}
+			} else
+
+			// PLAYER UNIT EVENTS
+			if (eventId >= GetHandleId(EVENT_PLAYER_UNIT_ATTACKED) && eventId <= GetHandleId(EVENT_PLAYER_UNIT_LOADED) ||
+				eventId >= GetHandleId(EVENT_PLAYER_UNIT_SELL) && eventId <= GetHandleId(EVENT_PLAYER_UNIT_PAWN_ITEM)
+			) {
+				EVENT_TRIGGERS[eventId] = CreateTrigger();
+				for (0 <= Index < bj_MAX_PLAYER_SLOTS) {
+					TriggerRegisterPlayerUnitEvent(EVENT_TRIGGERS[eventId], Player(Index), ConvertPlayerUnitEvent(eventId), null);
+				}
+			} else
+			
+			{
+				dbgT("Error E1: Попытка зарегистрировать действия для неизвестного события ID:" + I2S(eventId));
+				return null;
+			}
+		}
+		return TriggerAddAction(EVENT_TRIGGERS[eventId], action);
+	}
+
+	public function UnregisterAction(integer eventId, triggeraction action) {
+		if (EVENT_TRIGGERS[eventId] == null) {
+			dbgT("Error E2: Попытка зарегистрировать действия для незарегистриованного события ID:" + I2S(eventId));
+			return;
+		}
+		TriggerRemoveAction(EVENT_TRIGGERS[eventId], action);
+	}
+
+	public function ExecuteEvent(integer eventId) {
+		TriggerExecute(EVENT_TRIGGERS[eventId]);
 	}
 
 	function onInit() {
-		TriggerRegisterAnyUnitEventBJ(SpellEffectTrg, EVENT_PLAYER_UNIT_SPELL_EFFECT);
-		TriggerRegisterAnyUnitEventBJ(SpellEndcCastTrg, EVENT_PLAYER_UNIT_SPELL_ENDCAST);
-		TriggerRegisterAnyUnitEventBJ(LevelTrg, EVENT_PLAYER_HERO_LEVEL);
-		TriggerRegisterEnterRectSimple(EnterTrg, bj_mapInitialPlayableArea);
-		TriggerRegisterAnyUnitEventBJ(DeathTrg, EVENT_PLAYER_UNIT_DEATH);
-		TriggerRegisterAnyUnitEventBJ(ReviveTrg, EVENT_PLAYER_HERO_REVIVE_FINISH);
-		TriggerRegisterPlayerEvent(EscTrg, Player(0), EVENT_PLAYER_END_CINEMATIC);
-		for (1 <= Index <= MAX_COUNT_TYPE_AMPLIFIERS)
-			PostDamageModifierTrg[Index] = CreateTrigger();
+		for (EVENT_STUN <= Index <= EVENT_ENTER)
+			EVENT_TRIGGERS[Index] = CreateTrigger();
+		TriggerRegisterEnterRectSimple(EVENT_TRIGGERS[EVENT_STUN], bj_mapInitialPlayableArea);
 	}
 
 }

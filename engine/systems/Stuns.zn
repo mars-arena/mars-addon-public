@@ -1,4 +1,4 @@
-library Stuns requires Modifiers {
+library Stuns requires Events {
 
 // Constants
 
@@ -215,7 +215,7 @@ library Stuns requires Modifiers {
 			IS_ENTER_GET = isEnter;
 			IS_OUT_GET = isOut;
 			IS_FIRST_GET = isFirst;
-			TriggerExecute(StunEventTrg);
+			ExecuteEvent(EVENT_STUN);
 			ExecuteFunc("Trig_" + TRIG_EVENT_STUN + "_Actions");
 			STUNNING_UNIT_GET = null;
 			STUNNED_UNIT_GET = null;

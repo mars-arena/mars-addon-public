@@ -1,4 +1,4 @@
-library SpellGetters requires GameUtils {
+library SpellGetters requires Events {
 
 	// событие заклинаний
 	public constant string TRIG_EVENT_SPELLS = "EventSpells";

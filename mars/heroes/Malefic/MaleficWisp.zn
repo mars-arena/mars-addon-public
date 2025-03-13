@@ -1,0 +1,293 @@
+library MaleficWisp requires Events {
+
+	key WISP_HID;
+
+	constant integer MAX_PRIORITIES = 4;
+
+	
+	function IsTargetAvailible(Wisp this, unit filterUnit) -> boolean {
+		return 
+			filterUnit != null &&
+			UnitAlive(filterUnit) &&
+			DistanceBetweenWidgets(filterUnit, this.owner) < this.maxRange &&
+			!IsUnitType(filterUnit, UNIT_TYPE_MECHANICAL) &&
+			!IsUnitAlly(filterUnit, GetOwningPlayer(this.owner)) &&
+			!IsUnitFogged(filterUnit, GetOwningPlayer(this.owner)) &&
+			IsUnitVisible(filterUnit, GetOwningPlayer(this.owner)) &&
+			!IsUnitInvulnerable(filterUnit)
+		;
+	}
+
+
+	public struct Wisp {
+		static integer i;
+		static group Group = CreateGroup();
+
+		static constant integer RESTING_STATE = 1;
+		static constant integer FOLLOWING_STATE = 2;
+		static constant integer ATTACKING_STATE = 3;
+
+		static constant integer ORDER_PRIORITY_1 = 1;
+		static constant integer ATTACKED_PRIORITY_2 = 2;
+		static constant integer ATTACKING_PRIORITY_3 = 3;
+		static constant integer NEAREST_PRIORITY_4 = 4;
+
+		static constant real ATTACK_DISTANCE = 200;
+
+		static constant real UPDATE_STATE_INTERVAL = 0.1;
+		static constant real UPDATE_POSITION_INTERVAL = 1.0 / 40.0;
+
+		unit owner;
+		unit wisp;
+
+		Point2D ownerPos;
+		Point2D wispPos;
+		Point2D targetPos;
+
+		real maxRange; 		// максимальное расстояние когда светлячок начинает игнорировать приказы и следует за владельцем (не связан с maxSpeed)
+		real restRange;		// расстояние после достижение которого светлячок начинает отдыхать если нет приказов
+		real maxSpeed;		// максимальная скорость светлячка которую он не может привысить
+		real minSpeed;		// минимальная скорость светлячка (всегда в движении)
+
+		real speed;			// текущая скорость светлячка
+		real angle;			// текущий угол движения светлячка
+
+		integer state;
+		unit targets[MAX_PRIORITIES];
+
+		timer updateStateTm;
+		timer updatePositionTm;
+
+		trigger orderPriorityTrg;
+
+		static method create(unit owner) -> Wisp {
+			Wisp this = Wisp.allocate();
+			this.owner = owner;
+			this.wisp = CreateUnit(GetOwningPlayer(owner), 'wisp', 0, 0, 0);
+			this.ownerPos = Point2D.createAtWidget(owner);
+			this.wispPos = Point2D.clone(ownerPos);
+			this.targetPos = Point2D.create();
+			this.maxRange = 1200;
+			this.restRange = maxRange / 4.;
+			this.maxSpeed = 1200;
+			this.minSpeed = maxSpeed / 6.;
+
+			this.speed = 0;
+			this.angle = wispPos.angleTo(ownerPos);
+
+			this.state = RESTING_STATE;
+
+			this.targets[ORDER_PRIORITY_1] = null;
+			this.targets[ATTACKED_PRIORITY_2] = null;
+			this.targets[ATTACKING_PRIORITY_3] = null;
+			this.targets[NEAREST_PRIORITY_4] = null;
+
+			this.updateStateTm = CreateTimer();
+			SaveHandleDataInt(updateStateTm, this);
+			TimerStart(updateStateTm, UPDATE_STATE_INTERVAL, true, function Wisp.updateState);
+
+			this.updatePositionTm = CreateTimer();
+			SaveHandleDataInt(updatePositionTm, this);
+			TimerStart(updatePositionTm, UPDATE_POSITION_INTERVAL, true, function Wisp.updatePosition);
+
+			this.orderPriorityTrg = CreateTrigger();
+			TriggerRegisterUnitEvent(orderPriorityTrg, owner, EVENT_UNIT_ISSUED_TARGET_ORDER);
+			SaveHandleDataInt(orderPriorityTrg, this);
+			TriggerAddAction(orderPriorityTrg, function() {
+				Wisp this = LoadHandleDataInt(GetTriggeringTrigger());
+				if (IsTargetAvailible(this, GetOrderTargetUnit()))
+					this.targets[ORDER_PRIORITY_1] = GetOrderTargetUnit();
+			});
+			
+			wispPos.movePolar(maxRange/2.0, GetRandomReal(0, 360));
+			SetUnitXY(wisp, wispPos.x, wispPos.y);
+
+			SetUnitFacing(wisp, angle);
+			SetUnitColor(wisp, PLAYER_COLOR_PURPLE);
+			AddSpecialEffectTarget("war3mapImported\\Razengan.mdx", wisp, "chest");
+
+			SaveInteger(HT, GetHandleId(owner), WISP_HID, this);
+			return this;
+		}
+
+		static method load(unit owner) -> Wisp {
+			return LoadInteger(HT, GetHandleId(owner), WISP_HID);
+		}
+
+		static method get(unit owner) -> Wisp {
+			Wisp this = Wisp.load(owner);
+
+			if (!IsSet(this))
+				return Wisp.create(owner);
+			else
+				return this;
+		}
+
+		method destroy() {
+			this.deallocate();
+		}
+
+		method getPriorityTarget() -> unit {
+			for (1 <= i <= MAX_PRIORITIES) {
+				if (IsTargetAvailible(this, targets[i]))
+					return targets[i];
+			}
+			return null;
+		}
+
+		method updateNearestTarget() {
+			This = this;
+			GroupEnumUnitsInRange(Group, GetUnitX(owner), GetUnitY(owner), maxRange, Condition(function() -> boolean {
+				Wisp this = This;
+				return IsTargetAvailible(this, GetFilterUnit());
+			}));
+
+			EnumUnit = FirstOfGroup(Group);
+			FilteredUnit = EnumUnit;
+			while(EnumUnit != null) {
+				if (DistanceBetweenWidgets(FilteredUnit, owner) > DistanceBetweenWidgets(EnumUnit, owner)) {
+					FilteredUnit = EnumUnit;
+				}
+				GroupRemoveUnit(Group, EnumUnit);
+				EnumUnit = FirstOfGroup(Group);
+			}
+
+			this.targets[NEAREST_PRIORITY_4] = FilteredUnit;
+		}
+
+		static method onDamage() {
+			Wisp this;
+
+			if (GetDamageGiven() > 0.) {
+				this = Wisp.load(GetDamageAttackingUnit());
+
+				if (IsSet(this) && IsTargetAvailible(this, GetDamageAttackedUnit())) {
+					this.targets[ATTACKED_PRIORITY_2] = GetDamageAttackedUnit();
+				} else {
+					this = Wisp.load(GetDamageAttackedUnit());
+					if (
+						IsSet(this) &&
+						!IsTargetAvailible(this, this.targets[ATTACKING_PRIORITY_3]) &&
+						IsTargetAvailible(this, GetDamageAttackingUnit())
+					) {
+						this.targets[ATTACKING_PRIORITY_3] = GetDamageAttackingUnit();
+					}
+				}
+					
+			}
+				
+		}
+
+		static method updateState() {
+			Wisp this = LoadHandleDataInt(GetExpiredTimer());
+			ownerPos.setAtWidget(owner);
+			wispPos.setAtWidget(wisp);
+
+			if (state == RESTING_STATE && wispPos.distTo(ownerPos) > restRange) {
+				state = FOLLOWING_STATE;
+			}
+
+			if (wispPos.distTo(ownerPos) < restRange) {
+				state = RESTING_STATE;
+			}
+
+			this.updateNearestTarget();
+
+			for (1 <= i <= MAX_PRIORITIES) {
+				if (IsTargetAvailible(this, targets[i]))
+					state = ATTACKING_STATE;
+			}
+
+			if (state != ATTACKING_STATE && wispPos.distTo(ownerPos) > maxRange) {
+				state = FOLLOWING_STATE;
+			}
+
+			if (state == ATTACKING_STATE && this.getPriorityTarget() == null) {
+				state = FOLLOWING_STATE;
+			}
+
+			//BJDebugMsg(I2S(state));
+		}
+
+		static constant real SPEED_ADJUST_RATE_NEAR = 0.05;
+		static constant real SPEED_ADJUST_RATE_FAR = 0.1;
+		static constant real ANGLE_CHANGE_MAX_DIFF = 30.;
+		static constant real MIN_ANGLE_ADJUST_RATE = 0.02;
+		static constant real MAX_ANGLE_ADJUST_RATE = 0.05;
+
+		static method updatePosition() {
+			Wisp this = LoadHandleDataInt(GetExpiredTimer());
+			real distance = 0;
+			real targetSpeed = 0;
+			real targetAngle = 0;
+
+			if (state == RESTING_STATE || state == FOLLOWING_STATE) {
+				distance = wispPos.distTo(ownerPos);
+				targetSpeed = MaxReal(MinReal(maxSpeed, (distance - 100) / maxRange * maxSpeed), minSpeed);
+				targetAngle = wispPos.angleTo(ownerPos);
+				if (distance < maxRange) {
+					speed += (targetSpeed - speed) * SPEED_ADJUST_RATE_NEAR;
+				} else {
+					speed += (targetSpeed - speed) * SPEED_ADJUST_RATE_FAR;
+				}
+
+				if (state == FOLLOWING_STATE && AngleDifference(targetAngle, angle) > ANGLE_CHANGE_MAX_DIFF) {
+					angle = AngleTowards(
+						angle,
+						targetAngle,
+						AngleDifference(targetAngle, angle) * MAX_ANGLE_ADJUST_RATE - (speed / maxSpeed) * (MAX_ANGLE_ADJUST_RATE - MIN_ANGLE_ADJUST_RATE)
+					);
+				}
+			}
+
+			if (state == ATTACKING_STATE) {
+				targetPos.setAtWidget(this.getPriorityTarget());
+				distance = wispPos.distTo(targetPos);
+				targetSpeed = MaxReal(MinReal(maxSpeed, (distance) / (maxRange * 0.75) * maxSpeed), minSpeed);
+				targetAngle = wispPos.angleTo(targetPos);
+				if (distance < (maxRange * 0.75)) {
+					speed += (targetSpeed - speed) * SPEED_ADJUST_RATE_NEAR;
+				} else {
+					speed += (targetSpeed - speed) * SPEED_ADJUST_RATE_FAR;
+				}
+
+				if (AngleDifference(targetAngle, angle) > ANGLE_CHANGE_MAX_DIFF) {
+					angle = AngleTowards(
+						angle,
+						targetAngle,
+						AngleDifference(targetAngle, angle) * MAX_ANGLE_ADJUST_RATE - (speed / maxSpeed) * (MAX_ANGLE_ADJUST_RATE - MIN_ANGLE_ADJUST_RATE)
+					);
+				}
+
+			}
+
+			wispPos.movePolar(speed * UPDATE_POSITION_INTERVAL, angle);
+			SetUnitXY(wisp, wispPos.x, wispPos.y);
+
+			ownerPos.setAtWidget(owner);
+			wispPos.setAtWidget(wisp);
+			SetUnitFacing(wisp, angle);
+
+			//BJDebugMsg(R2S(speed));
+		}
+	}
+
+
+	function Create(unit owner) {
+		if (UnitHasAbility(owner, 'A00N')) {
+			Wisp.get(owner);
+		}
+	}
+	
+	function onInit() {
+		RegisterAction(EVENT_ENTER, function() {
+			Create(GetTriggerUnit());
+		});
+		
+		RegisterAction(EVENT_DAMAGE, function Wisp.onDamage);
+
+		ForGroup(INIT_UNITS, function() {
+			Create(GetEnumUnit());
+		});
+	}
+}

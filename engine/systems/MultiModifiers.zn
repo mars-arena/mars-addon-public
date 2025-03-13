@@ -102,6 +102,11 @@ library MultiModifiers requires MultiModifiersList {
 				break;
 			}
 		}
+
+		for (1 <= i <= LoadInteger(HT, GetHandleId(GetTriggerEventId()), 0)) {
+			ConditionalTriggerExecute(LoadTriggerHandle(HT, GetHandleId(GetTriggerEventId()), i));
+		}
+		
 		if (!sub) {
 			dbgT("Error MME2:" + GetUnitName(u) + " Невозможно удалить неинициализированное значение модификатора (" + I2S(modifier) + ").");
 		}

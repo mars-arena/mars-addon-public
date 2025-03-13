@@ -1,0 +1,236 @@
+library Orion initializer Init requires Auras
+
+	globals
+		private constant integer SPELL_ID_REDIRECT = 'A23A'
+		private constant integer SPELL_ID_EXPLODE = 'A23B'
+		private constant integer DUMMY_UNIT_ID = 'o00S'
+		private constant real EXPLOSION_RADIUS = 400.0
+		private constant real DAMAGE = 1000.0
+		private constant real MOVE_STEP = 10.0
+		private constant real VIEW_CHANGE_INTERVAL = 3.6
+		private constant real VIEW_ANGLE_VARIATION = 40.0
+		private constant real TURN_SPEED = 0.05
+		private hashtable satellitesHT = InitHashtable()
+		private integer satelliteIdCounter = 0
+	endglobals
+	
+	private function IsEnemy takes nothing returns boolean
+		return IsUnitEnemy(GetFilterUnit(), GetOwningPlayer(GetTriggerUnit())) and not IsUnitType(GetFilterUnit(), UNIT_TYPE_DEAD)
+	endfunction
+	
+	private function ChangeViewAngle takes nothing returns nothing
+		local timer t = GetExpiredTimer()
+		local integer uniqueId = LoadInteger(satellitesHT, GetHandleId(t), 0)
+		local unit satellite = LoadUnitHandle(satellitesHT, uniqueId, 0)
+		local unit target = LoadUnitHandle(satellitesHT, uniqueId, 1)
+		local real newAngle
+		local real angleToTarget
+		local real targetX
+		local real targetY
+		local real satelliteX
+		local real satelliteY
+	
+		if satellite != null and target != null then
+			set targetX = GetUnitX(target)
+			set targetY = GetUnitY(target)
+			set satelliteX = GetUnitX(satellite)
+			set satelliteY = GetUnitY(satellite)
+	
+			set angleToTarget = Atan2(targetY - satelliteY, targetX - satelliteX)
+			set newAngle = angleToTarget + GetRandomReal(-VIEW_ANGLE_VARIATION * bj_DEGTORAD, VIEW_ANGLE_VARIATION * bj_DEGTORAD)
+			call SaveReal(satellitesHT, uniqueId, 4, newAngle)
+		endif
+
+		set t = null
+		set satellite = null
+		set target = null
+	endfunction
+	
+	private function UpdateSatelliteMovement takes nothing returns nothing
+		local timer t = GetExpiredTimer()
+		local integer uniqueId = LoadInteger(satellitesHT, GetHandleId(t), 0)
+		local unit satellite = LoadUnitHandle(satellitesHT, uniqueId, 0)
+		local unit target = LoadUnitHandle(satellitesHT, uniqueId, 1)
+		local real satelliteX
+		local real satelliteY
+		local real viewAngle
+		local real targetAngle
+		local real moveAngle
+		local real angleDifference
+		local real newX
+		local real newY
+	
+		if satellite != null and target != null then
+			set satelliteX = GetUnitX(satellite)
+			set satelliteY = GetUnitY(satellite)
+			set viewAngle = LoadReal(satellitesHT, uniqueId, 3)
+			set targetAngle = LoadReal(satellitesHT, uniqueId, 4)
+			
+			set angleDifference = targetAngle - viewAngle
+			if angleDifference > bj_PI then
+				set angleDifference = angleDifference - 2 * bj_PI
+			elseif angleDifference < -bj_PI then
+				set angleDifference = angleDifference + 2 * bj_PI
+			endif
+	
+			set moveAngle = viewAngle + angleDifference * TURN_SPEED
+			set newX = satelliteX + MOVE_STEP * Cos(moveAngle)
+			set newY = satelliteY + MOVE_STEP * Sin(moveAngle)
+	
+			call SetUnitX(satellite, newX)
+			call SetUnitY(satellite, newY)
+			call SetUnitFacing(satellite, moveAngle * bj_RADTODEG)
+			call SaveReal(satellitesHT, uniqueId, 3, moveAngle)
+		endif
+
+		set t = null
+		set satellite = null
+		set target = null
+	endfunction
+	
+	private function RedirectSatellite takes nothing returns nothing
+		local unit caster = GetTriggerUnit()
+		local unit target = GetSpellTargetUnit()
+		local integer uniqueId = satelliteIdCounter
+		local unit satellite
+		local timer viewTimer = CreateTimer()
+		local timer movementTimer = CreateTimer()
+		local integer casterId = GetHandleId(caster) // Сохраняем уникальный ID кастера
+		local real angleToTarget
+		local real casterX = GetUnitX(caster)
+		local real casterY = GetUnitY(caster)
+		local real targetX = GetUnitX(target)
+		local real targetY = GetUnitY(target)
+		local real initialAngle = 0
+		// Вычисляем начальный угол обзора от кастера к цели
+		set angleToTarget = Atan2(targetY - casterY, targetX - casterX)
+		set initialAngle = angleToTarget
+		// Создаем новый спутник
+		set satellite = CreateUnit(GetOwningPlayer(caster), DUMMY_UNIT_ID, casterX, casterY, initialAngle * bj_RADTODEG)
+		if UnitHasMefisto(caster) == true then
+			call AddAuraToUnit(satellite, orion2aura_tid, null, false, 0, false,false,false, orion2aura_tid, Condition(function FilterRadiance), 1200., 5, true, 0.5)
+		endif
+		
+		// Сохраняем спутник и его данные в хеш-таблицу
+		call SaveUnitHandle(satellitesHT, uniqueId, 0, satellite)
+		call SaveInteger(satellitesHT, uniqueId, 2, casterId) // Сохраняем ID кастера
+		call SaveReal(satellitesHT, uniqueId, 3, initialAngle) // Начальный угол обзора
+		call SaveReal(satellitesHT, uniqueId, 4, initialAngle) // Начальный угол обзора для плавного перехода
+		call SaveUnitHandle(satellitesHT, uniqueId, 1, target)
+	
+		// Сохраняем таймеры в хеш-таблицу для корректного удаления
+		call SaveTimerHandle(satellitesHT, uniqueId, 3, movementTimer)
+		call SaveTimerHandle(satellitesHT, uniqueId, 4, viewTimer)
+	
+		// Сохраняем ID спутника в хештаблице для таймера
+		call SaveInteger(satellitesHT, GetHandleId(viewTimer), 0, uniqueId)
+		call SaveInteger(satellitesHT, GetHandleId(movementTimer), 0, uniqueId)
+	
+		// Запуск таймеров для индивидуального спутника
+		call TimerStart(viewTimer, VIEW_CHANGE_INTERVAL, true, function ChangeViewAngle)
+		call TimerStart(movementTimer, 0.03, true, function UpdateSatelliteMovement)
+	
+		// Увеличиваем счетчик уникальных идентификаторов
+		set satelliteIdCounter = satelliteIdCounter + 1
+	
+		// Пауза спутника, чтобы игнорировать любые приказы
+		call PauseUnit(satellite, true)
+
+		set caster = null
+		set target = null
+		set satellite = null
+		set viewTimer = null
+		set movementTimer = null
+	endfunction
+	
+	private function ExplodeSatellite takes nothing returns nothing
+		local unit caster = GetTriggerUnit()
+		local integer i = 0
+		local unit satellite
+		local real x
+		local real y
+		local group g
+		local unit u
+		local integer casterId = GetHandleId(caster)
+		local timer moveTimer
+		local timer viewTimer
+	
+		loop
+			exitwhen i >= satelliteIdCounter
+	
+			set satellite = LoadUnitHandle(satellitesHT, i, 0)
+			if satellite != null and LoadInteger(satellitesHT, i, 2) == casterId then
+				set x = GetUnitX(satellite)
+				set y = GetUnitY(satellite)
+	
+				call DestroyEffect(AddSpecialEffect("Abilities\\Weapons\\FragDriller\\FragDriller.mdl", x, y))
+				set g = CreateGroup()
+				call GroupEnumUnitsInRange(g, x, y, EXPLOSION_RADIUS, Condition(function IsEnemy))
+	
+				loop
+					set u = FirstOfGroup(g)
+					exitwhen u == null
+					call UnitDamageTarget(caster, u, DAMAGE, true, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
+					call GroupRemoveUnit(g, u)
+				endloop
+	
+				call DestroyGroup(g)
+	
+				set moveTimer = LoadTimerHandle(satellitesHT, i, 3)
+				set viewTimer = LoadTimerHandle(satellitesHT, i, 4)
+				if moveTimer != null then
+					call PauseTimer(moveTimer)
+					call DestroyTimer(moveTimer)
+					call RemoveSavedHandle(satellitesHT, i, 3)
+				endif
+				if viewTimer != null then
+					call PauseTimer(viewTimer)
+					call DestroyTimer(viewTimer)
+					call RemoveSavedHandle(satellitesHT, i, 4)
+				endif
+				call KillUnit(satellite)
+			endif
+	
+			set i = i + 1
+		endloop
+
+		set caster = null
+		set satellite = null
+		set g = null
+		set u = null
+		set moveTimer = null
+		set viewTimer = null
+	endfunction
+	
+	private function OnSpellEffect takes nothing returns nothing
+		local integer spellId = GetSpellAbilityId()
+		if spellId == SPELL_ID_REDIRECT then
+			call RedirectSatellite()
+			call SetPlayerAbilityAvailable(GetOwningPlayer(GetTriggerUnit()), 'A23A', false)
+			call SetPlayerAbilityAvailable(GetOwningPlayer(GetTriggerUnit()), 'A23B', true)
+		elseif spellId == SPELL_ID_EXPLODE then
+			call ExplodeSatellite()
+		endif
+	endfunction
+	
+	private function OnUnitDeath takes nothing returns nothing
+		local unit diedUnit = GetDyingUnit()
+		
+		// Проверяем, что умерший юнит — это спутник
+		if GetUnitTypeId(diedUnit) == DUMMY_UNIT_ID then
+			call SetPlayerAbilityAvailable(GetOwningPlayer(diedUnit), 'A23B', false)
+			call SetPlayerAbilityAvailable(GetOwningPlayer(diedUnit), 'A23A', true)
+		endif
+
+		set diedUnit = null
+	endfunction
+	
+	private function Init takes nothing returns nothing
+		// Регистрация триггера для обработки эффектов способностей
+		call RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_SPELL_EFFECT), function OnSpellEffect)
+		// Регистрация триггера для отслеживания смерти юнитов
+		call RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DEATH), function OnUnitDeath)
+	endfunction
+	
+endlibrary
+	

@@ -1,0 +1,1963 @@
+library BuffActions requires Buffs, SetUnitMaxState, HealLifestealRestore {
+
+	unit BUFF_OWNER_UNIT_GET;
+	unit BUFF_TARGET_UNIT_GET;
+	boolean BUFF_IS_ENTERED_GET;
+	boolean BUFF_IS_OUT_GET;
+	boolean BUFF_IS_ACTIONS_GET;
+	boolean BUFF_IS_TRANSFER_GET;
+	integer BUFF_ACTIONS_ID_GET;
+	integer BUFF_ID_GET;
+	timer BUFF_STACK_GET;
+
+	public function GetTriggerBuffOwner() -> unit {return BUFF_OWNER_UNIT_GET;}
+	public function GetTriggerBuffTarget() -> unit {return BUFF_TARGET_UNIT_GET;}
+	public function GetTriggerBuffIsEntered() -> boolean {return BUFF_IS_ENTERED_GET;}
+	public function GetTriggerBuffIsOut() -> boolean {return BUFF_IS_OUT_GET;}
+	public function GetTriggerBuffIsActions() -> boolean {return BUFF_IS_ACTIONS_GET;}
+	public function GetTriggerBuffIsTransfer() -> boolean {return BUFF_IS_TRANSFER_GET;}
+	public function GetTriggerBuffActionsId() -> integer {return BUFF_ACTIONS_ID_GET;}
+	public function GetTriggerBuffId() -> integer {return BUFF_ID_GET;}
+	public function GetTriggerBuffStack() -> timer {return BUFF_STACK_GET;}
+
+	public function BuffActions() {
+		unit ownerUnit = OwnerUnit;
+		unit targetUnit = TargetUnit;
+		boolean isEntered = IsEntered;
+		boolean isOut = IsOut;
+		boolean isActions = IsActions;
+		boolean isTransfer = IsTransfer;
+		integer actionsId = ActionsId;
+		integer buffId = BuffId;
+		timer buffStack = BuffStack;
+
+		BUFF_OWNER_UNIT_GET = ownerUnit;
+		BUFF_TARGET_UNIT_GET = targetUnit;
+		BUFF_IS_ENTERED_GET = isEntered;
+		BUFF_IS_OUT_GET = isOut;
+		BUFF_IS_ACTIONS_GET = isActions;
+		BUFF_IS_TRANSFER_GET = isTransfer;
+		BUFF_ACTIONS_ID_GET = actionsId;
+		BUFF_ID_GET = BuffId;
+		BUFF_STACK_GET = buffStack;
+
+		ExecuteEvent(EVENT_BUFF);
+		
+		if (actionsId == kresh1buff_tid) { // Kresh_1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1SP');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1SP');
+				UnitRemoveAbility(targetUnit, 'B04V'); // buff
+			}
+			if (isActions) {
+				UnitDamagePureToTarget(ownerUnit, targetUnit, 100);
+			}
+		}
+		
+		if (actionsId == kresh0buff_tid) { // Kresh_0
+			if (isEntered) {
+				DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\NightElf\\ManaBurn\\ManaBurnTarget.mdl", targetUnit, "overhead"));
+				UnitAddAbilityPermanent(targetUnit, 'A12I');
+				UnitAddAbilityPermanent(targetUnit, 'A12H');
+			}
+			if (isOut) {
+				DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\NightElf\\ManaBurn\\ManaBurnTarget.mdl", targetUnit, "overhead"));
+				UnitRemoveAbility(targetUnit, 'A12I');
+				UnitRemoveAbility(targetUnit, 'A12H');
+				UnitRemoveAbility(targetUnit, 'B01Y'); // buff
+			}
+		}
+
+		if (actionsId == teacup_tid) { // Tea Cup
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1XC');
+				UnitMakeAbilityPermanent(targetUnit, true, 'A1XD');
+				SetPlayerAbilityAvailableBJ( false, 'A1XC', GetOwningPlayer(targetUnit) );
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1XC');
+			}
+		}
+
+		if (actionsId == ursa4mefbuff_tid) { // Ursa 4 Mefisto
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1SJ');
+				UnitAddAbilityPermanent(targetUnit, 'A1SI');
+				UnitAddAbilityPermanent(targetUnit, 'A1S0');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1SJ');
+				UnitRemoveAbility(targetUnit, 'A1SI');
+				UnitRemoveAbility(targetUnit, 'A1S0');
+				UnitRemoveAbility(targetUnit, 'B00X'); // buff
+			}
+		}
+
+		if (actionsId == ursa4buff_tid) { // Ursa 4 
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1SJ');
+				UnitAddAbilityPermanent(targetUnit, 'A1SI');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1SJ');
+				UnitRemoveAbility(targetUnit, 'A1SI');
+				UnitRemoveAbility(targetUnit, 'B00X'); // buff
+			}
+		}
+		
+		if (actionsId == ursa2buff_tid) { // Ursa 2 
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1SF');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1SF');
+				UnitRemoveAbility(targetUnit, 'B016'); // buff
+			}
+		}
+
+		if (actionsId == ursa1buff_tid) { // Ursa 1 
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1SE');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1SE');
+				UnitRemoveAbility(targetUnit, 'B02Y'); // buff
+			}
+		}
+
+		if (actionsId == gall2buff_tid) { // Gallywix 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1SY');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1SY');
+				UnitRemoveAbility(targetUnit, 'B04G'); // buff
+			}
+		}
+
+		if (actionsId == morderkay3buff_tid) { // Morderkay 3
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1T0');
+				UnitAddAbilityPermanent(targetUnit, 'A1SZ');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1T0');
+				UnitRemoveAbility(targetUnit, 'A1SZ');
+				UnitRemoveAbility(targetUnit, 'B01X'); // buff
+			}
+		}
+
+		if (actionsId == forg1buff_tid) { // Forg 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1T2');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1T2');
+				UnitRemoveAbility(targetUnit, 'B02O'); // buff
+			}
+		}
+
+		if (actionsId == forg2buff_tid) { // Forg 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1T4');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1T4');
+				UnitRemoveAbility(targetUnit, 'B00B'); // buff
+			}
+		}
+
+		if (actionsId == forg3buff_tid) { // Forg 3
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1T7');
+				UnitAddAbilityPermanent(targetUnit, 'A1T6');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1T7');
+				UnitRemoveAbility(targetUnit, 'A1T6');
+				UnitRemoveAbility(targetUnit, 'B05Y'); // buff
+			}
+		}
+
+		if (actionsId == spike1buff_tid) { // Spike 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1HY');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1HY');
+				UnitRemoveAbility(targetUnit, 'B061'); // buff
+			}
+			if (isActions) {
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, 50);
+			}
+		}
+
+		if (actionsId == spike2abuff_tid) { // Spike 2a
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1I0');
+				UnitAddAbilityPermanent(targetUnit, 'A1I1');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1I0');
+				UnitRemoveAbility(targetUnit, 'A1I1');
+				UnitRemoveAbility(targetUnit, 'B062'); // buff
+			}
+		}
+
+		if (actionsId == spike2bbuff_tid) { // Spike 2b
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1I2');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1I2');
+				UnitRemoveAbility(targetUnit, 'B063'); // buff
+			}
+		}
+
+		if (actionsId == spike2cbuff_tid) { // Spike 2c
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1TE');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1TE');
+				UnitRemoveAbility(targetUnit, 'B03F'); // buff
+			}
+		}
+
+		if (actionsId == spike2dbuff_tid) { // Spike 2d
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1TH');
+				UnitAddAbilityPermanent(targetUnit, 'A1TF');
+				UnitMakeAbilityPermanent(targetUnit, true, 'A1TG');
+				SetPlayerAbilityAvailable(GetOwningPlayer(targetUnit), 'A1TH', false);
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1TH');
+				UnitRemoveAbility(targetUnit, 'A1TF');
+				UnitRemoveAbility(targetUnit, 'B05Z'); // buff
+			}
+		}
+
+		if (actionsId == spike2fbuff_tid) { // Spike 2f
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1TI');
+				AddUnitModifier(targetUnit, DEC_ENTER_TIME_NEG_BUFF, 0.50);
+				AddUnitModifier(targetUnit, DEC_ENTER_STUN_TIME, 0.50);
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1TI');
+				UnitRemoveAbility(targetUnit, 'B060'); // buff
+				SubUnitModifier(targetUnit, DEC_ENTER_TIME_NEG_BUFF, 0.50);
+				SubUnitModifier(targetUnit, DEC_ENTER_STUN_TIME, 0.50);
+			}
+		}
+		
+		if (actionsId == draken3buff_tid) { // Draken 3
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1TO');
+				UnitAddAbilityPermanent(targetUnit, 'A1TM');
+				AddAuraToUnit(targetUnit, draken3aura_tid, null, false, 0, false, false,false, draken3aura_tid, Condition(function FilterRadiance), 900., 0, false, 0);
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1TO');
+				UnitRemoveAbility(targetUnit, 'A1TM');
+				DestroyUnitAurasByType(targetUnit, draken3aura_tid, false);
+				UnitRemoveAbility(targetUnit, 'B07H'); // buff
+			}
+		}
+		
+		if (actionsId == dummytimer_tid) { // Dummy Timer
+			if (isOut) {
+				KillUnit(targetUnit);
+			}
+		}
+		
+		if (actionsId == basicroot_tid) { // Basicroot
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A1TY', 1, "entanglingroots");
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'BEer'); // buff
+			}
+		}
+		
+		if (actionsId == atreant1buff_tid) { // A Treant 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1U0');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1U0');
+				UnitRemoveAbility(targetUnit, 'B026'); // buff
+			}
+		}
+		
+		if (actionsId == atreant2buffa_tid) { // A Treant 2a
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A0IT', 1, "sleep");
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B040'); // buff
+				UnitRemoveAbility(targetUnit, 'BUsp'); // buff
+				UnitRemoveAbility(targetUnit, 'Bust'); // buff
+			}
+		}
+		
+		if (actionsId == atreant2buffb_tid) { // A Treant 2b
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A1U1', 1, "sleep");
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B02N'); // buff
+				UnitRemoveAbility(targetUnit, 'BUsp'); // buff
+				UnitRemoveAbility(targetUnit, 'Bust'); // buff
+			}
+		}
+		
+		if (actionsId == atreant3buff_tid) { // A Treant 3 talent
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1BE');
+				UnitAddAbilityPermanent(targetUnit, 'A1BD');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1BE');
+				UnitRemoveAbility(targetUnit, 'A1BD');
+				UnitRemoveAbility(targetUnit, 'B055'); // buff
+			}
+		}
+
+		if (actionsId == stanley1buff_tid) { // Stanley 1
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A066', GetUnitAbilityLevel(ownerUnit, 'A065'), "antimagicshell");
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B018'); // buff
+				UnitRemoveAbility(targetUnit, 'Bams'); // buff
+			}
+		}
+
+		if (actionsId == lord5buff_tid) { // Lord 5
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1U8');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1U8');
+				UnitRemoveAbility(targetUnit, 'B07T'); // buff
+			}
+		}
+
+		if (actionsId == lord3buff_tid) { // Lord 3
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1UB');
+				SetPlayerAbilityAvailable(GetOwningPlayer(targetUnit), 'A1UB', false);
+				UnitMakeAbilityPermanent(targetUnit, true, 'A1UA');
+				AddUnitModifier(targetUnit, INC_ENTER_STUN_TIME, 0.5);
+				AddUnitModifier(targetUnit, INC_ENTER_TIME_NEG_BUFF, 0.5);
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1UB');
+				UnitRemoveAbility(targetUnit, 'B01D'); // buff
+				SubUnitModifier(targetUnit, INC_ENTER_STUN_TIME, 0.5);
+				SubUnitModifier(targetUnit, INC_ENTER_TIME_NEG_BUFF, 0.5);
+			}
+		}
+
+		if (actionsId == gregor3buff_tid) { // Gregor 3
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1UE');
+				UnitAddAbilityPermanent(targetUnit, 'A1UD');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1UE');
+				UnitRemoveAbility(targetUnit, 'A1UD');
+				UnitRemoveAbility(targetUnit, 'B07U'); // buff
+			}
+		}
+
+		if (actionsId == razzlo1abuff_tid) { // Razzlo 1a
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1I8');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1I8');
+				UnitRemoveAbility(targetUnit, 'B07V'); // buff
+			}
+		}
+
+		if (actionsId == razzlo1bbuff_tid) { // Razzlo 1b
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1UG');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1UG');
+				UnitRemoveAbility(targetUnit, 'B038'); // buff
+			}
+			if (isActions) {
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, GetBuffDataReal(buffId));	
+				SetBuffDataReal(buffId, GetBuffDataReal(buffId) + 10);
+			}
+		}
+
+		if (actionsId == richard0buff_tid) { // Richard 0
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1UH');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1UH');
+				UnitRemoveAbility(targetUnit, 'B07N'); // buff
+			}
+		}
+
+		if (actionsId == richard1buff_tid) { // Richard 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A126');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A126');
+				UnitRemoveAbility(targetUnit, 'B041'); // buff
+			}
+		}
+
+		if (actionsId == richard2buff_tid) { // Richard 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1UL');
+				AddUnitAnimationProperties(targetUnit, "defend", true);
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1UL');
+				AddUnitAnimationProperties(targetUnit, "defend", false);
+				UnitRemoveAbility(targetUnit, 'B07W'); // buff
+			}
+		}
+
+		if (actionsId == richard5abuff_tid) { // Richard 5a
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1UO');
+				UnitAddAbilityPermanent(targetUnit, 'A1UM');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1UO');
+				UnitRemoveAbility(targetUnit, 'A1UM');
+				UnitRemoveAbility(targetUnit, 'B07X'); // buff
+			}
+		}
+
+		if (actionsId == richard5bbuff_tid) { // Richard 5b
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1UN');
+				UnitAddAbilityPermanent(targetUnit, 'A1UP');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1UN');
+				UnitRemoveAbility(targetUnit, 'A1UP');
+				UnitRemoveAbility(targetUnit, 'B07Y'); // buff
+			}
+		}
+
+		if (actionsId == rane2buff_tid) { // Rane 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1UX');
+				SetPlayerAbilityAvailable(GetOwningPlayer(targetUnit), 'A1UX', false);
+				UnitMakeAbilityPermanent(targetUnit, true, 'A1UV');
+				UnitMakeAbilityPermanent(targetUnit, true, 'A1UW');
+				AddAuraToUnit(targetUnit, rane2aura_tid, null, false, 0, false, false,false, rane2aura_tid, Condition(function FilterRadiance), 400., 0, false, 0);
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1UX');
+				DestroyUnitAurasByType(targetUnit, rane2aura_tid, false);
+				UnitRemoveAbility(targetUnit, 'B029'); // buff
+			}
+		}
+		
+		if (actionsId == rane3buff_tid) { // Rane 3
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1V1');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1V1');
+				UnitRemoveAbility(targetUnit, 'B080'); // buff
+			}
+			if (isActions) {
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, GetUnitMaxLife(targetUnit) * 0.01);	
+			}
+		}
+
+		if (actionsId == rane5buff_tid) { // Rane 5
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1V2');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1V2');
+				UnitRemoveAbility(targetUnit, 'B05D'); // buff
+			}
+		}
+		
+		if (actionsId == witcherq3buff_tid) { // Witcher Q 3
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A192');
+				if (UnitHasTalent(ownerUnit, 'A1WM')) {
+					UnitAddAbilityPermanent(targetUnit, 'A1WJ');
+					UnitAddAbilityPermanent(targetUnit, 'A1WK');
+					udg_Smart_Integer[1] = udg_Witcher_Integer[3] / 10;
+					udg_Smart_Integer[2] = udg_Witcher_Integer[3] - (udg_Smart_Integer[1] * 10);
+					SetUnitAbilityLevelSwapped( 'A1WK', targetUnit, ( udg_Smart_Integer[1] + 1 ) );
+					SetUnitAbilityLevelSwapped( 'A1WJ', targetUnit, ( udg_Smart_Integer[2] + 1 ) );
+				}
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A192');
+				UnitRemoveAbility(targetUnit, 'A1WJ');
+				UnitRemoveAbility(targetUnit, 'A1WK');
+				UnitRemoveAbility(targetUnit, 'B01K'); // buff
+			}
+			if (isActions) {
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, 50 * (1.0 + udg_Witcher_SignPower[GetUnitUserData(ownerUnit)] + udg_Arrow_Bonus_Damage[GetUnitUserData(ownerUnit)]));	
+			}
+		}
+
+		if (actionsId == witcherq4buff_tid) { // Witcher Q 4
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A052');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A052');
+				UnitRemoveAbility(targetUnit, 'B01L'); // buff
+			}
+		}
+		
+		if (actionsId == basicsleep1_tid) { // basicsleep
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A09F', 1, "sleep");
+				UnitRemoveAbility(targetUnit, 'BUsp'); // buff
+				UnitRemoveAbility(targetUnit, 'Bust'); // buff
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'BUsl'); // buff
+				UnitRemoveAbility(targetUnit, 'BUsp'); // buff
+				UnitRemoveAbility(targetUnit, 'Bust'); // buff
+			}
+		}
+		
+		if (actionsId == witcher01buff_tid) { // Witcher 01
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1VX');
+				SetUnitMaxState( targetUnit,UNIT_STATE_MAX_LIFE, R2I(GetUnitStateSwap(UNIT_STATE_MAX_LIFE, targetUnit) + I2R(400)));
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1VX');
+				UnitRemoveAbility(targetUnit, 'B081'); // buff
+				SetUnitMaxState( targetUnit,UNIT_STATE_MAX_LIFE, R2I(GetUnitStateSwap(UNIT_STATE_MAX_LIFE, targetUnit) - I2R(400)));
+			}
+		}
+
+		if (actionsId == witcher02buff_tid) { // Witcher 02
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1VZ');
+				udg_Hero_MP_Reg_Items_Main[GetUnitUserData(targetUnit)] = ( udg_Hero_MP_Reg_Items_Main[GetUnitUserData(targetUnit)] + 20.00 );
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1VZ');
+				UnitRemoveAbility(targetUnit, 'B082'); // buff
+				udg_Hero_MP_Reg_Items_Main[GetUnitUserData(targetUnit)] = ( udg_Hero_MP_Reg_Items_Main[GetUnitUserData(targetUnit)] - 20.00 );
+			}
+		}
+
+		if (actionsId == witcher03buff_tid) { // Witcher 03
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1W1');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1W1');
+				UnitRemoveAbility(targetUnit, 'B083'); // buff
+				if (udg_Witcher_Night[GetUnitUserData(targetUnit)] == true) {
+					udg_Witcher_Night[GetUnitUserData(targetUnit)] = false;
+					udg_Witcher_SignPower[GetUnitUserData(targetUnit)] = ( udg_Witcher_SignPower[GetUnitUserData(targetUnit)] - 0.50 );
+				}
+			}
+			if (isActions) {
+				if (GetTimeOfDay() < 6.00 || GetTimeOfDay() >= 18.00) {
+					if (udg_Witcher_Night[GetUnitUserData(targetUnit)] == false) {
+						udg_Witcher_Night[GetUnitUserData(targetUnit)] = true;
+						udg_Witcher_SignPower[GetUnitUserData(targetUnit)] = ( udg_Witcher_SignPower[GetUnitUserData(targetUnit)] + 0.50 );
+					}
+				 } else {
+					if (udg_Witcher_Night[GetUnitUserData(targetUnit)] == true) {
+						udg_Witcher_Night[GetUnitUserData(targetUnit)] = false;
+						udg_Witcher_SignPower[GetUnitUserData(targetUnit)] = ( udg_Witcher_SignPower[GetUnitUserData(targetUnit)] - 0.50 );
+					}
+				}
+			}
+		}
+
+		if (actionsId == witcher04abuff_tid) { // Witcher 04a
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1W3');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1W3');
+				UnitRemoveAbility(targetUnit, 'B084'); // buff
+			}
+		}
+
+		if (actionsId == witcher04bbuff_tid) { // Witcher 04b
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1W9');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1W9');
+				UnitRemoveAbility(targetUnit, 'B087'); // buff
+			}
+		}
+
+		if (actionsId == witcher05buff_tid) { // Witcher 05
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1W5');
+				AddUnitModifier(targetUnit, CHANCE_DODGE_ATTACK, 0.6);
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1W5');
+				UnitRemoveAbility(targetUnit, 'B085'); // buff
+				SubUnitModifier(targetUnit, CHANCE_DODGE_ATTACK, 0.6);
+			}
+		}
+
+		if (actionsId == witcher06buff_tid) { // Witcher 06
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1W8');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1W8');
+				UnitRemoveAbility(targetUnit, 'B086'); // buff
+			}
+		}
+
+		if (actionsId == witcher07buff_tid) { // Witcher 07
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1WC');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1WC');
+				UnitRemoveAbility(targetUnit, 'B088'); // buff
+			}
+		}
+
+		if (actionsId == witcher08buff_tid) { // Witcher 08
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1WF');
+				UnitMakeAbilityPermanent(targetUnit, true, 'A1WE');
+				UnitAddAbilityPermanent(targetUnit, 'A1WD');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1WF');
+				UnitRemoveAbility(targetUnit, 'A1WD');
+				UnitRemoveAbility(targetUnit, 'B03Q'); // buff
+			}
+		}
+
+		if (actionsId == witcher09buff_tid) { // Witcher 09
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1WI');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1WI');
+				UnitRemoveAbility(targetUnit, 'B089'); // buff
+			}
+		}
+
+		if (actionsId == goliath1buff_tid) { // Goliath 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1WP');
+				UnitMakeAbilityPermanent(targetUnit, true, 'A1WO');
+				if (UnitHasTalent(ownerUnit, 'A1OM')) {
+					SetUnitAbilityLevelSwapped( 'A1WO', targetUnit, 2 );
+				}
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1WP');
+				UnitRemoveAbility(targetUnit, 'B05M'); // buff
+			}
+		}
+
+		if (actionsId == goliath5buff_tid) { // Goliath 5
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A1FX', 1, "doom");
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B05O'); // buff
+				UnitRemoveAbility(targetUnit, 'BNdi'); // buff
+			}
+			if (isActions) {
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, 50);
+			}
+		}
+		
+		if (actionsId == fox1buff_tid) { // Fox 1
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A04X', 1, "ensnare");
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'Bena'); // buff
+				UnitRemoveAbility(targetUnit, 'Beng'); // buff
+			}
+		}
+
+		if (actionsId == fox4buff_tid) { // Fox 4
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1WW');
+				UnitAddAbilityPermanent(targetUnit, 'A1WV');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1WW');
+				UnitRemoveAbility(targetUnit, 'A1WV');
+				UnitRemoveAbility(targetUnit, 'B01F'); // buff
+			}
+		}
+		
+		if (actionsId == fox0buff_tid) { // Fox 0
+			if (isEntered) {
+				if (GetBuffStacks(buffId) == 1) {
+					UnitAddAbilityPermanent(targetUnit, 'A1YS');
+				}
+				//  udg_Hero_HP_Reg_Talents[GetConvertedPlayerId(GetOwningPlayer(targetUnit))] = ( udg_Hero_HP_Reg_Talents[GetConvertedPlayerId(GetOwningPlayer(targetUnit))] + 1 );
+			}
+			if (isOut) {
+				if (GetBuffStacks(buffId) == 0) {
+					UnitRemoveAbility(targetUnit, 'A1YS');
+					UnitRemoveAbility(targetUnit, 'B08J'); // buff
+				}
+				//   udg_Hero_HP_Reg_Talents[GetConvertedPlayerId(GetOwningPlayer(targetUnit))] = ( udg_Hero_HP_Reg_Talents[GetConvertedPlayerId(GetOwningPlayer(targetUnit))] - 1 );
+			}
+		}
+		
+		if (actionsId == silena2buff_tid) { // Silena 2
+			if (isEntered) {
+				UnitAddPowerUpItem (targetUnit, 'I0D5');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B03N'); // buff
+			}
+		}
+		
+		if (actionsId == robbie2buff_tid) { // Robbie 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A0QC');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A0QC');
+				UnitRemoveAbility(targetUnit, 'B051'); // buff
+			} 
+			if (isActions) {
+				if (GetUnitStateSwap(UNIT_STATE_LIFE, targetUnit) > (GetUnitMaxLife(targetUnit) * 0.005 * GetBuffStacks(buffId)) + 1.) {
+					SetUnitState(targetUnit, UNIT_STATE_LIFE, RMaxBJ(0,GetUnitStateSwap(UNIT_STATE_LIFE, targetUnit) - GetUnitMaxLife(targetUnit) * 0.005 * GetBuffStacks(buffId)));
+                } else {
+					SetUnitState(targetUnit, UNIT_STATE_LIFE, 1);
+                }
+				SetUnitState(ownerUnit, UNIT_STATE_LIFE, RMaxBJ(0,GetUnitStateSwap(UNIT_STATE_LIFE, ownerUnit) + GetUnitMaxLife(targetUnit) * 0.005 * GetBuffStacks(buffId)));
+			}
+		}
+
+		if (actionsId == wormy1buff_tid) { // Wormy 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1X1');
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, 100);
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1X1');
+				UnitRemoveAbility(targetUnit, 'B01R'); // buff
+			} 
+			if (isActions) {
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, 100);
+			}
+		}
+
+		if (actionsId == wormy2buff_tid) { // Wormy 2
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A09V', 1, "entanglingroots");
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B01U'); // buff
+			}
+			if (isActions) {
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, 10);
+			}
+		}
+
+		if (actionsId == wormy4buff_tid) { // Wormy 4
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A09T');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A09T');
+				UnitRemoveAbility(targetUnit, 'B01S'); // buff
+			}
+			if (isActions) {
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, 10);
+			}
+		}
+
+		if (actionsId == bluepotion_tid) { // Blue Potion
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A0V0');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A0V0');
+				UnitRemoveAbility(targetUnit, 'B027'); // buff
+			}
+			if (isActions) {
+				RestoreManaUnit(targetUnit, targetUnit, 25);
+			}
+		}
+
+		if (actionsId == blademail_tid) { // Blade Mail
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A02U');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A02U');
+				UnitRemoveAbility(targetUnit, 'B020'); // buff
+			}
+		}
+
+		if (actionsId == may2sleep_tid) { // May 2 sleep
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A1GX', 1, "sleep");
+				UnitRemoveAbility(targetUnit, 'BUsp'); // buff
+				UnitRemoveAbility(targetUnit, 'Bust'); // buff
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B08A'); // buff
+				UnitRemoveAbility(targetUnit, 'BUsp'); // buff
+				UnitRemoveAbility(targetUnit, 'Bust'); // buff
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, 200);
+				if (UnitHasTalent(ownerUnit, 'A1GZ')) {
+					AddBuffToUnit(ownerUnit , targetUnit , silence_tid , may2silence_tid , 4 , 0 , 0 , false , false , false, false, 0, false , false , false , false , 1);
+				} else {
+					AddBuffToUnit(ownerUnit , targetUnit , silence_tid , may2silence_tid , 2 , 0 , 0 , false , false , false, false, 0, false , false , false , false , 1);
+				}
+			}
+		}
+
+		if (actionsId == may2silence_tid) { // May 2 silence
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A1GM', 1, "drunkenhaze");
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B05J'); // buff
+			}
+		}
+
+		if (actionsId == may4buff_tid) { // May 4
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1GO');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1GO');
+				UnitRemoveAbility(targetUnit, 'B05K'); // buff
+			}
+		}
+
+		if (actionsId == may5fear_tid) { // May 5
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1X5');
+				if (IsUnitIllusion(targetUnit)) {
+					KillUnit(targetUnit);
+				}
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1X5');
+				UnitRemoveAbility(targetUnit, 'B08B'); // buff
+				IssueImmediateOrder( targetUnit, "stop" );
+				RemoveLocation (udg_Uncontrol_Target[GetUnitUserData(targetUnit)]);
+			}
+		}
+
+		if (actionsId == illidan2buff_tid) { // Illidan 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1X6');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1X6');
+				UnitRemoveAbility(targetUnit, 'B08C'); // buff
+				if (GetBuffRemainingDuration(buffId) <= 0.00) {
+					UnitDamagePureToTarget(ownerUnit, targetUnit, 200);
+				}
+			}
+		}
+
+		if (actionsId == illidan4abuff_tid) { // Illidan 4a
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1X8');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1X8');
+				UnitRemoveAbility(targetUnit, 'B04W'); // buff
+			}
+		}
+		
+		if (actionsId == illidan4bbuff_tid) { // Illidan 4b
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1X9');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1X9');
+				UnitRemoveAbility(targetUnit, 'B04X'); // buff
+			}
+		}
+
+		if (actionsId == illidan4cbuff_tid) { // Illidan 4c
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A19V');
+				SetPlayerAbilityAvailableBJ(false, 'A19V', GetOwningPlayer(targetUnit));
+				UnitMakeAbilityPermanent(targetUnit, true, 'A19Y');
+				UnitMakeAbilityPermanent(targetUnit, true, 'A19X');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A19V');
+				UnitRemoveAbility(targetUnit, 'B04Y'); // buff
+			}
+		}
+
+		if (actionsId == illidan5fear_tid) { // Illidan 5
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1XA');
+				if (IsUnitIllusion(targetUnit)) {
+					KillUnit(targetUnit);
+				}
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1XA');
+				UnitRemoveAbility(targetUnit, 'B052'); // buff
+				IssueImmediateOrder( targetUnit, "stop" );
+				RemoveLocation (udg_Uncontrol_Target[GetUnitUserData(targetUnit)]);
+			}
+		}
+
+		if (actionsId == benihime_tid) { // Benihime
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1XK');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1XK');
+				UnitRemoveAbility(targetUnit, 'B08F'); // buff
+			}
+		}
+
+		if (actionsId == gluma2buff_tid) { // Gluma 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1XQ');
+				UnitAddAbilityPermanent(targetUnit, 'A1XL');
+				UnitAddAbilityPermanent(targetUnit, 'A1XM');
+				UnitAddAbilityPermanent(targetUnit, 'A1XN');
+				UnitAddAbilityPermanent(targetUnit, 'A1XO');
+				UnitAddAbilityPermanent(targetUnit, 'A1XP');
+				UnitAddAbilityPermanent(targetUnit, 'A1XR');
+				if (UnitHasTalent(targetUnit, 'A0K8')) {
+					SetUnitAbilityLevelSwapped('A1XR', targetUnit,  2 );
+				}
+				udg_Smart_Integer[1] = R2I(udg_Hero_HP_Reg[GetUnitUserData(targetUnit)] * 4.00);
+				udg_Smart_Integer[2] = udg_Smart_Integer[1] / 10000;
+				udg_Smart_Integer[3] = (udg_Smart_Integer[1] - (udg_Smart_Integer[2] * 10000))/1000;
+				udg_Smart_Integer[4] = (udg_Smart_Integer[1] - (udg_Smart_Integer[2] * 10000) - (udg_Smart_Integer[3] * 1000))/100;
+				udg_Smart_Integer[5] = (udg_Smart_Integer[1] - (udg_Smart_Integer[2] * 10000) - (udg_Smart_Integer[3] * 1000) - (udg_Smart_Integer[4] * 100))/10;
+				udg_Smart_Integer[6] = udg_Smart_Integer[1] - (udg_Smart_Integer[2] * 10000) - (udg_Smart_Integer[3] * 1000) - (udg_Smart_Integer[4] * 100) - (udg_Smart_Integer[5] * 10);
+				SetUnitAbilityLevelSwapped('A1XL', targetUnit,  udg_Smart_Integer[2] + 1 );
+				SetUnitAbilityLevelSwapped('A1XM', targetUnit,  udg_Smart_Integer[3] + 1 );
+				SetUnitAbilityLevelSwapped('A1XN', targetUnit,  udg_Smart_Integer[4] + 1 );
+				SetUnitAbilityLevelSwapped('A1XO', targetUnit,  udg_Smart_Integer[5] + 1 );
+				SetUnitAbilityLevelSwapped('A1XP', targetUnit,  udg_Smart_Integer[6] + 1 );
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1XQ');
+				UnitRemoveAbility(targetUnit, 'A1XL');
+				UnitRemoveAbility(targetUnit, 'A1XM');
+				UnitRemoveAbility(targetUnit, 'A1XN');
+				UnitRemoveAbility(targetUnit, 'A1XO');
+				UnitRemoveAbility(targetUnit, 'A1XP');
+				UnitRemoveAbility(targetUnit, 'A1XR');
+				UnitRemoveAbility(targetUnit, 'B02K'); // buff
+			}
+			if (isActions) {
+				udg_Smart_Integer[1] = R2I(udg_Hero_HP_Reg[GetUnitUserData(targetUnit)] * 4.00);
+				udg_Smart_Integer[2] = udg_Smart_Integer[1] / 10000;
+				udg_Smart_Integer[3] = (udg_Smart_Integer[1] - (udg_Smart_Integer[2] * 10000))/1000;
+				udg_Smart_Integer[4] = (udg_Smart_Integer[1] - (udg_Smart_Integer[2] * 10000) - (udg_Smart_Integer[3] * 1000))/100;
+				udg_Smart_Integer[5] = (udg_Smart_Integer[1] - (udg_Smart_Integer[2] * 10000) - (udg_Smart_Integer[3] * 1000) - (udg_Smart_Integer[4] * 100))/10;
+				udg_Smart_Integer[6] = udg_Smart_Integer[1] - (udg_Smart_Integer[2] * 10000) - (udg_Smart_Integer[3] * 1000) - (udg_Smart_Integer[4] * 100) - (udg_Smart_Integer[5] * 10);
+				SetUnitAbilityLevelSwapped('A1XL', targetUnit,  udg_Smart_Integer[2] + 1 );
+				SetUnitAbilityLevelSwapped('A1XM', targetUnit,  udg_Smart_Integer[3] + 1 );
+				SetUnitAbilityLevelSwapped('A1XN', targetUnit,  udg_Smart_Integer[4] + 1 );
+				SetUnitAbilityLevelSwapped('A1XO', targetUnit,  udg_Smart_Integer[5] + 1 );
+				SetUnitAbilityLevelSwapped('A1XP', targetUnit,  udg_Smart_Integer[6] + 1 );
+			}
+		}
+		
+		if (actionsId == gluma4buff_tid) { // Gluma 4
+			if (isEntered) {
+				// Создаем точку и сохраняем на хэндл юнита
+				// Point2D.createAtWidget(targetUnit).save(targetUnit, GLUMABOMB_HID); - тоже самое, просто коротко.
+				//
+				// Еще тоже самое, только в две строки
+				// TempPoint = Point2D.createAtWidget(targetUnit);
+				// TempPoint.save(targetUnit, GLUMABOMB_HID);
+				//
+				// Ну и такой полувыебистый вариант
+				Point2D
+					.createAtWidget(targetUnit)
+					.save(targetUnit, GLUMABOMB_HID)
+				;
+
+				UnitAddAbilityPermanent(targetUnit, 'A1XT');
+				UnitAddAbilityPermanent(targetUnit, 'A1XS');
+				UnitAddAbilityPermanent(targetUnit, 'A1XU');
+				SetUnitVertexColorBJ(targetUnit, 100, 100, 100, 100.00);
+				AddUnitAnimationPropertiesBJ(true, "alternate", targetUnit);
+                SetUnitPathing(targetUnit, false);
+                DestroyEffect(AddSpecialEffectTarget("Objects\\Spawnmodels\\Undead\\ImpaleTargetDust\\ImpaleTargetDust.mdl", targetUnit, "origin"));
+			}
+			if (isOut) {
+				// Загружаем и дестроим точку
+				Point2D.load(targetUnit, GLUMABOMB_HID).destroy();
+
+				UnitRemoveAbility(targetUnit, 'A1XT');
+				UnitRemoveAbility(targetUnit, 'A1XS');
+				UnitRemoveAbility(targetUnit, 'A1XU');
+				UnitRemoveAbility(targetUnit, 'B08G'); // buff
+				StunUnit(targetUnit, targetUnit, LOST_CONTROL_STUN, 0.25);
+				SetUnitVertexColorBJ(targetUnit, 100, 100, 100, 0.00);
+				AddUnitAnimationPropertiesBJ(false, "alternate", targetUnit);
+				SetUnitAnimation(targetUnit, "attack");
+				udg_Gluma_Target[1] = GetUnitLoc(targetUnit);
+				CreateNUnitsAtLocFacingLocBJ(1, 'e01P', GetOwningPlayer(targetUnit), udg_Gluma_Target[1], udg_Gluma_Target[1]);
+				UnitApplyTimedLifeBJ(1.00, 'BTLF', GetLastCreatedUnit());
+				UnitAddAbilityBJ('A0GV', GetLastCreatedUnit());
+				IssueImmediateOrder(GetLastCreatedUnit(), "stomp");
+				RemoveLocation(udg_Gluma_Target[1]);
+				SetUnitPathing(targetUnit, true);
+			}
+			if (isActions) {
+				// Заметь, что точку мы создаем только одну, а потом меняем ей координаты, по хорошему так и делать. При инициализации создаваь объекты, после завершения - уничтожать.
+				if (IsTerrainPathable(GetWidgetX(targetUnit), GetWidgetY(targetUnit), PATHING_TYPE_WALKABILITY)) {
+					DestroyUnitBuff(targetUnit, buffId, true);
+				}
+				if (UnitHasAbility(targetUnit, 'B04D')) {
+					TempPoint = Point2D.load(targetUnit, GLUMABOMB_HID); // загружаем точку
+					if (TempPoint.distToWidget(targetUnit) >= 200.0) { // чекаем расстояние
+						TempPoint.setAtWidget(targetUnit);	// ставим новые координаты
+						TempUnit = CreateUnit(GetOwningPlayer(targetUnit), 'o00H', GetWidgetX(targetUnit), GetWidgetY(targetUnit), 270.0);
+						UnitApplyTimeLife(TempUnit, 3.0);
+						StunUnit(targetUnit, TempUnit, LOST_CONTROL_STUN, 5.0);
+						SetUnitAnimation(TempUnit, "stand work");
+					}
+				}
+			}
+		}
+
+		if (actionsId == gluma5buff_tid) { // Gluma 5
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A0GX');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A0GX');
+				UnitRemoveAbility(targetUnit, 'B02L'); // buff
+			}
+		}
+
+		if (actionsId == alice2buff_tid) { // Alice 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1XZ');
+				udg_Hero_XP_Percent[GetConvertedPlayerId(GetOwningPlayer(targetUnit))] = ( udg_Hero_XP_Percent[GetConvertedPlayerId(GetOwningPlayer(targetUnit))] + GetBuffDataReal(buffId) );
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1XZ');
+				UnitRemoveAbility(targetUnit, 'B001'); // buff
+				udg_Hero_XP_Percent[GetConvertedPlayerId(GetOwningPlayer(targetUnit))] = ( udg_Hero_XP_Percent[GetConvertedPlayerId(GetOwningPlayer(targetUnit))] - GetBuffDataReal(buffId) );
+			}
+		}
+
+		if (actionsId == alice3delay_tid) { // Alice 3
+			if (isOut) {
+				if (UnitAlive(targetUnit)) {
+					DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\Undead\\DarkRitual\\DarkRitualTarget.mdl", targetUnit, "origin"));
+					if (UnitHasTalent(targetUnit, 'A1Y6')) {
+						AddAuraToUnit(targetUnit, alice3trap_tid, null, false, 0, false, true,true, alice3trap_tid, Condition(function FilterAuraEnemyHero), 135., 0, false, 0.25);
+					} else {
+						AddAuraToUnit(targetUnit, alice3trap_tid, null, false, 0, false, true,true, alice3trap_tid, Condition(function FilterRadiance), 135., 0, false, 0.25);
+					}
+				}
+			}
+		}
+
+		if (actionsId == frostslow_tid) { // Frost slow
+			if (isEntered) {
+				if (GetBuffStacks(buffId) == 2 && GetHeroLevel(udg_Hero[GetConvertedPlayerId(GetOwningPlayer(ownerUnit))]) >= 80 && GetUnitTypeId(udg_Hero[GetConvertedPlayerId(GetOwningPlayer(ownerUnit))]) == 'N000') {
+					StunUnit(udg_Hero[GetConvertedPlayerId(GetOwningPlayer(ownerUnit))], targetUnit, FROST_STUN, 1.8);
+					DestroyUnitBuff(targetUnit, GetUnitBuffByType(targetUnit, frostslow_tid), true);
+				} else {
+					ApplyAbilityToUnit(ownerUnit, targetUnit, 'A00G', 1, "frostnova");
+				}
+			}
+			if (isOut) {
+ 				UnitRemoveAbility(targetUnit, 'Bfro'); // buff
+			}
+		}
+
+		if (actionsId == frostslowcrown_tid) { // Frost slow North Crown
+			if (isEntered) {
+				if (GetBuffStacks(buffId) == 2 && GetHeroLevel(udg_Hero[GetConvertedPlayerId(GetOwningPlayer(ownerUnit))]) >= 80 && GetUnitTypeId(udg_Hero[GetConvertedPlayerId(GetOwningPlayer(ownerUnit))]) == 'N000') {
+					StunUnit(udg_Hero[GetConvertedPlayerId(GetOwningPlayer(ownerUnit))], targetUnit, FROST_STUN, 1.8);
+					DestroyUnitBuff(targetUnit, GetUnitBuffByType(targetUnit, frostslow_tid), true);
+				} else {
+					ApplyAbilityToUnit(ownerUnit, targetUnit, 'A00G', 1, "frostnova");
+					udg_Hero_HP_Reg_Unscale[GetUnitUserData(targetUnit)] = ( udg_Hero_HP_Reg_Unscale[GetUnitUserData(targetUnit)] + 0.50 );
+				}
+			}
+			if (isOut) {
+ 				UnitRemoveAbility(targetUnit, 'Bfro'); // buff
+				udg_Hero_HP_Reg_Unscale[GetUnitUserData(targetUnit)] = ( udg_Hero_HP_Reg_Unscale[GetUnitUserData(targetUnit)] - 0.50 );
+			}
+		}
+
+		if (actionsId == todzi2buff_tid) { // Todzi 2
+			if (isEntered) {
+				UnitAddPowerUpItem (targetUnit, 'I0D9');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B015'); // buff
+			}
+		}
+
+		if (actionsId == puss3buff_tid) { // Puss 3
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1YH');
+				UnitAddAbilityPermanent(targetUnit, 'A1YI');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1YH');
+				UnitRemoveAbility(targetUnit, 'A1YI');
+				UnitRemoveAbility(targetUnit, 'B04I'); // buff
+			}
+		}
+
+		if (actionsId == flash2fear_tid) { // Flash 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1YL');
+				if (IsUnitIllusion(targetUnit)) {
+					KillUnit(targetUnit);
+				}
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1YL');
+				UnitRemoveAbility(targetUnit, 'B08H'); // buff
+				IssueImmediateOrder( targetUnit, "stop" );
+				RemoveLocation (udg_Uncontrol_Target[GetUnitUserData(targetUnit)]);
+			}
+		}
+
+		if (actionsId == katrina1buff_tid) { // Katrina 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A0VN');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A0VN');
+				UnitRemoveAbility(targetUnit, 'B01E'); // buff
+			}
+		}
+
+		if (actionsId == katrina2buff_tid) { // Katrina 2
+			if (isEntered) {
+				UnitAddPowerUpItem (targetUnit, 'I0DC');
+				ResetUnitAnimation(targetUnit);
+			}
+			if (isOut) {
+				if (UnitAlive(targetUnit)) {
+					UnitAddPowerUpItem (targetUnit, 'I0DD');
+					ResetUnitAnimation(targetUnit);
+					UnitRemoveAbility(targetUnit, 'B08I'); // buff
+				}
+			}
+		}
+
+		if (actionsId == desolate2_tid) { // Desolate 2
+			if (isEntered) {
+				if (GetBuffStacks(buffId) == 1) {
+					UnitAddAbilityPermanent(targetUnit, 'A1XF');
+					UnitAddAbilityPermanent(targetUnit, 'A1QO');
+				}
+				SetUnitAbilityLevelSwapped('A1QO', targetUnit, (GetBuffStacks(buffId)));
+			}
+			if (isOut) {
+				SetUnitAbilityLevelSwapped('A1QO', targetUnit, (GetBuffStacks(buffId)));
+				if (GetBuffStacks(buffId) == 0) {
+					UnitRemoveAbility(targetUnit, 'A1XF');
+					UnitRemoveAbility(targetUnit, 'A1QO');
+					UnitRemoveAbility(targetUnit, 'B05I'); // buff
+				}
+			}
+		}
+
+		if (actionsId == desolate1_tid) { // Desolate 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1XF');
+				UnitAddAbilityPermanent(targetUnit, 'A1XE');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1XF');
+				UnitRemoveAbility(targetUnit, 'A1XE');
+				UnitRemoveAbility(targetUnit, 'B05I'); // buff
+			}
+		}
+
+		if (actionsId == lita4buff_tid) { // Lita 4
+			if (isEntered) {
+				UnitAddPowerUpItem (targetUnit, 'I0DE');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B03D'); // buff
+			}
+		}
+
+		if (actionsId == miku0stars_tid) { // Miku 0
+			if (isOut) {
+				if (UnitHasTalent(ownerUnit, 'A0IG')) {
+					UnitDamageMagicToTarget(ownerUnit, targetUnit, 100);
+				} else {
+					UnitDamageMagicToTarget(ownerUnit, targetUnit, 50);
+				}
+			}
+		}
+
+		if (actionsId == miku4buff_tid) { // Miku 4
+			if (isEntered) {
+				UnitAddPowerUpItem (targetUnit, 'I0DF');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B08K'); // buff
+			}
+		}
+
+		if (actionsId == miku5buff_tid) { // Miku 5
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1QF');
+				AddUnitModifier(targetUnit, INC_LIFESTEAL, 5.0);
+				AddUnitModifier(targetUnit, INC_ENTER_HEAL, 5.0);
+				udg_Hero_HP_Reg_Scale_Main[GetUnitUserData(targetUnit)] = ( udg_Hero_HP_Reg_Scale_Main[GetUnitUserData(targetUnit)] + 5.0 );
+			}
+			if (isOut) {
+				SubUnitModifier(targetUnit, INC_LIFESTEAL, 5.0);
+				SubUnitModifier(targetUnit, INC_ENTER_HEAL, 5.0);
+				udg_Hero_HP_Reg_Scale_Main[GetUnitUserData(targetUnit)] = ( udg_Hero_HP_Reg_Scale_Main[GetUnitUserData(targetUnit)] - 5.0 );
+				UnitRemoveAbility(targetUnit, 'A1QF');
+				UnitRemoveAbility(targetUnit, 'B06A'); // buff
+			}
+		}
+
+		if (actionsId == gordon2buff_tid) { // Gordon 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1Z9');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1Z9');
+				UnitRemoveAbility(targetUnit, 'B008'); // buff
+			}
+		}
+
+		if (actionsId == gordon3buff_tid) { // Gordon 3
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1I9');
+				AddUnitModifier(targetUnit, CHANCE_MISS, 0.5);
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1I9');
+				UnitRemoveAbility(targetUnit, 'B00M'); // buff
+				SubUnitModifier(targetUnit, CHANCE_MISS, 0.5);
+			}
+		}
+
+		if (actionsId == harpyboss_tid) { // Harpy Boss 0
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1RF');
+				AddUnitModifier(targetUnit, CHANCE_MISS, 0.3);
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1RF');
+				UnitRemoveAbility(targetUnit, 'B04E'); // buff
+				SubUnitModifier(targetUnit, CHANCE_MISS, 0.3);
+			}
+		}
+
+		if (actionsId == hope1buff_tid) { // Hope 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A16M');
+				if (GetUnitAbilityLevel(ownerUnit, 'B04D') > 0) {
+				UnitAddAbilityPermanent(targetUnit, 'A1NS');
+				UnitMakeAbilityPermanent(targetUnit, true, 'A1NT');
+				SetPlayerAbilityAvailable(GetOwningPlayer(targetUnit), 'A1NS', false);
+				}
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A16M');
+				UnitRemoveAbility(targetUnit, 'A1NS');
+				UnitRemoveAbility(targetUnit, 'B07F'); // buff
+			}
+		}
+
+		if (actionsId == hope2buff_tid) { // Hope 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1ZH');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1ZH');
+				UnitRemoveAbility(targetUnit, 'B02F'); // buff
+			}
+		}
+
+		if (actionsId == hope4buff_tid) { // Hope 4
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1ZI');
+				AddUnitModifier(targetUnit, CHANCE_MISS, 0.5);
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1ZI');
+				UnitRemoveAbility(targetUnit, 'B000'); // buff
+				SubUnitModifier(targetUnit, CHANCE_MISS, 0.5);
+			}
+		}
+
+		if (actionsId == hope3buff_tid) { // Hope 3
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1ZJ');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1ZJ');
+				UnitRemoveAbility(targetUnit, 'B08L'); // buff
+			}
+		}
+
+		if (actionsId == sanyahammerbuff_tid) { // Sanya Hammer Item
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1ZM');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1ZM');
+				UnitRemoveAbility(targetUnit, 'B08M'); // buff
+			}
+		}
+
+		if (actionsId == sanya4buff_tid) { // Sanya 
+			if (isEntered) {
+				AddAuraToUnit(targetUnit, sanya4aura_tid, null, false, 0, false, false,false, sanya4aura_tid, Condition(function FilterAuraAlly), 900., 0, false, 0);
+			}
+			if (isOut) {
+				DestroyUnitAurasByType(targetUnit, sanya4aura_tid, false);
+			}
+		}
+
+		if (actionsId == sanya1buff_tid) { // Sanya 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1ZR');
+				UnitAddAbilityPermanent(targetUnit, 'A1ZS');
+				UnitAddAbilityPermanent(targetUnit, 'A1ZT');
+				if (!UnitHasTalent(ownerUnit, 'A0G2')) {
+					SetUnitAbilityLevelSwapped('A1ZT', targetUnit,  2);
+				}
+				if (UnitHasTalent(ownerUnit, 'A0V7')) {
+					SetUnitAbilityLevelSwapped('A1ZS', targetUnit,  2);
+				}
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1ZR');
+				UnitRemoveAbility(targetUnit, 'A1ZS');
+				UnitRemoveAbility(targetUnit, 'A1ZT');
+				UnitRemoveAbility(targetUnit, 'B08O'); // buff
+			}
+			if (isActions) {
+				if (UnitHasTalent(ownerUnit, 'A0G2')) {
+					SetUnitAbilityLevel(targetUnit, 'A1ZT', GetUnitAbilityLevel(targetUnit, 'A1ZT') + 1);
+				}
+			}
+		}
+
+		if (actionsId == sanya2buff_tid) { // Sanya 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A200');
+				udg_Hero_HP_Reg_Items_Main[GetUnitUserData(targetUnit)] = ( udg_Hero_HP_Reg_Items_Main[GetUnitUserData(targetUnit)] + 100.00 );
+				udg_Hero_HP_Reg_Scale_Main[GetUnitUserData(targetUnit)] = ( udg_Hero_HP_Reg_Scale_Main[GetUnitUserData(targetUnit)] + 0.50 );
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A200');
+				UnitRemoveAbility(targetUnit, 'B013'); // buff
+				udg_Hero_HP_Reg_Items_Main[GetUnitUserData(targetUnit)] = ( udg_Hero_HP_Reg_Items_Main[GetUnitUserData(targetUnit)] - 100.00 );
+				udg_Hero_HP_Reg_Scale_Main[GetUnitUserData(targetUnit)] = ( udg_Hero_HP_Reg_Scale_Main[GetUnitUserData(targetUnit)] - 0.50 );
+			}
+		}
+
+		if (actionsId == gosseinitem_tid) { // Gossein Item
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A206');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A206');
+				UnitRemoveAbility(targetUnit, 'B014'); // buff
+			}
+		}
+
+		if (actionsId == admirale2buff_tid) { // Admirale 2
+			if (isEntered) {
+				if (GetBuffStacks(buffId) == 1) {
+					UnitAddAbilityPermanent(targetUnit, 'A208');
+					UnitAddAbilityPermanent(targetUnit, 'A209');
+				}
+				SetUnitAbilityLevelSwapped('A209', targetUnit, (GetBuffStacks(buffId)));
+			}
+			if (isOut) {
+				SetUnitAbilityLevelSwapped('A209', targetUnit, (GetBuffStacks(buffId)));
+				if (GetBuffStacks(buffId) == 0) {
+					UnitRemoveAbility(targetUnit, 'A208');
+					UnitRemoveAbility(targetUnit, 'A209');
+					UnitRemoveAbility(targetUnit, 'B005'); // buff
+				}
+			}
+		}
+
+		if (actionsId == fliz1buff_tid) { // Fliz 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1KY');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1KY');
+				UnitRemoveAbility(targetUnit, 'B072'); // buff
+			}
+			if (isActions) {
+				UnitDamagePureToTarget(ownerUnit, targetUnit, 50);
+			}
+		}
+
+		if (actionsId == eva1buff_tid) { // Evelyn 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1DR');
+				UnitAddAbilityPermanent(targetUnit, 'A1H8');
+				if (GetUnitAbilityLevel(targetUnit, 'B04D') > 1) {
+					SetUnitAbilityLevelSwapped('A1H8', targetUnit, 2);
+				}              
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1DR');
+				UnitRemoveAbility(targetUnit, 'A1H8');
+				UnitRemoveAbility(targetUnit, 'B05E'); // buff
+			}
+		}
+
+		if (actionsId == eva3silence_tid) { // Eva 3 silence
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A1H9', GetBuffDataInt(buffId), "drunkenhaze");
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, 200 * GetBuffDataInt(buffId));
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B05X'); // buff
+			}
+
+		}
+
+		if (actionsId == lonwon4buff_tid) { // Lonwon 4
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A20M');
+				UnitAddAbilityPermanent(targetUnit, 'A20L');
+				if (UnitHasTalent(targetUnit, 'A0RE')) {
+					UnitAddAbilityPermanent(targetUnit, 'A20N');
+				}
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A20M');
+				UnitRemoveAbility(targetUnit, 'A20L');
+				UnitRemoveAbility(targetUnit, 'A20N');
+				UnitRemoveAbility(targetUnit, 'B035'); // buff
+			}
+		}
+
+		if (actionsId == linx2buff_tid) { // Linx 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A20O');
+				UnitAddAbilityPermanent(targetUnit, 'A20Q');
+				UnitMakeAbilityPermanent(targetUnit, true, 'A20R');
+				SetPlayerAbilityAvailable(GetOwningPlayer(targetUnit), 'A20Q', false);
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A20O');
+				UnitRemoveAbility(targetUnit, 'A20Q');
+				UnitRemoveAbility(targetUnit, 'B05F'); // buff
+			}
+		}
+
+		if (actionsId == linx3buff_tid) { // Linx 3
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A20S');
+				UnitAddAbilityPermanent(targetUnit, 'A20T');
+				UnitMakeAbilityPermanent(targetUnit, true, 'A20U');
+				SetPlayerAbilityAvailable(GetOwningPlayer(targetUnit), 'A20T', false);
+				AddAuraToUnit(targetUnit, linx3aura_tid, null, false, 0, true, false, false, linx3aura_tid, Condition(function FilterRadiance), 200., 0, true, 0.3);
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A20S');
+				UnitRemoveAbility(targetUnit, 'A20T');
+				UnitRemoveAbility(targetUnit, 'B03T'); // buff
+				DestroyUnitAurasByType(targetUnit, linx3aura_tid, false);
+			}
+		}
+
+		if (actionsId == ben2buff_tid) { // Ben 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A12Y');
+				udg_Hero_XP_Percent[GetConvertedPlayerId(GetOwningPlayer(targetUnit))] = ( udg_Hero_XP_Percent[GetConvertedPlayerId(GetOwningPlayer(targetUnit))] + 0.50 );
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A12Y');
+				udg_Hero_XP_Percent[GetConvertedPlayerId(GetOwningPlayer(targetUnit))] = ( udg_Hero_XP_Percent[GetConvertedPlayerId(GetOwningPlayer(targetUnit))] - 0.50 );
+				UnitRemoveAbility(targetUnit, 'B046'); // buff
+			}
+		}
+
+		if (actionsId == ben1buff_tid) { // Ben 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A20X');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A20X');
+				UnitRemoveAbility(targetUnit, 'B045'); // buff
+			}
+		}
+
+		if (actionsId == ben5buff_tid) { // Ben 5
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1NC');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1NC');
+				UnitRemoveAbility(targetUnit, 'B07C'); // buff
+			}
+		}
+
+		if (actionsId == morgeen4fear_tid) { // Morgeen 4 Fear
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A21D');
+				if (IsUnitIllusion(targetUnit)) {
+					KillUnit(targetUnit);
+				}
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A21D');
+				UnitRemoveAbility(targetUnit, 'B03S'); // buff
+				IssueImmediateOrder( targetUnit, "stop" );
+				RemoveLocation (udg_Uncontrol_Target[GetUnitUserData(targetUnit)]);
+			}
+		}
+
+		if (actionsId == rotto2buff_tid) { // Rotto 2
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A1CT', 1, "entanglingroots");
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B057'); // buff
+			}
+		}
+
+		if (actionsId == mizuki3buff_tid) { // Mizuki 3
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A21X');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A21X');
+				UnitRemoveAbility(targetUnit, 'B03K'); // buff
+			}
+		}
+
+		if (actionsId == beatl1buff_tid) { // Beatljax 1
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A1TY', 1, "entanglingroots");
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'BEer'); // buff
+			}
+			if (isActions) {
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, 50);
+			}
+		}
+
+		if (actionsId == tenjin3buff_tid) { // Tenjin 3
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A0SZ', 1, "antimagicshell");
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B06C'); // buff
+				UnitRemoveAbility(targetUnit, 'Bams'); // buff
+			}
+		}
+
+		if (actionsId == nomi1fear_tid) { // Nomi 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A225');
+				if (IsUnitIllusion(targetUnit)) {
+					KillUnit(targetUnit);
+				}
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A225');
+				UnitRemoveAbility(targetUnit, 'B08R'); // buff
+				IssueImmediateOrder( targetUnit, "stop" );
+				RemoveLocation (udg_Uncontrol_Target[GetUnitUserData(targetUnit)]);
+			}
+		}
+
+		if (actionsId == nomi3buff_tid) { // Nomi 3
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A228');
+				UnitAddAbilityPermanent(targetUnit, 'A229');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A228');
+				UnitRemoveAbility(targetUnit, 'A229');
+				UnitRemoveAbility(targetUnit, 'B08S'); // buff
+			}
+		}
+
+		if (actionsId == nomi4buff_tid) { // Nomi 4
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A12L', 1, "polymorph");
+				DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl", GetUnitX(targetUnit), GetUnitY(targetUnit)));
+			}
+			if (isOut) {
+				DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl", targetUnit, "origin"));
+				UnitRemoveAbility(targetUnit, 'Bply'); // buff
+			}
+		}
+
+		if (actionsId == nomi5buff_tid) { // Nomi 5
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A22D');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A22D');
+				UnitRemoveAbility(targetUnit, 'B08T'); // buff
+			}
+		}
+
+		if (actionsId == nullidai3buff_tid) { // Nullidai 3
+			if (isEntered) {
+				AddAuraToUnit(targetUnit, nullidai3_tid, null, false, 0, false, false, false, nullidai3_tid, Condition(function FilterAuraAlly), 900., 0, false, 0);
+			}
+			if (isOut) {
+				DestroyUnitAurasByType(targetUnit, nullidai3_tid, true);
+			}
+		}
+
+		if (actionsId == jake2buff_tid) { // Jake 2
+		
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A1FS', 1, "cyclone");
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'Bcyc'); // buff
+				UnitRemoveAbility(targetUnit, 'Bcy2'); // buff
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, GetBuffDataReal(buffId));
+				if (UnitHasTalent(ownerUnit, 'A22S')) {
+					udg_Jake_Caster[3] = ownerUnit;
+					udg_Jake_Caster[4] = targetUnit;
+					TriggerExecute( gg_trg_Jake_3 );
+				}
+			}
+		}
+
+		if (actionsId == jake3buff_tid) { // Jake 3
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A22M');
+				udg_Hero_MS_Simple[GetUnitUserData(targetUnit)] = ( udg_Hero_MS_Simple[GetUnitUserData(targetUnit)] + 100.00 );
+				udg_Arrow_Bonus_Distance[GetUnitUserData(targetUnit)] = ( udg_Arrow_Bonus_Distance[GetUnitUserData(targetUnit)] + 0.5 );
+				udg_Arrow_Bonus_Speed[GetUnitUserData(targetUnit)] = ( udg_Arrow_Bonus_Speed[GetUnitUserData(targetUnit)] + 0.5 );
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A22M');
+				UnitRemoveAbility(targetUnit, 'B05W'); // buff
+				udg_Hero_MS_Simple[GetUnitUserData(targetUnit)] = ( udg_Hero_MS_Simple[GetUnitUserData(targetUnit)] - 100.00 );
+				udg_Arrow_Bonus_Distance[GetUnitUserData(targetUnit)] = ( udg_Arrow_Bonus_Distance[GetUnitUserData(targetUnit)] - 0.5 );
+				udg_Arrow_Bonus_Speed[GetUnitUserData(targetUnit)] = ( udg_Arrow_Bonus_Speed[GetUnitUserData(targetUnit)] - 0.5 );
+			}
+		}
+
+		if (actionsId == anna0buff_tid) { // Anna 0
+			if (isEntered) {
+				if (GetBuffStacks(buffId) == 1) {
+					UnitAddAbilityPermanent(targetUnit, 'A13T');
+					UnitAddAbilityPermanent(targetUnit, 'A22V');
+				}
+				SetUnitAbilityLevelSwapped('A13T', targetUnit, GetBuffStacks(buffId));
+			}
+			if (isOut) {
+				if (GetBuffStacks(buffId) == 0) {
+					UnitRemoveAbility(targetUnit, 'A13T');
+					UnitRemoveAbility(targetUnit, 'A22V');
+					UnitRemoveAbility(targetUnit, 'B08V'); // buff
+				}
+				SetUnitAbilityLevelSwapped('A13T', targetUnit, GetBuffStacks(buffId));
+			}
+		}
+
+		if (actionsId == anna1buff_tid) { // Anna 1
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A230');
+				AddUnitModifier(targetUnit, CHANCE_DODGE_ATTACK, 1.0);
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A230');
+				UnitRemoveAbility(targetUnit, 'B08W'); // buff
+				SubUnitModifier(targetUnit, CHANCE_DODGE_ATTACK, 1.0);
+			}
+		}
+
+		if (actionsId == anna3slowbuff_tid) { // Anna 3 slow buff
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A22Y');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A22Y');
+				UnitRemoveAbility(targetUnit, 'B048'); // buff
+			}
+		}
+
+		if (actionsId == anna3buff_tid) { // Anna 3 buff
+			if (isEntered) {
+				if (GetBuffStacks(buffId) == 1) {
+					UnitAddAbilityPermanent(targetUnit, 'A22Z');
+				}
+				TempUnit = LoadUnitHandle(HT, GetHandleId(buffStack), 0);
+				if (TempUnit == null) {
+					TempUnit = CreateUnit(GetOwningPlayer(ownerUnit), 'e060', GetUnitX(targetUnit), GetUnitY(targetUnit), 0);
+					SaveUnitHandle(HT, GetHandleId(buffStack), 0, TempUnit);
+				}
+				AttachUnitToUnit(TempUnit, targetUnit, 0, 0, 0);
+			}
+			if (isOut) {
+				if (GetBuffStacks(buffId) == 0) {
+					UnitRemoveAbility(targetUnit, 'A22Z');
+					UnitRemoveAbility(targetUnit, 'B07A'); // buff
+				}
+				TempUnit = LoadUnitHandle(HT, GetHandleId(buffStack), 0);
+				if (TempUnit != null) {
+					DetachUnit(TempUnit);
+					if (GetBuffStackRemainingDuration(buffStack) <= 0) {
+						UnitApplyTimedLife(TempUnit, 'BTLF', 1.00);
+						UnitAddAbility(TempUnit, 'A144');
+						IssueImmediateOrder( TempUnit, "thunderclap" );
+					} else {
+						TempTimer = CreateTimer();
+						SaveHandleDataUnit(TempTimer, TempUnit);
+						TimerStart(TempTimer, GetBuffStackRemainingDuration(buffStack), false, function() {
+							TempUnit = LoadHandleDataUnit(GetExpiredTimer());
+							FlushTimer(GetExpiredTimer());
+							UnitApplyTimedLife(TempUnit, 'BTLF', 1.00);
+							UnitAddAbility(TempUnit, 'A144');
+							IssueImmediateOrder( TempUnit, "thunderclap" );
+						});
+					}
+				}
+			}
+		}
+
+		if (actionsId == anna4buff_tid) { // Anna 4
+			if (isEntered) {
+				ApplyAbilityToUnit(ownerUnit, targetUnit, 'A1HW', 1, "faeriefire");
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'B08X'); // buff
+			}
+		}
+
+		if (actionsId == collector5buff_tid) { // Collector 5
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A08Q');
+				UnitAddAbilityPermanent(targetUnit, 'A235');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A08Q');
+				UnitRemoveAbility(targetUnit, 'A235');
+				UnitRemoveAbility(targetUnit, 'B08Y'); // buff
+			}
+		}
+
+		if (actionsId == orion1buff_tid) { // Orion 1
+		
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1AP');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1AP');
+				UnitRemoveAbility(targetUnit, 'B053'); // buff
+			}
+			if (isActions) {
+				HealUnit(ownerUnit, targetUnit, 75);
+			}
+			
+		}
+
+		if (actionsId == skyshield_tid) { // Sky Slayer Shield
+		
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A24B');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A24B');
+				UnitRemoveAbility(targetUnit, 'B095'); // buff
+			}
+			
+		}
+
+		if (actionsId == skyheal_tid) { // Sky Slayer Heal
+		
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A24C');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A24C');
+				UnitRemoveAbility(targetUnit, 'B096'); // buff
+			}
+			
+		}
+
+		if (actionsId == arthas2shield_tid) { // Arthas 2
+		
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A24L');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A24L');
+				UnitRemoveAbility(targetUnit, 'B097'); // buff
+			}
+			
+		}
+
+		if (actionsId == arthas3buff_tid) { // Arthas 3
+			if (isEntered) {
+				TempAttachment = GetBuffDataInt(buffId);
+                TempUnit = TempAttachment.attached;
+				if (TempUnit == null) {
+					TempUnit = CreateUnit(GetOwningPlayer(ownerUnit), 'e067', GetUnitX(targetUnit), GetUnitY(targetUnit), 0);
+				}
+				TempAttachment = AttachUnitToUnit(TempUnit, targetUnit, 0, 0, 0);
+                SetBuffDataInt(buffId, TempAttachment);
+				if (UnitHasTalent(ownerUnit, 'A24O')) {
+					udg_Smart_Real[1] = 0.4;
+ 				} else {
+					udg_Smart_Real[1] = 0.6;
+				}
+				AddAuraToUnit(TempUnit, arthas3aura_tid, null, false, 0, false, false, false, arthas3aura_tid, Condition(function FilterAuraAlly), 300., 0, true, udg_Smart_Real[1]);
+				AddAuraToUnit(TempUnit, arthas3aura2_tid, null, false, 0, false, false, false, arthas3aura2_tid, Condition(function FilterRadiance), 300., 0, true, udg_Smart_Real[1]);
+            }
+			if (isOut) {
+				TempAttachment = GetBuffDataInt(buffId);
+				KillUnit(TempAttachment.attached);
+				TempAttachment.destroy();
+			}
+		}
+
+		if (actionsId == arthas4buff_tid) { // Arthas 4 Buff
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A24Q');
+			}
+			if (isOut) {
+				TempGroup = CreateGroup();
+				UnitRemoveAbility(targetUnit, 'A24Q');
+				UnitRemoveAbility(targetUnit, 'B098'); // buff
+				udg_Smart_Real[1] = 500 + GetBuffDataReal(buffId);
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, udg_Smart_Real[1]);
+				DestroyEffect(AddSpecialEffectTarget("war3mapImported\\Heaven's Gate.mdx", targetUnit, "origin"));
+				GroupEnumUnitsInRangeFiz(TempGroup, GetUnitX(targetUnit), GetUnitY(targetUnit), 300, ConditionParameters(function FilterRectangleSplash, ownerUnit, targetUnit, 0));
+	
+				EnumUnit = FirstOfGroup(TempGroup);
+				while (EnumUnit != null) {
+					DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\Human\\HolyBolt\\HolyBoltSpecialArt.mdl", EnumUnit, "origin"));
+					UnitDamageMagicToTarget(ownerUnit, EnumUnit, udg_Smart_Real[1]*0.5);
+					GroupRemoveUnit(TempGroup, EnumUnit);
+					EnumUnit = FirstOfGroup(TempGroup);
+				}
+
+				GroupEnumUnitsInRangeFiz(TempGroup, GetUnitX(targetUnit), GetUnitY(targetUnit), 300, ConditionWithOwner(function FilterAlly, ownerUnit));
+		
+				EnumUnit = FirstOfGroup(TempGroup);
+				while (EnumUnit != null) {
+					DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\Human\\HolyBolt\\HolyBoltSpecialArt.mdl", EnumUnit, "origin"));
+					HealUnit(ownerUnit, EnumUnit, udg_Smart_Real[1]*0.5);
+					if (UnitHasTalent(ownerUnit, 'A25O')) {
+						AddBuffToUnit(ownerUnit , EnumUnit , ridgevortexer_tid , ridgevortexer_tid , 4 , 1 , 2 , false , true , false, false, 0, true , true , false , false , 4);
+						udg_Debuff_Caster_Strong = EnumUnit;
+						TriggerExecute( gg_trg_Debuff_Strong );
+					}
+					GroupRemoveUnit(TempGroup, EnumUnit);
+					EnumUnit = FirstOfGroup(TempGroup);
+				}
+				DestroyGroup(TempGroup);
+			}
+		}
+
+		if (actionsId == cerebrobuff_tid) { // Cerebro
+		
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A1E5');
+				UnitMakeAbilityPermanent(targetUnit, true, 'A1DY');
+				UnitMakeAbilityPermanent(targetUnit, true, 'A11T');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A1E5');
+				UnitRemoveAbility(targetUnit, 'B05L'); // buff
+			}
+		}
+
+		if (actionsId == chumpunk_tid) { // Chumpunk
+		
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A25B');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A25B');
+				UnitRemoveAbility(targetUnit, 'B09B'); // buff
+			}
+		}
+
+		if (actionsId == megagun2_tid) { // Megagun 2
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A25I');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A25I');
+				UnitRemoveAbility(targetUnit, 'B09C'); // buff
+			}
+			if (isActions) {
+				UnitDamageMagicToTarget(ownerUnit, targetUnit, 200);
+			}
+		}
+
+		if (actionsId == needler_tid) { // Needler (Иглострел)
+			if (isEntered) {
+				UnitAddAbilityPermanent(targetUnit, 'A25N');
+			}
+			if (isOut) {
+				UnitRemoveAbility(targetUnit, 'A25N');
+				UnitRemoveAbility(targetUnit, 'B09D'); // buff
+			}
+		}
+
+		ownerUnit = null;
+		targetUnit = null;
+		buffStack = null;
+
+		BUFF_OWNER_UNIT_GET = null;
+		BUFF_TARGET_UNIT_GET = null;
+		BUFF_IS_ENTERED_GET = false;
+		BUFF_IS_OUT_GET = false;
+		BUFF_IS_ACTIONS_GET = false;
+		BUFF_IS_TRANSFER_GET = false;
+		BUFF_ACTIONS_ID_GET = 0;
+		BUFF_ID_GET = 0;
+		BUFF_STACK_GET = null;
+	}
+
+
+}

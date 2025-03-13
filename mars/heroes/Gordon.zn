@@ -1,0 +1,151 @@
+library Gordon requires Filters {
+
+	constant integer ABILITY_ID = 'A0N0';			// 'A0N0'
+	constant integer ABILITY2_ID ='A1ZA';			//
+	constant integer ABILITY3_ID = 'A1ZB';			//
+	constant integer TALENT_ID = 'A0N1';
+	constant real EXPLOSION_DELAY = 2.0;			// Задержка взрыва (сек)
+	constant integer MAX_BOUNCE_COUNT = 4;			// Максимальное количество отскоков
+	constant integer GRANADE_UNIT_ID = 'e008';		//'e008'
+	constant real DMG = 2000;						// Урон
+	constant real DURATION_BUFF = 4;				// Урон
+	constant real MIN_FACTOR = 0.25;				// Минимальный коэффициент урона
+	constant real SPLASH_RANGE = 300;				// Радиус взрыва
+
+	constant real MAX_DISTANCE = 1200;				//
+	constant real MAX_SPEED = 1400;					//
+	constant real OFFSET_Z = 100.;					// Смещение стартового положение по оси Z
+	constant real SPEED_Z = 1250;					// Стартовая скорость по оси Z
+	constant real BOUNCE_RESIST_Z = -0.3;			// Коэффициент сопротивления при отскоке по оси Z
+	constant real BOUNCE_RESIST_XY = 0;				// Коэффициент сопротивления при отскоке по осям X и Y
+	constant real AIR_RESIST = 0.001;				// Сопротивление воздуха
+	constant real FRICTION = 0.5;					// Сила трения
+	constant real SIZE = 35;						// Размер (радиус в см)
+	constant real MASS = 5;							// Масса (только для каллайда с другими объектами)
+	constant real ACCELERATION_Z = 9.81 * 100 * 3;	// Ускорение свободного падения
+
+	struct Grenade {
+		unit owner;
+		DynamicProjectile obj;
+		timer tm;
+	
+		static method create(unit owner, real x2, real y2) -> Grenade {
+			Grenade this = Grenade.allocate();
+			real distance; 
+			real speedFactor;
+			real x1 = GetUnitX(owner);
+			real y1 = GetUnitY(owner);
+			unit projectile = CreateUnit(GetOwningPlayer(owner), GRANADE_UNIT_ID, x1, y1, 360.);
+			MakeUnitFly(projectile);
+			SetUnitPathing(projectile, false);
+			SetUnitXYZ(projectile, x1, y1, GetTerrainZ(x1, y1) + OFFSET_Z);
+			distance = DistanceBetweenCoords(x1, y1, x2, y2);
+			speedFactor = distance / MAX_DISTANCE;
+
+			this.tm = CreateTimer();
+			SaveHandleDataInt(tm, this);
+			TimerStart(tm, EXPLOSION_DELAY, false, function Grenade.expired);
+	
+			this.owner = owner;
+			this.obj = DynamicProjectile.create( 
+				this,
+				projectile,
+				Grenade.action.name,
+				(x2 - x1) / distance * MAX_SPEED * speedFactor,
+				(y2 - y1) / distance * MAX_SPEED * speedFactor,
+				SPEED_Z + (GetTerrainZ(x2, y2) - GetTerrainZ(x1, y1)),
+				BOUNCE_RESIST_Z,
+				BOUNCE_RESIST_XY,
+				AIR_RESIST,
+				FRICTION,
+				SIZE,
+				MASS,
+				ACCELERATION_Z
+			);
+
+			projectile = null;
+			return this;
+		}
+
+		method destroy() {
+			TempGroup = CreateGroup();
+			GroupEnumUnitsInRange(TempGroup, GetUnitX(obj.projectile), GetUnitY(obj.projectile), SPLASH_RANGE, ConditionWithOwner(function FilterEnemyNotImmune, owner));
+
+			EnumUnit = FirstOfGroup(TempGroup);
+			while (EnumUnit != null) {
+				UnitDamageMagicToTarget(owner, EnumUnit, DMG * (1 - ((1 - MIN_FACTOR) / SPLASH_RANGE * DistanceBetweenWidgets(EnumUnit, obj.projectile))));
+				AddBuffToUnit(
+					owner,
+					EnumUnit,
+					gordon2buff_tid,
+					gordon2buff_tid,
+					DURATION_BUFF * (1 - ((1 - MIN_FACTOR) / SPLASH_RANGE * DistanceBetweenWidgets(EnumUnit, obj.projectile))),
+					0,
+					0,
+					false,
+					false,
+					false,
+					false,
+					0,
+					false,
+					false,
+					false,
+					false,
+					0
+				);
+				GroupRemoveUnit(TempGroup, EnumUnit);
+				EnumUnit = FirstOfGroup(TempGroup);
+			}
+
+			DestroyGroup(TempGroup);
+			FlushTimer(tm); tm = null;
+			owner = null;
+			obj.destroy();
+			deallocate();
+		}
+
+		static method action() {
+			Grenade this = GetSpellObject();
+			if ((GetSpellIsBounce() && obj.countBounces >= MAX_BOUNCE_COUNT) || GetSpellIsStopped()) {
+				destroy();
+			}
+		}
+
+		static method expired() {
+			Grenade this = LoadHandleDataInt(GetExpiredTimer());
+			destroy();
+		}
+	}
+
+	function onInit() {
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_SPELL_EFFECT), function() {
+			if (GetSpellAbilityId() == ABILITY_ID || GetSpellAbilityId() == ABILITY2_ID || GetSpellAbilityId() == ABILITY3_ID) {
+				TriggerUnit = GetTriggerUnit();
+				AbilityID = GetSpellAbilityId();
+				Grenade.create(TriggerUnit, GetSpellTargetX(), GetSpellTargetY());
+
+				TempTimer = CreateTimer();
+				SaveHandleDataUnit(TempTimer, TriggerUnit);
+				TimerStart(TempTimer, 0, false, function() {
+					unit triggerUnit = LoadHandleDataUnit(GetExpiredTimer());
+					FlushTimer(GetExpiredTimer());
+					if (UnitHasTalent(triggerUnit, TALENT_ID)) {
+						if (AbilityID == ABILITY_ID) {
+							SetPlayerAbilityAvailable(GetOwningPlayer(triggerUnit), ABILITY_ID, false);
+							SetPlayerAbilityAvailable(GetOwningPlayer(triggerUnit), ABILITY2_ID, true);
+						} else if (AbilityID == ABILITY2_ID) {
+							SetPlayerAbilityAvailable(GetOwningPlayer(triggerUnit), ABILITY2_ID, false);
+							SetPlayerAbilityAvailable(GetOwningPlayer(triggerUnit), ABILITY3_ID, true);
+						} else if (AbilityID == ABILITY3_ID) {
+							SetPlayerAbilityAvailable(GetOwningPlayer(triggerUnit), ABILITY3_ID, false);
+							SetPlayerAbilityAvailable(GetOwningPlayer(triggerUnit), ABILITY_ID, true);
+						}
+						IssueImmediateOrder(triggerUnit, "stop");
+					}
+				});
+
+			}
+		});
+	}
+
+}

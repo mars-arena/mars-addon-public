@@ -1,0 +1,40 @@
+library James requires Doubles {
+
+	constant integer ABILITY_ID = 'A22U';
+
+	function onInit() {
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_SPELL_EFFECT), function() {
+			if (GetSpellAbilityId() == ABILITY_ID) {
+				TempTimer = CreateTimer();
+				SaveHandleDataUnit(TempTimer, GetTriggerUnit());
+				TimerStart(TempTimer, 0.01, false, function() {
+					TempUnit = LoadHandleDataUnit(GetExpiredTimer());
+					FlushTimer(GetExpiredTimer());
+					if (UnitHasTalent(TempUnit, 'A20B')) {
+						Doubles.Count = 4;
+					} else {
+						Doubles.Count = 3;
+					}
+	
+					Doubles.Range = 150.;
+					Doubles.Speed = 900.;
+					Doubles.Delay = 0.2;
+	
+					Doubles.RemainingTime = 26.;
+					if (UnitHasTalent(TempUnit, 'A0KR')) {
+						Doubles.DamageGiven = 0.8;
+					} else {
+						Doubles.DamageGiven = 0.4;
+					}
+					Doubles.DamageTaken = 4.;
+	
+					Doubles.EffInit = "Objects\\Spawnmodels\\Naga\\NagaDeath\\NagaDeath.mdl";
+					Doubles.EffMissile = "Objects\\Spawnmodels\\Naga\\NagaDeath\\NagaDeath.mdl";
+			
+					Doubles.start(TempUnit, JAMESILLUSIONS_HID);
+				});
+			}
+		});
+	}
+
+}

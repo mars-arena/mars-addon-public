@@ -1,0 +1,99 @@
+library DamageAPI requires Damage {
+
+	public function Damage(unit whichUnit, unit target, real value) -> DamageEvent {
+		if (WantDelay) {
+			WantDelay = false;
+			return DamageEvent.create(whichUnit, target, value).delayed();
+		}
+		return DamageEvent.create(whichUnit, target, value);
+	}
+
+	// deprecated use Damage(whichUnit, target, value).run instead
+	public function UnitAttackToTarget(
+		unit whichUnit,
+		unit target,
+		real value,
+		attacktype attackType,
+		damagetype damageType,
+		boolean isSpecAttack,
+		boolean ignoreBlock,
+		boolean ignoreMiss,
+		boolean ignorePierce, // deprecated 
+		boolean isNoRepeat
+	) {
+		DamageEvent this = DamageEvent.create(whichUnit, target, value);
+		this.attackType = attackType; 
+		this.damageType = damageType; 
+		this.ignoreBlock_a = ignoreBlock; 
+		this.ignoreMiss_a = ignoreMiss; 
+		this.isAttack = true;
+		this.isNoRepeat = isNoRepeat;
+		this.isSimulate = true;
+		this.isSpecAttack = isSpecAttack;
+		this.wantDelay = WantDelay;
+		WantDelay = false;
+
+		this.run();
+	}
+
+	// deprecated use Damage(whichUnit, target, value).run instead
+	public function UnitDamageToTarget(
+		unit whichUnit,
+		unit target,
+		real value,
+		attacktype attackType,
+		damagetype damageType,
+		boolean onTrigger,
+		boolean isNoRepeat,
+		boolean isReflection,
+		boolean ignoreBlock,
+		boolean isHide
+	) {
+		DamageEvent this = DamageEvent.create(whichUnit, target, value);
+		this.attackType = attackType; 
+		this.damageType = damageType; 
+		this.ignoreBlock_a = ignoreBlock; 
+		//this.ignoreMiss_a = false; 
+		//this.ignorePierce = false; 
+		//this.isAttack = false;
+		this.isHide = isHide;
+		this.isNoRepeat = isNoRepeat;
+		this.isReflection = isReflection;
+		//this.isSimulate = false;
+		//this.isSpecAttack = false;
+		this.withOrigin = true;
+		this.onTrigger = onTrigger;
+		this.wantDelay = WantDelay;
+		WantDelay = false;
+
+		this.run();
+	}
+
+	// deprecated use Damage(whichUnit, target, value).run instead
+	public function UnitDamageMagicToTarget(
+		unit whichUnit,
+		unit target,
+		real value
+	) {
+		Damage(whichUnit, target, value).magic().run();
+	}
+
+	// deprecated use Damage(whichUnit, target, value).run instead
+	public function UnitDamagePureToTarget(
+		unit whichUnit,
+		unit target,
+		real value
+	) {
+		Damage(whichUnit, target, value).pure().run();
+	}
+
+	// deprecated use Damage(whichUnit, target, value).run instead
+	public function UnitDamagePhysToTarget(
+		unit whichUnit,
+		unit target,
+		real value
+	) {
+		Damage(whichUnit, target, value).phys().run();
+	}
+
+}

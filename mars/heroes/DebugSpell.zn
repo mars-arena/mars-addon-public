@@ -1,0 +1,92 @@
+library DebugSpell requires Buffs {
+
+	function onInit() {
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_SPELL_EFFECT), function() {
+			if (GetSpellAbilityId() == '0000') {
+				AddBuffToUnit(
+					GetTriggerUnit(),
+					GetSpellTargetUnit(),
+					BUFF_POS_TID,
+					BUFF_POS_TID,
+					10,
+					1,
+					0,
+					false,
+					false,
+					false,
+					false,
+					0,
+					false,
+					false,
+					false,
+					false,
+					0
+				);
+			}
+			if (GetSpellAbilityId() == 'A00O') {
+				AddBuffToUnit(
+					GetTriggerUnit(),
+					GetSpellTargetUnit(),
+					BUFF_NEG_TID,
+					BUFF_NEG_TID,
+					10,
+					0,
+					0,
+					false,
+					false,
+					false,
+					false,
+					0,
+					false,
+					false,
+					false,
+					false,
+					0
+				);
+			}
+			if (GetSpellAbilityId() == 'A00N') {
+				AddBuffToUnit(
+					GetTriggerUnit(),
+					GetSpellTargetUnit(),
+					BUFF_STACKABLE_TID,
+					BUFF_STACKABLE_TID,
+					15,
+					1,
+					1,
+					true,
+					false,
+					false,
+					false,
+					5,
+					true,
+					true,
+					false,
+					false,
+					0
+				);
+			}
+			if (GetSpellAbilityId() == 'A00P') {
+				TransferUnitBuffsToUnit(GetTriggerUnit(), GetSpellTargetUnit(), 0, 1);
+				TransferUnitBuffsToUnit(GetSpellTargetUnit(), GetTriggerUnit(), 1, 1);
+			}
+			/*
+			if (GetSpellAbilityId() == 'A1SX') {
+				TempAura = 0;
+				TempAura = GetOwnerAuraByType(GetSpellTargetUnit(), testaura_tid);
+				if (TempAura == 0) {
+					BJDebugMsg("0");
+					AddAuraToUnit(GetSpellTargetUnit(), testaura_tid, null, false, 0, false, false,false, testaura_tid, Condition(function FilterAll), 400., 0, false, 0);
+				} else {
+					TempAura.radius = TempAura.radius + 100;
+				}
+				BJDebugMsg(R2S(TempAura.radius));
+				
+			}
+			if (GetSpellAbilityId() == 'A1RL') {
+				dbgT(GetUnitName(GetTriggerUnit()) +  " -> (slow) " + GetUnitName(GetSpellTargetUnit()));
+			}
+			*/
+		});
+	}
+
+}

@@ -59,12 +59,12 @@ library HealLifestealRestore requires Events {
 		HealingUnit = healingUnit;
 		OverHeal = 0.0;
 
-		TriggerExecute(HealModifierTrg);
+		ExecuteEvent(EVENT_HEAL_MODIFIER);
 
 		if (HealAmount > 0.0) {
 			OverHeal = MaxReal(0, HealAmount - (GetUnitMaxLife(HealedUnit) - GetUnitState(HealedUnit, UNIT_STATE_LIFE)));
 			SetUnitState(HealedUnit, UNIT_STATE_LIFE, GetUnitState(HealedUnit, UNIT_STATE_LIFE) + HealAmount);
-			TriggerExecute(HealEventTrg);
+			ExecuteEvent(EVENT_HEAL);
 		}
 
 		HealAmount = 0.0;
@@ -78,12 +78,12 @@ library HealLifestealRestore requires Events {
 		LifestealedUnit = whichUnit;
 		OverLifesteal = 0.0;
 
-		TriggerExecute(LifestealModifierTrg);
+		ExecuteEvent(EVENT_LIFESTEAL_MODIFIER);
 
 		if (LifestealAmount > 0.0) {
 			OverLifesteal = MaxReal(0, LifestealAmount - (GetUnitMaxLife(LifestealedUnit) - GetUnitState(LifestealedUnit, UNIT_STATE_LIFE)));
 			SetUnitState(LifestealedUnit, UNIT_STATE_LIFE, GetUnitState(LifestealedUnit, UNIT_STATE_LIFE) + LifestealAmount);
-			TriggerExecute(LifestealEventTrg);
+			ExecuteEvent(EVENT_LIFESTEAL);
 		}
 
 		LifestealAmount = 0.0;
@@ -97,12 +97,12 @@ library HealLifestealRestore requires Events {
 		RestoringUnit = restoringUnit;
 		OverRestore = 0.0;
 
-		TriggerExecute(RestoreModifierTrg);
+		ExecuteEvent(EVENT_RESTORE_MODIFIER);
 
 		if (RestoredAmount > 0.0) {
 			OverRestore = MaxReal(0, RestoredAmount - (GetUnitState(RestoredUnit, UNIT_STATE_MAX_MANA) - GetUnitState(RestoredUnit, UNIT_STATE_MANA)));
 			SetUnitState(RestoredUnit, UNIT_STATE_MANA, GetUnitState(RestoredUnit, UNIT_STATE_MANA) + RestoredAmount);
-			TriggerExecute(RestoreEventTrg);
+			ExecuteEvent(EVENT_RESTORE);
 		}
 
 		RestoredAmount = 0.0;
@@ -112,22 +112,22 @@ library HealLifestealRestore requires Events {
 	}
 
 	function onInit() {
-		HealEventAddAction(function() {
+		RegisterAction(EVENT_HEAL, function() {
 			TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(GetHealingUnit()), GetHealedUnit(), HEAL_TEXT, GetHealAmount(), "");
 			TempText.showToPlayer(GetOwningPlayer(GetHealedUnit()));
 			if (IsMapDuel())
 				TempText.showToObservers();
 		});
 
-		LifestealEventAddAction(function() {
+		RegisterAction(EVENT_LIFESTEAL, function() {
 			TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(GetLifestealedUnit()), GetLifestealedUnit(), HEAL_TEXT, GetLifestealAmount(), "");
 			if (IsMapDuel())
 				TempText.showToObservers();
 			DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\Undead\\VampiricAura\\VampiricAuraTarget.mdx", GetLifestealedUnit(), "origin"));
 		});
 
-		RestoreEventAddAction(function() {
-			TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(GetRestoredUnit()), GetRestoredUnit(), HEAL_TEXT, GetRestoredAmount(), "");
+		RegisterAction(EVENT_RESTORE, function() {
+			TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(GetRestoredUnit()), GetRestoredUnit(), MANA_TEXT, GetRestoredAmount(), "");
 			if (IsMapDuel())
 				TempText.showToObservers();
 		});

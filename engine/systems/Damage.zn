@@ -1,8 +1,9 @@
-library Damage requires Buffs {
+library Damage requires Events {
 	
 	public boolean DebugDmg = false;
 
-	mapcontrol TempControl = null;
+	public DamageEvent TempDamage = 0;
+
 	SummativeText TempText = 0;
 
 	trigger DamageTrigger = CreateTrigger();
@@ -24,7 +25,6 @@ library Damage requires Buffs {
 
 	boolean IgnoreBlock = false;
 	boolean IgnoreMiss = false;
-	boolean IgnorePierce = false;
 	boolean IsAttack = false;
 	boolean IsBlocked = false;
 	boolean IsCritical = false;
@@ -65,15 +65,21 @@ library Damage requires Buffs {
 	real UniquePower = 0;
 	unit AttackedUnit = null;
 	unit AttackingUnit = null;
+	unit SourceUnit = null;
+	Point2D SourcePosition = 0;
 
 	function ClearDamageEngineGlobals() {
 		if (IsRun) {
+			if (IsManual) dbgT("- вручную");
 			dbgT("Error D1: Очистка дамаг системы во время работы.");
 			dbgT("-- " + GetUnitName(AttackingUnit) + "|r -> " + GetUnitName(AttackedUnit) + "|r --");
 		}
 		ArmorReduction = 0.00;
 		AttackedUnit = null;
 		AttackingUnit = null;
+		SourceUnit = null;
+		if (IsSet(SourcePosition)) SourcePosition.destroy();
+		SourcePosition = 0;
 		BashDamage = 0.00;
 		BashDuration = 0.00;
 		BashType = 0;
@@ -92,7 +98,6 @@ library Damage requires Buffs {
 		DodgeChance = 0;
 		IgnoreBlock = false;
 		IgnoreMiss = false;
-		IgnorePierce = false;
 		IsAttack = false;
 		IsBlocked = false;
 		IsCritical = false;
@@ -138,6 +143,8 @@ library Damage requires Buffs {
 	real LIFE_ATTACKED_UNIT = 0;
 	unit ATTACKED_UNIT_GET = null;
 	unit ATTACKING_UNIT_GET = null;
+	unit SOURCE_UNIT = null;
+	Point2D SOURCE_POSITION = 0;
 
 	function ClearDamagePassGlobals() {
 		if (IsRunPass) {
@@ -164,141 +171,9 @@ library Damage requires Buffs {
 		LIFE_ATTACKED_UNIT = 0;
 		ATTACKED_UNIT_GET = null;
 		ATTACKING_UNIT_GET = null;
-	}
-
-	// Симуляция атаки
-	public function UnitAttackToTarget(
-		unit whichUnit,
-		unit target,
-		real value,
-		attacktype attackType,
-		damagetype damageType,
-		boolean isSpecAttack,
-		boolean ignoreBlock,
-		boolean ignoreMiss,
-		boolean ignorePierce,
-		boolean isNoRepeat
-	) {
-		DamageEvent this = DamageEvent.create();
-		this.whichUnit = whichUnit;
-		this.target = target;
-		this.value = value; 
-		this.attackType = attackType; 
-		this.damageType = damageType; 
-		this.ignoreBlock = ignoreBlock; 
-		this.ignoreMiss = ignoreMiss; 
-		this.ignorePierce = false; // deprecated 
-		this.isAttack = true;
-		//this.isHide = false;
-		this.isNoRepeat = isNoRepeat;
-		//this.isReflection = false;
-		this.isSimulate = true;
-		this.isSpecAttack = isSpecAttack;
-		this.withOrigin = true;
-		this.onTrigger = true;
-		this.wantDelay = WantDelay;
-		WantDelay = false;
-
-		this.run();
-	}
-
-	// Урон
-	public function UnitDamageToTarget(
-		unit whichUnit,
-		unit target,
-		real value,
-		attacktype attackType,
-		damagetype damageType,
-		boolean onTrigger,
-		boolean isNoRepeat,
-		boolean isReflection,
-		boolean ignoreBlock,
-		boolean isHide
-	) {
-		DamageEvent this = DamageEvent.create();
-		this.whichUnit = whichUnit;
-		this.target = target;
-		this.value = value; 
-		this.attackType = attackType; 
-		this.damageType = damageType; 
-		this.ignoreBlock = ignoreBlock; 
-		//this.ignoreMiss = false; 
-		//this.ignorePierce = false; 
-		//this.isAttack = false;
-		this.isHide = isHide;
-		this.isNoRepeat = isNoRepeat;
-		this.isReflection = isReflection;
-		//this.isSimulate = false;
-		//this.isSpecAttack = false;
-		this.withOrigin = true;
-		this.onTrigger = onTrigger;
-		this.wantDelay = WantDelay;
-		WantDelay = false;
-
-		this.run();
-	}
-
-	// Магический урон
-	public function UnitDamageMagicToTarget(
-		unit whichUnit,
-		unit target,
-		real value
-	) {
-		DamageEvent this = DamageEvent.create();
-		this.whichUnit = whichUnit;
-		this.target = target;
-		this.value = value; 
-		this.attackType = ATTACK_TYPE_NORMAL; 
-		this.damageType = DAMAGE_TYPE_MAGIC; 
-		this.isHide = false;
-		this.onTrigger = true;
-		this.withOrigin = true;
-		this.wantDelay = WantDelay;
-		WantDelay = false;
-
-		this.run();
-	}
-
-	// Чистый урон
-	public function UnitDamagePureToTarget(
-		unit whichUnit,
-		unit target,
-		real value
-	) {
-		DamageEvent this = DamageEvent.create();
-		this.whichUnit = whichUnit;
-		this.target = target;
-		this.value = value; 
-		this.attackType = ATTACK_TYPE_CHAOS; 
-		this.damageType = DAMAGE_TYPE_UNIVERSAL; 
-		this.isHide = false;
-		this.onTrigger = true;
-		this.withOrigin = true;
-		this.wantDelay = WantDelay;
-		WantDelay = false;
-
-		this.run();
-	}
-
-	// Физический урон
-	public function UnitDamagePhysToTarget(
-		unit whichUnit,
-		unit target,
-		real value
-	) {
-		DamageEvent this = DamageEvent.create();
-		this.whichUnit = whichUnit;
-		this.target = target;
-		this.value = value; 
-		this.attackType = ATTACK_TYPE_HERO; 
-		this.damageType = DAMAGE_TYPE_NORMAL; 
-		this.isHide = false;
-		this.onTrigger = true;
-		this.withOrigin = true;
-		this.wantDelay = WantDelay;
-		WantDelay = false;
-
-		this.run();
+		SOURCE_UNIT = null;
+		if (IsSet(SOURCE_POSITION)) SOURCE_POSITION.destroy();
+		SOURCE_POSITION = 0;
 	}
 
 	public function DisableDetectDamage() {
@@ -311,6 +186,11 @@ library Damage requires Buffs {
 
 	public function GetModifierAttackedUnit() -> unit {return AttackedUnit;}
 	public function GetModifierAttackingUnit() -> unit {return AttackingUnit;}
+	public function GetModifierSourceUnit() -> unit {return SourceUnit;}
+	public function GetModifierSourcePosition() -> Point2D {
+		if (!IsSet(SourcePosition)) SourcePosition = Point2D.createAtWidget(SourceUnit);
+		return SourcePosition;
+	}
 
 	//public function GetModifierGiven() -> real {return DMG_GIVEN_GET;}
 	public function IsModifierIgnoreBlock() -> boolean {return IgnoreBlock;}
@@ -324,8 +204,6 @@ library Damage requires Buffs {
 	public function IsModifierReflection() -> boolean {return IsReflection;}
 	public function IsModifierSimulate() -> boolean {return IsSimulate;}
 	public function IsModifierSpecAttack() -> boolean {return IsSpecAttack;}
-
-	public function IsModifierIgnorePierce() -> boolean {return IgnorePierce;} // deprecated
 
 	public function AddModifierDodgeChance(real dodgeChance) {DodgeChance = RMinBJ((1 - (1 - DodgeChance) * (1 - dodgeChance)), 1.00);}
 	public function GetModifierDodgeChance() -> real {return DodgeChance;}
@@ -423,6 +301,11 @@ library Damage requires Buffs {
 
 	public function GetDamageAttackedUnit() -> unit {return ATTACKED_UNIT_GET;}
 	public function GetDamageAttackingUnit() -> unit {return ATTACKING_UNIT_GET;}
+	public function GetDamageSourceUnit() -> unit {return SOURCE_UNIT;}
+	public function GetDamageSourcePosition() -> Point2D {
+		if (!IsSet(SOURCE_POSITION)) SOURCE_POSITION = Point2D.createAtWidget(SOURCE_UNIT);
+		return SOURCE_POSITION;
+	}
 	public function GetDamageBash() -> real {return BUSH_DAMAGE;}
 	public function GetDamageBashDuration() -> real {return BUSH_DURATION;}
 	public function GetDamageBlocked() -> real {return DMG_BLOCKED_GET;}
@@ -440,16 +323,18 @@ library Damage requires Buffs {
 	public function GetDamageIsSimulate() -> boolean {return IS_SIMULATE;}
 	public function GetDamageIsSpecAttack() -> boolean {return IS_SPEC_ATTACK;}
 	public function GetDamageLifeAttackedUnit() -> real {return LIFE_ATTACKED_UNIT;}
+	public function GetDamageIsRunPass() -> boolean {return IsRunPass;}
 
-	struct DamageEvent {
+	public struct DamageEvent {
 		unit whichUnit;
 		unit target;
+		unit sourceUnit_a;
 		real value;
+		Point2D sourcePosition_a;
 		attacktype attackType;
 		damagetype damageType;
-		boolean ignoreBlock;
-		boolean ignoreMiss;
-		boolean ignorePierce;
+		boolean ignoreBlock_a;
+		boolean ignoreMiss_a;
 		boolean isAttack;
 		boolean isHide;
 		boolean isNoRepeat;
@@ -460,24 +345,106 @@ library Damage requires Buffs {
 		boolean wantDelay;
 		boolean withOrigin;
 
-		static method create() -> DamageEvent {
+		static method create(unit whichUnit, unit target, real value) -> DamageEvent {
 			DamageEvent this = DamageEvent.allocate();
-			this.target = null;
-			this.value = 0;
-			this.attackType = null;
-			this.damageType = null;
-			this.ignoreBlock = false;
-			this.ignoreMiss = false;
-			this.ignorePierce = false;
+			this.whichUnit = whichUnit;
+			this.target = target;
+			this.sourceUnit_a = whichUnit;
+			this.value = value;
+			this.sourcePosition_a = 0;
+			this.attackType = ATTACK_TYPE_HERO;
+			this.damageType = DAMAGE_TYPE_NORMAL;
+			this.ignoreBlock_a = false;
+			this.ignoreMiss_a = false;
 			this.isAttack = false;
 			this.isHide = false;
 			this.isNoRepeat = false;
 			this.isReflection = false;
 			this.isSimulate = false;
 			this.isSpecAttack = false;
-			this.onTrigger = false;
+			this.onTrigger = true;
 			this.wantDelay = false;
-			this.withOrigin = false;
+			this.withOrigin = true;
+			return this;
+		}
+
+		method sourceUnit(unit sourceUnit) -> DamageEvent {
+			this.sourceUnit_a = sourceUnit;
+			return this;
+		}
+
+		method sourcePosition(real x, real y) -> DamageEvent {
+			this.sourcePosition_a = Point2D.createAt(x, y);
+			return this;
+		}
+
+		method types(attacktype attackType, damagetype damageType) -> DamageEvent {
+			this.attackType = attackType;
+			this.damageType = damageType;
+			return this;
+		}
+
+		method magic() -> DamageEvent {
+			this.attackType = ATTACK_TYPE_NORMAL;
+			this.damageType = DAMAGE_TYPE_MAGIC;
+			return this;
+		}
+
+		method pure() -> DamageEvent {
+			this.attackType = ATTACK_TYPE_CHAOS;
+			this.damageType = DAMAGE_TYPE_UNIVERSAL;
+			return this;
+		}
+
+		method phys() -> DamageEvent {
+			this.attackType = ATTACK_TYPE_HERO;
+			this.damageType = DAMAGE_TYPE_NORMAL;
+			return this;
+		}
+
+		method ignoreBlock() -> DamageEvent {
+			this.ignoreBlock_a = true;
+			return this;
+		}
+
+		method ignoreMiss() -> DamageEvent {
+			this.ignoreMiss_a = true;
+			return this;
+		}
+
+		method hide() -> DamageEvent {
+			this.isHide = true;
+			return this;
+		}
+
+		method noRepeat() -> DamageEvent {
+			this.isNoRepeat = true;
+			return this;
+		}
+
+		method reflection() -> DamageEvent {
+			this.isReflection = true;
+			return this;
+		}
+
+		method simulate() -> DamageEvent {
+			this.isAttack = true;
+			this.isSimulate = true;
+			return this;
+		}
+
+		method specAttack() -> DamageEvent {
+			this.isSpecAttack = true;
+			return this;
+		}
+
+		method offTrigger() -> DamageEvent {
+			this.onTrigger = false;
+			return this;
+		}
+
+		method delayed() -> DamageEvent {
+			this.wantDelay = true;
 			return this;
 		}
 
@@ -507,31 +474,41 @@ library Damage requires Buffs {
 		}
 
 		method execute() {
-			ClearDamageEngineGlobals();
+			if (UnitAlive(target)) {
+				if (IsRun) {
+					dbgT(" ");
+					dbgT("Error D1: Недопустимое внутреннее инициирование ивента урона.");
+					dbgT("-- " + GetUnitName(whichUnit) + "|r -> " + GetUnitName(target) + "|r --");
+					this.destroy();
+				}
 
-			if (attackType == ATTACK_TYPE_CHAOS && damageType == DAMAGE_TYPE_UNIVERSAL) {
-				IsPure = true;
-			} else if (damageType == DAMAGE_TYPE_ENHANCED || damageType == DAMAGE_TYPE_MAGIC) {
-				IsMagical = true;
-			} else if (damageType == DAMAGE_TYPE_NORMAL || damageType == DAMAGE_TYPE_UNIVERSAL) {
-				IsPhys = true;
+				ClearDamageEngineGlobals();
+
+				if (attackType == ATTACK_TYPE_CHAOS && damageType == DAMAGE_TYPE_UNIVERSAL) {
+					IsPure = true;
+				} else if (damageType == DAMAGE_TYPE_ENHANCED || damageType == DAMAGE_TYPE_MAGIC) {
+					IsMagical = true;
+				} else if (damageType == DAMAGE_TYPE_NORMAL || damageType == DAMAGE_TYPE_UNIVERSAL) {
+					IsPhys = true;
+				}
+
+				IsManual = true;
+				SourceUnit = sourceUnit_a;
+				SourcePosition = sourcePosition_a;
+				DMGOrigin = value;
+				IgnoreBlock = ignoreBlock_a;
+				IgnoreMiss = ignoreMiss_a;
+				IsAttack = isAttack;
+				IsHide = isHide;
+				IsNoRepeat = isNoRepeat;
+				IsReflection = isReflection;
+				IsSimulate = isSimulate;
+				IsSpecAttack = isSpecAttack;
+				WithOrigin = withOrigin;
+				UnitDamageTarget(whichUnit, target, value, true, false, attackType, damageType, WEAPON_TYPE_WHOKNOWS);
+
+				ClearDamageEngineGlobals();
 			}
-
-			IsManual = true;
-			DMGOrigin = value;
-			IgnoreBlock = ignoreBlock;
-			IgnoreMiss = ignoreMiss;
-			IgnorePierce = ignorePierce;
-			IsAttack = isAttack;
-			IsHide = isHide;
-			IsNoRepeat = isNoRepeat;
-			IsReflection = isReflection;
-			IsSimulate = isSimulate;
-			IsSpecAttack = isSpecAttack;
-			WithOrigin = withOrigin;
-			UnitDamageTarget(whichUnit, target, value, true, false, attackType, damageType, WEAPON_TYPE_WHOKNOWS);
-
-			ClearDamageEngineGlobals();
 
 			this.destroy();
 		}
@@ -539,6 +516,7 @@ library Damage requires Buffs {
 		method destroy() {
 			whichUnit = null;
 			target = null;
+			sourceUnit_a = null;
 			attackType = null;
 			damageType = null;
 			this.deallocate();
@@ -565,11 +543,15 @@ library Damage requires Buffs {
 		real lifeAttackedUnit;
 		unit attackedUnit;
 		unit attackingUnit;
+		unit sourceUnit;
+		Point2D sourcePosition;
 
 		static method create() -> DamagePass {
 			DamagePass this = DamagePass.allocate();
 			attackedUnit = null;
 			attackingUnit = null;
+			sourceUnit = null;
+			sourcePosition = 0;
 			bashDamage = 0.0;
 			bashDuration = 0.0;
 			dmgBlocked = 0.0;
@@ -620,8 +602,10 @@ library Damage requires Buffs {
 				LIFE_ATTACKED_UNIT = lifeAttackedUnit;
 				ATTACKED_UNIT_GET = attackedUnit;
 				ATTACKING_UNIT_GET = attackingUnit;
+				SOURCE_UNIT = sourceUnit;
+				SOURCE_POSITION = sourcePosition;
 
-				TriggerExecute(DamageEventTrg);
+				ExecuteEvent(EVENT_DAMAGE);
 
 				IsRunPass = false;
 
@@ -694,14 +678,15 @@ library Damage requires Buffs {
 			NegateDamage(GetTriggerUnit(), GetEventDamage());
 			
 		} else {
-			if (!IsManual) {
-				ClearDamageEngineGlobals();
-			}
-
 			if (IsRun) {
 				dbgT(" ");
 				dbgT("Error D0: Недопустимое внутреннее инициирование системы урона.");
 				dbgT("-- " + GetUnitName(GetEventDamageSource()) + "|r -> " + GetUnitName(GetTriggerUnit()) + "|r --");
+				return;
+			}
+
+			if (!IsManual) {
+				ClearDamageEngineGlobals();
 			}
 
 			// ИНИЦИАЛИЗАЦИЯ
@@ -727,13 +712,21 @@ library Damage requires Buffs {
 				} else {
 					dbgT("-- " + GetUnitName(AttackingUnit) + "|r -> " + GetUnitName(AttackedUnit) + "|r HP" + R2S(GetWidgetLife(AttackedUnit)) + "/" + R2S(GetUnitMaxLife(AttackedUnit)) + " --");
 				}
+
+				if (SourceUnit != AttackingUnit) {
+					dbgT("- юнит источник: " + GetUnitName(SourceUnit));
+				}
+				
+				if (IsSet(SourcePosition)) {
+					dbgT("- точка источник: " + R2S(SourcePosition.x) + " " + R2S(SourcePosition.y));
+				}
 			}
 			
 			// УВОРОТ
 			if (!IgnoreMiss) {
 
 				// динамический расчет модификаторов уворота
-				TriggerExecute(DodgeModifierTrg);
+				ExecuteEvent(EVENT_DODGE_MODIFIER);
 
 				// логика уворота
 				if ((IsAttack && (GetRandomReal(0, 1) < DodgeChance || GetRandomReal(0, 1) < MissChance))) {
@@ -760,19 +753,7 @@ library Damage requires Buffs {
 			if (DebugDmg && IsDodge) {
 				dbgT("- промах");
 			}
-
-			// ДОП УСЛОВИЯ НА СНИЖЕНИЕ БРОНИ
-			//if (IsAttack && !IsDodge && !IsUnitType(AttackedUnit, UNIT_TYPE_TAUREN) && !IsUnitType(AttackedUnit, UNIT_TYPE_STRUCTURE)) {
-			//	if (UnitHasItemType(AttackingUnit, KVINSHPAGA_ID)) { //КВИНШПАГА
-            //        WantDelay = true;
-			//		AddBuffToUnit(AttackingUnit, AttackedUnit, desolate_tid, desolate2_tid, 5, 0, 0, true, true, false, false, 10, false, false, false, false, 1);
-			//	} else if (UnitHasItemType(AttackingUnit, SFERA_EDEMA_ID)) { //СФЕРА ЭДЕМА
-            //        WantDelay = true;
-			//		AddBuffToUnit(AttackingUnit, AttackedUnit, desolate_tid, desolate1_tid, 3, 0, 0, false, false, false, false , 0, false, false, false, false, 1);
-			//	}
-			//	
-			//}
-			
+		
 			// получить исходный урон для героев
 			if ((IsAttack && !IsSimulate && IsHeroDetectAttack(AttackingUnit))) {
 				DetectDMGOrigin();
@@ -785,7 +766,7 @@ library Damage requires Buffs {
 				// TO DO вычислять с отловленного урона а потом делить DMGMax на броню если это нужно
 
 				// динамический расчет предшествующих модификаторов
-				TriggerExecute(PrecedingModifierTrg);
+				ExecuteEvent(EVENT_PRECEDING_MODIFIER);
 
 				DetectDMGOrigin();
 				DMGMax = DMGOrigin;
@@ -795,7 +776,7 @@ library Damage requires Buffs {
 
 				// динамический расчет уникальных модификаторов
 				UniquePower = DMGMax;
-				TriggerExecute(UniqueModifierTrg);
+				ExecuteEvent(EVENT_UNIQUE_MODIFIER);
 
 				// изменение урона критом
 				if (CritDmg > 0) {
@@ -832,15 +813,19 @@ library Damage requires Buffs {
 			}
 			
 			// динамический расчет модификаторов урона и пост защиты
-			TriggerExecute(PostDamageModifierTrg[INDEX_ORDER_DAMAGE]);
+			ExecuteEvent(EVENT_POST_MODIFIER_INDEX_DAMAGE);
 			DMGGiven = RMaxBJ(DMGGiven, 0.0);
 			DMGTaken = RMaxBJ(DMGTaken, 0.0);
 			DMGMax = RMaxBJ(DMGMax, 0.0);
-			TriggerExecute(PostDamageModifierTrg[INDEX_ORDER_PERCENT]);
+			ExecuteEvent(EVENT_POST_MODIFIER_INDEX_PERCENT);
 			DMGGiven = RMaxBJ(DMGGiven, 0.0);
 			DMGTaken = RMaxBJ(DMGTaken, 0.0);
 			DMGMax = RMaxBJ(DMGMax, 0.0);
-			TriggerExecute(PostDamageModifierTrg[INDEX_ORDER_AMOUNT]);
+			ExecuteEvent(EVENT_POST_MODIFIER_INDEX_AMOUNT);
+			DMGGiven = RMaxBJ(DMGGiven, 0.0);
+			DMGTaken = RMaxBJ(DMGTaken, 0.0);
+			DMGMax = RMaxBJ(DMGMax, 0.0);
+			ExecuteEvent(EVENT_POST_MODIFIER_INDEX_PASS);
 			DMGGiven = RMaxBJ(DMGGiven, 0.0);
 			DMGTaken = RMaxBJ(DMGTaken, 0.0);
 			DMGMax = RMaxBJ(DMGMax, 0.0);
@@ -854,17 +839,21 @@ library Damage requires Buffs {
 
 				// отменяем наносимый урон
 				if (DMGTaken <= 0.00) {
+					IsCritical = false;
 					IsBlocked = true;
 					NegateDamage(AttackedUnit, DMGCaptured);
 					DMGBlocked = DMGGiven;
 				} else {
+					IsBlocked = false;
 					// отменяем отловленный урон - получаемый урон
 					if (DMGTaken < DMGCaptured) {
 						NegateDamage(AttackedUnit, DMGCaptured - DMGTaken);
 					} else {
 						// наносим получаемый урон - отловленный
 						if (DMGTaken > DMGCaptured) {
-							UnitDamageToTarget(AttackingUnit, AttackedUnit, DMGTaken - DMGCaptured, ATTACK_TYPE_CHAOS, DAMAGE_TYPE_UNIVERSAL, false, false, false, false, false);
+							DisableTrigger(DamageTrigger);
+							UnitDamageTarget(AttackingUnit, AttackedUnit, DMGTaken - DMGCaptured, true, false, ATTACK_TYPE_CHAOS, DAMAGE_TYPE_UNIVERSAL, WEAPON_TYPE_WHOKNOWS);
+							EnableTrigger(DamageTrigger);
 						}
 					}
 				}
@@ -877,10 +866,6 @@ library Damage requires Buffs {
 				}
 			}
 
-			if (DMGTaken > 0) {
-				IsBlocked = false;
-			}
-
 			if (DebugDmg && DMGBlocked != 0.) dbgT("- заблокировано урона  = " + R2S(DMGBlocked));
 			if (DebugDmg && IsBlocked) dbgT("- блок");
 			
@@ -888,36 +873,44 @@ library Damage requires Buffs {
 			
 			// ОТОБРАЖЕНИЕ УРОНА
 			if (!IsDodge && DMGCaptured > 0.0) {
-				TempControl = GetPlayerController(GetOwningPlayer(AttackingUnit));
-				// физический критический урон
-				if (IsCritical && !IsMagical && !IsPure) {
-					CreateFlyingTextToUnit(AttackedUnit, CRITICAL_STRIKE_COLOR + I2S(R2I(DMGMax + 0.5)) + "‼|r", CRITICAL_INIT_SIZE, CRITICAL_BONUS_SIZE, CRITICAL_TIME_LIFE, CRITICAL_TIME_FADE, CRITICAL_OFFSET_Z, CRITICAL_MIN_SPEED, CRITICAL_MAX_SPEED, CRITICAL_MIN_ANGLE, CRITICAL_MAX_ANGLE);
+				
+				if (DMGMax > 0.00 && IsCritical) {
+					// физический критический урон
+					if (!IsMagical && !IsPure) {
+						CreateFlyingTextToUnit(AttackedUnit, CRITICAL_STRIKE_COLOR + I2S(R2I(DMGMax + 0.5)) + "‼|r", CRITICAL_INIT_SIZE, CRITICAL_BONUS_SIZE, CRITICAL_TIME_LIFE, CRITICAL_TIME_FADE, CRITICAL_OFFSET_Z, CRITICAL_MIN_SPEED, CRITICAL_MAX_SPEED, CRITICAL_MIN_ANGLE, CRITICAL_MAX_ANGLE);
+					} else
 
-				// магический критический урон
-				} else if (IsCritical && IsMagical) {
-					CreateFlyingTextToUnit(AttackedUnit, CRITICAL_MAGIC_COLOR + I2S(R2I(DMGMax + 0.5)) + "‼|r", CRITICAL_INIT_SIZE, CRITICAL_BONUS_SIZE, CRITICAL_TIME_LIFE, CRITICAL_TIME_FADE, CRITICAL_OFFSET_Z, CRITICAL_MIN_SPEED, CRITICAL_MAX_SPEED, CRITICAL_MIN_ANGLE, CRITICAL_MAX_ANGLE);
+					// магический критический урон
+					if (IsMagical) {
+						CreateFlyingTextToUnit(AttackedUnit, CRITICAL_MAGIC_COLOR + I2S(R2I(DMGMax + 0.5)) + "‼|r", CRITICAL_INIT_SIZE, CRITICAL_BONUS_SIZE, CRITICAL_TIME_LIFE, CRITICAL_TIME_FADE, CRITICAL_OFFSET_Z, CRITICAL_MIN_SPEED, CRITICAL_MAX_SPEED, CRITICAL_MIN_ANGLE, CRITICAL_MAX_ANGLE);
+					} else
 
-				// чистый критический урон
-				} else if (IsCritical && IsPure) {
-					CreateFlyingTextToUnit(AttackedUnit, CRITICAL_PURE_COLOR + I2S(R2I(DMGMax + 0.5)) + "‼|r", CRITICAL_INIT_SIZE, CRITICAL_BONUS_SIZE, CRITICAL_TIME_LIFE, CRITICAL_TIME_FADE, CRITICAL_OFFSET_Z, CRITICAL_MIN_SPEED, CRITICAL_MAX_SPEED, CRITICAL_MIN_ANGLE, CRITICAL_MAX_ANGLE);
-
-				// обычный чистый урон
-				} else if (IsPure && TempControl == MAP_CONTROL_USER) {
-					TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, REGULAR_TEXT, DMGMax, PURE_DMG_COLOR);
-					if (IsMapDuel())
-						TempText.showToObservers();
-
-				// обычный магический урон
-				} else if (IsMagical && TempControl == MAP_CONTROL_USER) {
-					TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, REGULAR_TEXT, DMGMax, MAGICAL_DMG_COLOR);
-					if (IsMapDuel())
-						TempText.showToObservers();
+					// чистый критический урон
+					if (IsPure) {
+						CreateFlyingTextToUnit(AttackedUnit, CRITICAL_PURE_COLOR + I2S(R2I(DMGMax + 0.5)) + "‼|r", CRITICAL_INIT_SIZE, CRITICAL_BONUS_SIZE, CRITICAL_TIME_LIFE, CRITICAL_TIME_FADE, CRITICAL_OFFSET_Z, CRITICAL_MIN_SPEED, CRITICAL_MAX_SPEED, CRITICAL_MIN_ANGLE, CRITICAL_MAX_ANGLE);
+					}
 				}
 
-				if (DMGGiven > 0.00 && TempControl == MAP_CONTROL_USER && (FLOATING_DMG_ON_UNITS || IsUnitType(AttackedUnit, UNIT_TYPE_HERO))) {
-					TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, DMG_TEXT, DMGGiven, "");
-					if (IsMapDuel())
-						TempText.showToObservers();
+				if (GetPlayerController(GetOwningPlayer(AttackingUnit)) == MAP_CONTROL_USER && (FLOATING_DMG_ON_UNITS || IsUnitType(AttackedUnit, UNIT_TYPE_HERO))) {
+					if (DMGMax > 0.00 && !IsCritical) {
+						// обычный чистый урон
+						if (IsPure) {
+							TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, REGULAR_TEXT, DMGMax, PURE_DMG_COLOR);
+							if (IsMapDuel()) TempText.showToObservers();
+						} else
+
+						// обычный магический урон
+						if (IsMagical) {
+							TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, REGULAR_TEXT, DMGMax, MAGICAL_DMG_COLOR);
+							if (IsMapDuel()) TempText.showToObservers();
+						}
+					}
+
+					// обычный урон
+					if (DMGGiven > 0.0) {
+						TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(AttackingUnit), AttackedUnit, DMG_TEXT, DMGGiven, "");
+						if (IsMapDuel()) TempText.showToObservers();
+					}
 				}
 			}
 
@@ -929,6 +922,8 @@ library Damage requires Buffs {
 			this = DamagePass.create();
 			this.attackedUnit = AttackedUnit;
 			this.attackingUnit = AttackingUnit;
+			this.sourceUnit = SourceUnit;
+			this.sourcePosition = SourcePosition;
 			this.bashDamage = BashDamage;
 			this.bashDuration = BashDuration;
 			this.dmgBlocked = DMGBlocked;
@@ -974,17 +969,13 @@ library Damage requires Buffs {
 		AnyUnitDamagedEvent(DamageTrigger);
 		TriggerAddAction(DamageTrigger, function Actions);
 
-		TempTrigger = CreateTrigger();
-		TriggerRegisterAnyUnitEventBJ(TempTrigger, EVENT_PLAYER_UNIT_ATTACKED);
-		TriggerAddCondition(TempTrigger, Condition(function() -> boolean {
-			return
-				GetUnitTypeId(GetAttacker()) == DUMMY_ATC_ID &&
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_ATTACKED), function() {
+			if (GetUnitTypeId(GetAttacker()) == DUMMY_ATC_ID &&
 				LoadUnitHandle(HT, GetHandleId(GetAttacker()), UNIT_DUMMY_HID) != GetTriggerUnit()
-			;
-		}));
-		TriggerAddAction(TempTrigger, function() {
-			dbgT(GetUnitName(GetTriggerUnit()) + " not target " + GetUnitName(GetAttacker()));
-			KillUnit(GetAttacker());
+			) {
+				dbgT(GetUnitName(GetTriggerUnit()) + " not target " + GetUnitName(GetAttacker()));
+				KillUnit(GetAttacker());
+			}
 		});
 	}
 

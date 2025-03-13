@@ -1,4 +1,4 @@
-library HashCleaner requires GameUtils {
+library HashCleaner requires Stuns, Auras, Buffs {
 
 	// TO DO
 	struct ClearUnit {
@@ -38,6 +38,7 @@ library HashCleaner requires GameUtils {
 				DestroyAllBuffsByHashId(hashId);
 				DestroyAllModifiersByHashId(hashId);
 				DestroyAllMultiModifiersByHashId(hashId);
+				if (IsSet(UnitData.load(hashId))) UnitData.load(hashId).destroy();
 				
 				FlushChildHashtable(HT, hashId);
 				FlushChildHashtable(udg_HT_GUI, hashId);
@@ -50,13 +51,9 @@ library HashCleaner requires GameUtils {
 	}
 	
 	function onInit() {
-		trigger t;
-		t = CreateTrigger();
-		TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_DEATH);
-		TriggerAddAction(t, function() {
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DEATH),  function() {
 			ClearUnit.create(GetTriggerUnit());
 		});
-		t = null;
 	}
 	
 }

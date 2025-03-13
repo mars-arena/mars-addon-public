@@ -7,10 +7,10 @@ library FloatingText requires TechUtils {
 	public constant boolean FLOATING_DMG_ON_UNITS = true;
 
 	// @const время при котором значение нового текста суммируется с предыдущем (0.25 думаю лучше будет)
-	constant real ADD_UP_TIME = 0.2;
+	constant real ADD_UP_TIME = 0.3;
 
 	// @const задержка набирания скорости плавающим текстом
-	constant real VELOCITY_DELAY = 0.1;
+	constant real VELOCITY_DELAY = 0.3;
 
 	// @const настройки критического текста
 	public constant real CRITICAL_INIT_SIZE = 9.;
@@ -39,8 +39,6 @@ library FloatingText requires TechUtils {
 	public constant integer BLOCK_TEXT = 3;
 	public constant integer DMG_TEXT = 4;
 	public constant integer REGULAR_TEXT = 5;
-	
-	
 
 	string Prefix[MAX_COUNT_TYPE_TEXTS];
 	string Postfix[MAX_COUNT_TYPE_TEXTS];
@@ -122,8 +120,27 @@ library FloatingText requires TechUtils {
 
 		timer tm;
 
+		static integer TotalTexts = 1;
+		static integer RemoveIndex = 1;
+
 		static method create(player owner, unit target, integer textType) -> SummativeText {
-			SummativeText this = SummativeText.allocate();
+			SummativeText this;
+			SummativeText old;
+			if (TotalTexts == 90) {
+				dbgT("Remove textag " + I2S(RemoveIndex));
+				old = SummativeText.load(RemoveIndex);
+				if (IsSet(old)) {
+					old.destroy();
+				}
+				RemoveIndex = (RemoveIndex + 1);
+				if (RemoveIndex > 90) {
+					RemoveIndex = 1;
+				}
+			} else {
+				TotalTexts = TotalTexts + 1;
+			}
+			
+			this = SummativeText.allocate();
 			this.vtag = VelocityTextTag.create(textType);
 			this.owner = owner;
 			this.target = target;
@@ -138,6 +155,10 @@ library FloatingText requires TechUtils {
 			Save(owner, target, textType, this);
 
 			return this;
+		}
+
+		static method load(integer index) -> SummativeText {
+			return index;
 		}
 
 		method showValue(real addValue, string prefix) -> SummativeText {
@@ -206,6 +227,7 @@ library FloatingText requires TechUtils {
 		}
 
 		method destroy() {
+			TotalTexts -= 1;
 			Remove(owner, target, textType);
 			vtag.destroy();
 			owner = null;
