@@ -2,11 +2,20 @@ library Stuns requires Events {
 
 // Constants
 
+	// Событие оглушения юнита
+	//
+	// GetTriggerStun() -> Stun
+	// GetStunningUnit() -> unit
+	// GetStunnedUnit() -> unit
+	// GetStunTypeId() -> integer
+	// GetStunDuration() -> real
+	// GetStunIsEnter() -> boolean
+	// GetStunIsOut() -> boolean
+	// GetStunIsFirst() -> boolean
+	public integer EVENT_STUN;
+
 	// @const максимальное количество типов оглушений, которые могут действовать на одну цель.
 	constant integer MAX_COUNT_STUN_TYPES = 10;
-
-	// @const cобытия начала и конца оглушения любого юнита любого типа (исключая `LOST_CONTROL_STUN`).
-	constant string TRIG_EVENT_STUN = "EventStun";
 
 	hashtable HTInternal = InitHashtable();
 
@@ -48,7 +57,7 @@ library Stuns requires Events {
 // Tech Functions
 
 	function dbg(string msg) {
-		if (DebugStun) dbgT(msg);
+		if (DebugStun) Debug(msg);
 	}
 
 	function Save(unit stunned, integer typeId, Stun stun) {
@@ -79,14 +88,45 @@ library Stuns requires Events {
 // API
 
 	// Event Getters
-	public function GetTriggerStun() -> Stun {return OBJECT_GET;}
-	public function GetStunningUnit() -> unit {return STUNNING_UNIT_GET;}
-	public function GetStunnedUnit() -> unit {return STUNNED_UNIT_GET;}
-	public function GetStunTypeId() -> integer {return TYPE_ID_GET;}
-	public function GetStunDuration() -> real {return DURATION_GET;}
-	public function GetStunIsEnter() -> boolean {return IS_ENTER_GET;}
-	public function GetStunIsOut() -> boolean {return IS_OUT_GET;}
-	public function GetStunIsFirst() -> boolean {return IS_FIRST_GET;}
+	public function GetTriggerStun() -> Stun {
+		debug DebugEvent(EVENT_STUN);
+		return OBJECT_GET;
+	}
+
+	public function GetStunningUnit() -> unit {
+		debug DebugEvent(EVENT_STUN);
+		return STUNNING_UNIT_GET;
+	}
+
+	public function GetStunnedUnit() -> unit {
+		debug DebugEvent(EVENT_STUN);
+		return STUNNED_UNIT_GET;
+	}
+
+	public function GetStunTypeId() -> integer {
+		debug DebugEvent(EVENT_STUN);
+		return TYPE_ID_GET;
+	}
+
+	public function GetStunDuration() -> real {
+		debug DebugEvent(EVENT_STUN);
+		return DURATION_GET;
+	}
+
+	public function GetStunIsEnter() -> boolean {
+		debug DebugEvent(EVENT_STUN);
+		return IS_ENTER_GET;
+	}
+
+	public function GetStunIsOut() -> boolean {
+		debug DebugEvent(EVENT_STUN);
+		return IS_OUT_GET;
+	}
+
+	public function GetStunIsFirst() -> boolean {
+		debug DebugEvent(EVENT_STUN);
+		return IS_FIRST_GET;
+	}
 
 	// Object Getters
 
@@ -216,7 +256,6 @@ library Stuns requires Events {
 			IS_OUT_GET = isOut;
 			IS_FIRST_GET = isFirst;
 			ExecuteEvent(EVENT_STUN);
-			ExecuteFunc("Trig_" + TRIG_EVENT_STUN + "_Actions");
 			STUNNING_UNIT_GET = null;
 			STUNNED_UNIT_GET = null;
 			TYPE_ID_GET = 0;
@@ -265,19 +304,19 @@ library Stuns requires Events {
 					GetUnitModifier(stunningUnit, INC_OUT_STUN_TIME);
 			}
 			if (duration > GetStunRemainingTimeByType(stunnedUnit, typeId)) {
-				dbg("stun " + GetUnitName(stunnedUnit) + " " + R2S(duration) + " > " + R2S(GetStunRemainingTimeByType(stunnedUnit, typeId)));
+				debug dbg("stun " + GetUnitName(stunnedUnit) + " " + R2S(duration) + " > " + R2S(GetStunRemainingTimeByType(stunnedUnit, typeId)));
 
 				if (IsUnitStunned(stunnedUnit)) {
 
 					object = GetUnitStunByType(stunnedUnit, typeId);
 					if (object != 0) {
 						object.restart(stunningUnit, duration);
-						dbg("end restart");
+						debug dbg("end restart");
 						executeEvent(object, stunningUnit, stunnedUnit, typeId, duration, true, false, false);
 					} else {
 						object = Stun.create(stunningUnit, stunnedUnit, typeId, duration);
 						Save(stunnedUnit, typeId, object);
-						dbg("end without stun");
+						debug dbg("end without stun");
 						object.start();
 						executeEvent(object, stunningUnit, stunnedUnit, typeId, duration, true, false, true);
 					}
@@ -291,21 +330,21 @@ library Stuns requires Events {
 						Save(stunnedUnit, typeId, object);
 						SaveDummy(stunnedUnit, dummy);
 						object.start();
-						dbg("end with stun");
+						debug dbg("end with stun");
 						executeEvent(object, stunningUnit, stunnedUnit, typeId, duration, true, false, true);
 					} else {
-						dbg("not " + GetUnitName(stunnedUnit) + " can't magicleash " + R2S(duration));
+						debug dbg("not " + GetUnitName(stunnedUnit) + " can't magicleash " + R2S(duration));
 						return object;
 					}
 
 				}
 
 			} else {
-				dbg("not " + GetUnitName(stunnedUnit) + " " + R2S(duration) + " < " + R2S(GetStunRemainingTimeByType(stunnedUnit, typeId)));
+				debug dbg("not " + GetUnitName(stunnedUnit) + " " + R2S(duration) + " < " + R2S(GetStunRemainingTimeByType(stunnedUnit, typeId)));
 				executeEvent(GetUnitStunByType(stunnedUnit, typeId), stunningUnit, stunnedUnit, typeId, duration, true, false, false);
 			}
 		} else {
-			dbg("not " + GetUnitName(stunnedUnit) + " is dead or immun " + R2S(duration));
+			debug dbg("not " + GetUnitName(stunnedUnit) + " is dead or immun " + R2S(duration));
 		}
 
 		dummy = null;
@@ -357,7 +396,7 @@ library Stuns requires Events {
 			executeEvent(this, stunningUnit, stunnedUnit, typeId, duration, false, true, false);
 
 			if (!IsUnitStunnedExceptType(stunnedUnit, typeId)) {
-				UnitRemoveAbility(stunnedUnit, STUN_BUFF_ID);
+				//UnitRemoveAbility(stunnedUnit, STUN_BUFF_ID);
 				KillUnit(LoadDummy(stunnedUnit)); RemoveDummy(stunnedUnit);
 			}
 
@@ -387,7 +426,7 @@ library Stuns requires Events {
 
 		static method expired() {
 			Stun this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
-			dbg("expired " + GetUnitName(stunnedUnit) + " " + R2S(duration));
+			debug dbg("expired " + GetUnitName(stunnedUnit) + " " + R2S(duration));
 			this.destroy();
 		}
 
@@ -395,6 +434,7 @@ library Stuns requires Events {
 
 	// Init Function
 	function onInit() {
+		EVENT_STUN = CreateEvent("EVENT_STUN");
 		StunEffect[NORMAL_STUN] = "Abilities\\Spells\\Human\\Thunderclap\\ThunderclapTarget.mdl";
 		StunAttach[NORMAL_STUN] = "overhead";
 		StunEffect[LOST_CONTROL_STUN] = "";

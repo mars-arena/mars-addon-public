@@ -29,7 +29,7 @@ library Modifiers requires ModifiersList {
 		} else if (IsModifierMultiplicative(modifier)) {
 			locMod = LoadLocationHandle(HT, GetHandleId(u), modifier);
 			if (locMod == null) {
-				dbgT("Error ME1:" + GetUnitName(u) + " Невозможно удалить значение для не инициализированного модификатора.");
+				debug Error("ME1", GetUnitName(u) + " Невозможно удалить значение для не инициализированного модификатора.");
 				return;
 			}
 			countMod = LoadInteger(HT, GetHandleId(locMod), 0);
@@ -44,7 +44,7 @@ library Modifiers requires ModifiersList {
 			
 		}
 		if (!sub) {
-			dbgT("Error ME2:" + GetUnitName(u) + " Невозможно удалить неинициализированное значение модификатора (" + I2S(modifier) + ").");
+			debug Error("ME2", GetUnitName(u) + " Невозможно удалить неинициализированное значение модификатора (" + I2S(modifier) + ").");
 		}
 		locMod = null;
 	}

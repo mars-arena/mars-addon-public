@@ -1,4 +1,4 @@
-library DynamicProjectiles requires GameUtils, VectorAPI {
+library DynamicProjectiles requires TechUtils, VectorAPI {
 
 	public struct DynamicProjectile {
 		integer object;

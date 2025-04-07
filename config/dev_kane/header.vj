@@ -38,6 +38,20 @@ globals
 	integer iS = 0
 	integer iE = 0
 	group bGroup = CreateGroup()
+	unit CasterUnit
+	unit OwnerUnit
+	unit TargetUnit
+	real Value
+	unit AuraOwnerUnit
+	unit AuraTargetUnit
+	boolean IsEntered
+	boolean IsOut
+	boolean IsActions
+	boolean IsTransfer
+	integer ActionsId
+	integer BuffId
+	timer BuffStack
+	real TIMER_PERIOD = 0.03125
 
 	// фейк переменная
 	force udg_Observers

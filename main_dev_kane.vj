@@ -17,13 +17,13 @@
 
 //		//! import vjass    "../mars-addon/engine/libraries/AntiMH.vj"
 		//! import vjass    "../mars-addon/engine/libraries/CoordUtils.vj"
-		//! import zinc     "../mars-addon/engine/libraries/GameUtils.zn"
+		//! import zinc     "../mars-addon/engine/libraries/SummativeText.zn"
 		//! import vjass    "../mars-addon/engine/libraries/TechUtils.vj"
 		//! import zinc     "../mars-addon/engine/libraries/TexttagUtils.zn"
 		//! import vjass    "../mars-addon/engine/libraries/Armor.vj"
 		//! import zinc     "../mars-addon/engine/libraries/Attachment.zn"
 		//! import zinc     "../mars-addon/engine/libraries/Debug.zn"
-		//! import zinc     "../mars-addon/engine/libraries/FloatingText.zn"
+		//! import zinc     "../mars-addon/engine/libraries/Lightning.zn"
 		//! import zinc     "../mars-addon/engine/libraries/JumpToPoint.zn"
 		//! import vjass    "../mars-addon/engine/libraries/Math.vj"
 		//! import vjass    "../mars-addon/engine/libraries/NegateDamage.vj"
@@ -56,6 +56,8 @@
 		//! import zinc     "../mars-addon/engine/systems/StaticProjectiles.zn"
 		//! import zinc     "../mars-addon/engine/systems/Stuns.zn"
 		//! import zinc     "../mars-addon/engine/systems/UnitData.zn"
+		//! import zinc     "../mars-addon/engine/systems/AttackSpeed.zn"
+		//! import zinc     "../mars-addon/engine/systems/Regeneration.zn"
 
 	//
 
@@ -93,7 +95,7 @@
 			//! import zinc     "../mars-addon/mars/common/others/CliffMiss.zn"
 			//! import zinc     "../mars-addon/mars/common/others/Doubles.zn"
 			//! import zinc     "../mars-addon/mars/common/others/Hammer.zn"
-			//! import zinc     "../mars-addon/mars/common/others/Lightning.zn"
+			//! import zinc     "../mars-addon/mars/common/others/MassLightning.zn"
 			//! import zinc     "../mars-addon/mars/common/others/RectangleSplash.zn"
 		
 		//

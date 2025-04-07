@@ -2,9 +2,9 @@
 
 Список технических функций, упрощающих разработку проекта.
 
-- Создает отладочный текст в точке. <br> `dbgXY(string s, real x, real y) -> void`
+- Создает отладочный текст в точке. <br> `DebugXY(string s, real x, real y) -> void`
 
-- Создает отладочный текст. <br> `dbgT(string s) -> void`
+- Создает отладочный текст. <br> `Debug(string s) -> void`
 
 - Делает юнита летающим. <br> `MakeUnitFly(unit u) -> void`
 

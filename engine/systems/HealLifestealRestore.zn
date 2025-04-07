@@ -1,6 +1,19 @@
 library HealLifestealRestore requires Events {
 
 // Variables
+
+	public integer EVENT_HEAL_MODIFIER;
+
+	public integer EVENT_HEAL;
+
+	public integer EVENT_LIFESTEAL_MODIFIER;
+
+	public integer EVENT_LIFESTEAL;
+
+	public integer EVENT_RESTORE_MODIFIER;
+
+	public integer EVENT_RESTORE;
+
 	SummativeText TempText;
 
 	// Debug Variables
@@ -24,32 +37,114 @@ library HealLifestealRestore requires Events {
 // Tech Functions
 
 	function dbg(string msg) {
-		if (DebugHeal) dbgT(msg);
+		if (DebugHeal) Debug(msg);
 	}
 
 // API
 
 	// Event Getters
 
-	public function GetHealAmount() -> real {return HealAmount;}
-	public function GetHealedUnit() -> unit {return HealedUnit;}
-	public function GetHealingUnit() -> unit {return HealingUnit;}
-	public function GetOverHeal() -> real {return OverHeal;}
+	public function GetHealAmount() -> real {
+		debug if (
+			!IsEventRun(EVENT_HEAL_MODIFIER) &&
+			!IsEventRun(EVENT_HEAL)
+		) {
+			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
+		}
+		return HealAmount;
+	}
+	public function GetHealedUnit() -> unit {
+		debug if (
+			!IsEventRun(EVENT_HEAL_MODIFIER) &&
+			!IsEventRun(EVENT_HEAL)
+		) {
+			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
+		}
+		return HealedUnit;
+	}
+	public function GetHealingUnit() -> unit {
+		debug if (
+			!IsEventRun(EVENT_HEAL_MODIFIER) &&
+			!IsEventRun(EVENT_HEAL)
+		) {
+			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
+		}
+		return HealingUnit;
+	}
+	public function GetOverHeal() -> real {
+		debug DebugEvent(EVENT_HEAL);
+		return OverHeal;
+	}
 
-	public function GetLifestealAmount() -> real {return LifestealAmount;}
-	public function GetLifestealedUnit() -> unit {return LifestealedUnit;}
-	public function GetOverLifesteal() -> real {return OverLifesteal;}
+	public function GetLifestealAmount() -> real {
+		debug if (
+			!IsEventRun(EVENT_LIFESTEAL_MODIFIER) &&
+			!IsEventRun(EVENT_LIFESTEAL)
+		) {
+			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
+		}
+		return LifestealAmount;
+	}
+	public function GetLifestealedUnit() -> unit {
+		debug if (
+			!IsEventRun(EVENT_LIFESTEAL_MODIFIER) &&
+			!IsEventRun(EVENT_LIFESTEAL)
+		) {
+			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
+		}
+		return LifestealedUnit;
+	}
+	public function GetOverLifesteal() -> real {
+		debug DebugEvent(EVENT_LIFESTEAL);
+		return OverLifesteal;
+	}
 
-	public function GetRestoredAmount() -> real {return RestoredAmount;}
-	public function GetRestoredUnit() -> unit {return RestoredUnit;}
-	public function GetRestoringUnit() -> unit {return RestoringUnit;}
-	public function GetOverRestore() -> real {return OverRestore;}
+	public function GetRestoredAmount() -> real {
+		debug if (
+			!IsEventRun(EVENT_RESTORE_MODIFIER) &&
+			!IsEventRun(EVENT_RESTORE)
+		) {
+			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
+		}
+		return RestoredAmount;
+	}
+	public function GetRestoredUnit() -> unit {
+		debug if (
+			!IsEventRun(EVENT_RESTORE_MODIFIER) &&
+			!IsEventRun(EVENT_RESTORE)
+		) {
+			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
+		}
+		return RestoredUnit;
+	}
+	public function GetRestoringUnit() -> unit {
+		debug if (
+			!IsEventRun(EVENT_RESTORE_MODIFIER) &&
+			!IsEventRun(EVENT_RESTORE)
+		) {
+			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
+		}
+		return RestoringUnit;
+	}
+	public function GetOverRestore() -> real {
+		debug DebugEvent(EVENT_RESTORE);
+		return OverRestore;
+	}
 
 	// Event Setters
 
-	public function SetHealAmount(real healAmount) {HealAmount = healAmount;}
-	public function SetLifestealAmount(real lifestealAmount) {LifestealAmount = lifestealAmount;}
-	public function SetRestoredAmount(real restoredAmount) {RestoredAmount = restoredAmount;}
+	public function SetHealAmount(real healAmount) {
+		debug DebugEvent(EVENT_HEAL_MODIFIER);
+		HealAmount = healAmount;
+	}
+	public function SetLifestealAmount(real lifestealAmount) {
+		debug DebugEvent(EVENT_LIFESTEAL_MODIFIER);
+		LifestealAmount = lifestealAmount;
+	}
+	public function SetRestoredAmount(real restoredAmount) {
+		debug DebugEvent(EVENT_RESTORE_MODIFIER);
+		RestoredAmount = restoredAmount;
+	}
 
 	// Functions
 
@@ -131,6 +226,13 @@ library HealLifestealRestore requires Events {
 			if (IsMapDuel())
 				TempText.showToObservers();
 		});
+
+		EVENT_HEAL_MODIFIER = CreateEvent("EVENT_HEAL_MODIFIER");
+		EVENT_HEAL = CreateEvent("EVENT_HEAL");
+		EVENT_LIFESTEAL_MODIFIER = CreateEvent("EVENT_LIFESTEAL_MODIFIER");
+		EVENT_LIFESTEAL = CreateEvent("EVENT_LIFESTEAL");
+		EVENT_RESTORE_MODIFIER = CreateEvent("EVENT_RESTORE_MODIFIER");
+		EVENT_RESTORE = CreateEvent("EVENT_RESTORE");
 	}
 
 }

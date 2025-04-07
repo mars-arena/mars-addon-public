@@ -79,7 +79,7 @@ library MultiModifiers requires MultiModifiersList {
 		locValue5 = LoadLocationHandle(HT, GetHandleId(locMod), 5);
 		locValue6 = LoadLocationHandle(HT, GetHandleId(locMod), 6);
 		if (locMod == null) {
-			dbgT("Error MME1:" + GetUnitName(u) + " Невозможно удалить значение для не инициализированного модификатора (" + I2S(modifier) + ").");
+			debug Error("MME1", GetUnitName(u) + " Невозможно удалить значение для не инициализированного модификатора (" + I2S(modifier) + ").");
 			return false;
 		}
 		countMod = LoadInteger(HT, GetHandleId(locMod), 0);
@@ -108,7 +108,7 @@ library MultiModifiers requires MultiModifiersList {
 		}
 		
 		if (!sub) {
-			dbgT("Error MME2:" + GetUnitName(u) + " Невозможно удалить неинициализированное значение модификатора (" + I2S(modifier) + ").");
+			debug Error("ME2", GetUnitName(u) + " Невозможно удалить неинициализированное значение модификатора (" + I2S(modifier) + ").");
 		}
 		locMod = null;
 		locType = null;

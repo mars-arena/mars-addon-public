@@ -1,4 +1,4 @@
-library Doubles requires StaticProjectiles {
+library Doubles requires Illusions {
 
 	public struct Doubles {
 		static integer Count = 2;

@@ -1,4 +1,4 @@
-library BuffTypes requires GameUtils {
+library BuffTypes requires TechUtils {
 
     //Arthas
     public key ARTHAS_DOME_TID;

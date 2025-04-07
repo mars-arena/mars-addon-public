@@ -2,8 +2,10 @@ library UnitData requires Modifiers {
 
 // Variables
 
+	public UnitData TempData = 0; 
+
 	// Hash Variables
-	key UNIT_EX_HID;
+	key UNIT_DATA_HID;
 
 // API Functions
 
@@ -12,8 +14,6 @@ library UnitData requires Modifiers {
 	}
 
 	public function Arrow(unit whichUnit) -> ArrowData {
-		if (!IsSet(UnitData.get(whichUnit).arrow))
-			UnitData.get(whichUnit).arrow = ArrowData.create();
 		return UnitData.get(whichUnit).arrow;
 	}
 
@@ -22,39 +22,40 @@ library UnitData requires Modifiers {
 	public struct UnitData {
 		unit u;
 
-		real movespeed = 0.;
-		ArrowData arrow = 0;
+		//real movespeed = 0.;
+		ArrowData arrow_atr = 0;
 
 		static method create(unit whichUnit) -> UnitData {
 			UnitData this = UnitData.allocate();
 			this.u = whichUnit;
+			SaveInteger(HT, GetHandleId(whichUnit), UNIT_DATA_HID, this);
 			return this;
 		}
 
 		method destroy() {
-			RemoveSavedInteger(HT, GetHandleId(u), UNIT_EX_HID);
-			if (IsSet(arrow))
-				arrow.destroy();
+			RemoveSavedInteger(HT, GetHandleId(u), UNIT_DATA_HID);
+			if (IsSet(arrow_atr))
+				arrow_atr.destroy();
 			u = null;
 			this.deallocate();
 		}
 
 		static method load(integer hashId) -> UnitData {
-			return LoadInteger(HT, hashId, UNIT_EX_HID);
+			return LoadInteger(HT, hashId, UNIT_DATA_HID);
 		}
 
 		static method get(unit whichUnit) -> UnitData {
 			UnitData this = UnitData.load(GetHandleId(whichUnit)); 
 			if (!IsSet(this))
-				return UnitData.create(whichUnit);
+				this = UnitData.create(whichUnit);
 			return this;
 		}
 
-		//method operator arrow() -> ArrowData {
-		//	if (!IsSet(arrow))
-		//		arrow = ArrowData.create();
-		//	return arrow;
-		//}
+		method operator arrow() -> ArrowData {
+			if (!IsSet(arrow_atr))
+				arrow_atr = ArrowData.create();
+			return arrow_atr;
+		}
 	}
 
 	public struct ArrowData {
@@ -72,25 +73,23 @@ library UnitData requires Modifiers {
 		damagetype damageType = null;
 		attacktype attackType = null;
 		boolean pierce = false;
-		group unitGroup = null;
+		group unitGroup_atr = null;
 
 		static method create() -> ArrowData {
 			ArrowData this = ArrowData.allocate();
-			this.unitGroup = CreateGroup();
 			return this;
 		}
 
-		//method operator unitGroup() -> ArrowData {
-		//	if (!IsSet(unitGroup))
-		//		unitGroup = ArrowData.create();
-		//	return unitGroup;
-		//}
+		method operator unitGroup() -> group {
+			if (unitGroup_atr == null)
+				unitGroup_atr = CreateGroup();
+			return unitGroup_atr;
+		}
 
 		method destroy() {
-			simulateType = null;
 			damageType = null;
 			attackType = null;
-			DestroyGroup(unitGroup); unitGroup = null;
+			DestroyGroup(unitGroup_atr); unitGroup_atr = null;
 			this.deallocate();
 		}
 	}

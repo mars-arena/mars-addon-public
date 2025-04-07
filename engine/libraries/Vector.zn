@@ -1,88 +1,86 @@
 library Vector requires Debug {
 
-   public struct Vec2 {
+	public struct Vec2 {
 		real x, y;
-		
+
 		// Constructors
 		static method createAt(real x, real y) -> Vec2 {
 			return Vec2.allocate().setAt(x, y);
 		}
-		
+
 		static method create() -> Vec2 {
 			return Vec2.allocate().setAt(0.0, 0.0);
 		}
-	
+
 		static method createRandom() -> Vec2 {
 			return Vec2.allocate().setAt(GetRandomReal(-1.0, 1.0), GetRandomReal(-1.0, 1.0));
 		}
-		
+
 		// Transitional behavior
 		static method clone(Vec2 another) -> Vec2 {
 			return Vec2.allocate().setAt(another.x, another.y);
 		}
-		
+
 		method setAt(real x, real y) -> Vec2 {
 			this.x = x;
 			this.y = y;
 			return this;
 		}
-	
 
 		method clear() -> Vec2 {
 			return this.setAt(0.0, 0.0);
 		}
 
-	
 		method copy(Vec2 another) -> Vec2 {
 			return this.setAt(another.x, another.y);
 		}
-	
+
 		// Math
 		method add(Vec2 another) -> Vec2 {
 			return this.setAt(this.x + another.x, this.y + another.y);
 		}
-	
+
 		method sub(Vec2 another) -> Vec2 {
 			return this.setAt(this.x - another.x, this.y - another.y);
 		}
-	
+
 		method scale(real number) -> Vec2 {
 			return this.setAt(this.x*number, this.y*number);
 		}
-	
+
 		method div(real number) -> Vec2 {
 			return this.scale(1.0/number);
 		}
-	
+
 		method dot(Vec2 another) -> real {
 			return this.x*another.x + this.y*another.y;
 		}
-	
+
 		method lengthSqr() -> real {
 			return this.x*this.x + this.y*this.y;
 		}
-	
+
 		method length() -> real {
 			return SquareRoot(this.x*this.x + this.y*this.y);
 		}
-	
+
 		method distToSqr(Vec2 another) -> real {
 			return (this.x - another.x)*(this.x - another.x) + (this.y - another.y)*(this.y - another.y);
 		}
-	
+
 		method distTo(Vec2 another) -> real {
 			return SquareRoot(this.distToSqr(another));
 		}
-	
+
 		method angle(Vec2 another) -> real {
 			return Acos(this.dot(another)/this.length()*another.length());  // radians
 		}
-	
+
 		method normalize() -> Vec2 {
-			debug if (this.length == 0.0) { dbgT("attempt to normalize vector with zero length"); return this; }
+			debug if (this.length == 0.0) { Debug("attempt to normalize vector with zero length"); return this; }
 			return this.scale(1.0/this.length());
 		}
-	
+
 		// Misc.
 		method reflect(Vec2 normal) -> Vec2 {
 			Vec2 temp = Vec2.clone(normal).scale(2.0*this.dot(normal));
@@ -90,9 +88,7 @@ library Vector requires Debug {
 			temp.destroy();
 			return this;
 		}
-	}   
-
-
+	}
 
 	public struct Vec3 {
 		real x, y, z;
@@ -101,85 +97,85 @@ library Vector requires Debug {
 		static method create() -> Vec3 {
 			return Vec3.allocate().setAt(0.0, 0.0, 0.0);
 		}
-	
+
 		static method createAt(real x, real y, real z) -> Vec3 {
 			return Vec3.allocate().setAt(x, y, z);
 		}
-	
+
 		static method createRandom() -> Vec3 {
 			return Vec3.allocate().setAt(GetRandomReal(-1.0, 1.0), GetRandomReal(-1.0, 1.0), GetRandomReal(-1.0, 1.0));
 		}
-	
+
 		// Transitional behavior
 		static method clone(Vec3 another) -> Vec3 {
 			return Vec3.allocate().setAt(another.x, another.y, another.z);
 		}
-		
+
 		method setAt(real x, real y, real z) -> Vec3 {
 			this.x = x;
 			this.y = y;
 			this.z = z;
 			return this;
 		}
-		
+
 		method clear() -> Vec3 {
 			return this.setAt(0.0, 0.0, 0.0);
 		}
-	
+
 		method copy(Vec3 another) -> Vec3 {
 			return this.setAt(another.x, another.y, another.z);
 		}
-	
+
 		// Math
 		method add(Vec3 another) -> Vec3 {
 			return this.setAt(this.x + another.x, this.y + another.y, this.z + another.z);
 		}
-	
+
 		method sub(Vec3 another) -> Vec3 {
 			return this.setAt(this.x - another.x, this.y - another.y, this.z - another.z);
 		}
-	
+
 		method scale(real number) -> Vec3 {
 			return this.setAt(this.x*number, this.y*number, this.z*number);
 		}
-	
+
 		method div(real number) -> Vec3 {
 			return this.scale(1.0/number);
 		}
-	
+
 		method dot(Vec3 another) -> real {
 			return this.x*another.x + this.y*another.y + this.z*another.z;
 		}
-	
+
 		method lengthSqr() -> real {
 			return this.x*this.x + this.y*this.y + this.z*this.z;
 		}
-	
+
 		method length() -> real {
 			return SquareRoot(this.x*this.x + this.y*this.y + this.z*this.z);
 		}
-	
+
 		method distToSqr(Vec3 another) -> real {
 			return (this.x - another.x)*(this.x - another.x) + (this.y - another.y)*(this.y - another.y) + (this.z - another.z)*(this.z - another.z);
 		}
-	
+
 		method distTo(Vec3 another) -> real {
 			return SquareRoot(this.distToSqr(another));
 		}
-	
+
 		method angle(Vec3 another) -> real {
 			return Acos(this.dot(another)/this.length()*another.length());
 		}
-	
+
 		method normalize() -> Vec3 {
-			debug if (this.length == 0.0) { dbgT("attempt to normalize vector with zero length"); return this; }
+			debug if (this.length == 0.0) { Debug("attempt to normalize vector with zero length"); return this; }
 			return this.scale(1.0/this.length());
 		}
-	
+
 		static method cross(Vec3 edge1, Vec3 edge2) -> Vec3 {
 			return Vec3.createAt(edge1.y*edge2.z - edge1.z*edge2.y, edge1.z*edge2.x - edge1.x*edge2.z, edge1.x*edge2.y - edge1.y*edge2.x);
 		}
-	
+
 		// Misc.
 		method reflect(Vec3 normal) -> Vec3 {
 			Vec3 temp = Vec3.clone(normal).scale(2.0*this.dot(normal));
@@ -187,7 +183,7 @@ library Vector requires Debug {
 			temp.destroy();
 			return this;
 		}
-	
+
 		static method triangleNormal(Vec3 a, Vec3 b, Vec3 c) -> Vec3 {
 			Vec3 edge1 = Vec3.clone(b).sub(a);
 			Vec3 edge2 = Vec3.clone(c).sub(a);

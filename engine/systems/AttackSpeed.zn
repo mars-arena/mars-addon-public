@@ -1,0 +1,209 @@
+library AttackSpeed requires Events, BuffActions {
+
+// Constants
+
+	constant real BASE_ATTACK_SPEED = 100.0;
+
+// Variables
+
+	public integer EVENT_ATTACK_SPEED;
+
+	integer AS_ABILITY_BONUS_ONES = 'A003';
+	integer AS_ABILITY_BONUS_TENS = 'A005';
+	integer AS_ABILITY_BONUS_HUNDREDS = 'A00F';
+	integer AS_ABILITY_PENALTY_ONES = 'A00I';
+	integer AS_ABILITY_PENALTY_TENS = 'A00M';
+	integer AS_ABILITY_PENALTY_HUNDREDS = 'A00X';
+
+	// Event Variables
+	unit ASUnit = null;
+	real ASBonus = 0.;		// flat 
+	real ASPenalty = 0.;	// flat
+	real ASIncrease = 0.;	// percentage
+	real ASDecrease = 0.;	// percentage
+
+// Debug
+
+	public boolean DebugAS = true;
+	public boolean IsRunAS = false;
+
+	function dbg(string msg, real x, real y) {
+		if (DebugAS) DebugXY(msg, x, y);
+	}
+
+// Event API
+
+	// Event Getters
+
+	public function GetASUnit() -> unit {
+		debug DebugEvent(EVENT_ATTACK_SPEED);
+		return ASUnit;
+	}
+	public function GetASBonus() -> real {
+		debug DebugEvent(EVENT_ATTACK_SPEED);
+		return ASBonus;
+	}
+	public function GetASPenalty() -> real {
+		debug DebugEvent(EVENT_ATTACK_SPEED);
+		return ASPenalty;
+	}
+	public function GetASIncrease() -> real {
+		debug DebugEvent(EVENT_ATTACK_SPEED);
+		return ASIncrease;
+	}
+	public function GetASDecrease() -> real {
+		debug DebugEvent(EVENT_ATTACK_SPEED);
+		return ASDecrease;
+	}
+
+	// Event Adders
+
+	public function AddASBonus(real asBonus) {
+		debug DebugEvent(EVENT_ATTACK_SPEED);
+		ASBonus += asBonus;
+	}
+	public function AddASPenalty(real asPenalty) {
+		debug DebugEvent(EVENT_ATTACK_SPEED);
+		ASPenalty += asPenalty;
+	}
+	public function AddASIncrease(real asIncrease) {
+		debug DebugEvent(EVENT_ATTACK_SPEED);
+		ASIncrease += asIncrease;
+	}
+	public function AddASDecrease(real asDecrease) {
+		debug DebugEvent(EVENT_ATTACK_SPEED);
+		ASDecrease = RMinBJ((1 - (1 - ASDecrease) * (1 - asDecrease)), 1.00);
+	}
+
+	// Event Setters
+
+	public function SetASBonus(real asBonus) {
+		debug DebugEvent(EVENT_ATTACK_SPEED);
+		ASBonus = asBonus;
+	}
+	public function SetASPenalty(real asPenalty) {
+		debug DebugEvent(EVENT_ATTACK_SPEED);
+		ASPenalty = asPenalty;
+	}
+	public function SetASIncrease(real asIncrease) {
+		debug DebugEvent(EVENT_ATTACK_SPEED);
+		ASIncrease = asIncrease;
+	}
+	public function SetASDecrease(real asDecrease) {
+		debug DebugEvent(EVENT_ATTACK_SPEED);
+		ASDecrease = asDecrease;
+	}
+
+// System
+
+	function Reset() {
+		ASUnit = null;
+		ASBonus = 0.0;
+		ASPenalty = 0.0;
+		ASIncrease = 0.0;
+		ASDecrease = 0.0;
+	}
+
+	function AddAbilitiesToUnit(unit whichUnit) {
+		UnitAddAbilityPermanent(whichUnit, AS_ABILITY_BONUS_ONES);
+		UnitAddAbilityPermanent(whichUnit, AS_ABILITY_BONUS_TENS);
+		UnitAddAbilityPermanent(whichUnit, AS_ABILITY_BONUS_HUNDREDS);
+		UnitAddAbilityPermanent(whichUnit, AS_ABILITY_PENALTY_ONES);
+		UnitAddAbilityPermanent(whichUnit, AS_ABILITY_PENALTY_TENS);
+		UnitAddAbilityPermanent(whichUnit, AS_ABILITY_PENALTY_HUNDREDS);
+	}
+
+	public function GetUnitAttackSpeed(unit whichUnit) -> real {
+		real attackSpeed = 0.0;
+		integer hundreds, tens, ones = 0;
+
+		if (whichUnit == null) {
+			debug Warning("AS1", "unit is null");
+			return 0.0;
+		}
+		if (IsRunAS) {
+			debug Error("AS2", "Внутренее иницирование системы!");
+			return 0.0;
+		}
+
+		IsRunAS = true;
+
+		Reset();
+		ASUnit = whichUnit;
+
+		ExecuteEvent(EVENT_ATTACK_SPEED);
+
+		attackSpeed = (ASBonus + BASE_ATTACK_SPEED) * (1.00 + ASIncrease) * (1 - ASDecrease) - ASPenalty - BASE_ATTACK_SPEED; 
+
+		if (attackSpeed > 999.0) {
+			attackSpeed = 999.0;
+		} else if (attackSpeed < -999.0) {
+			attackSpeed = -999.0;
+		}
+
+		debug dbg("as: " + R2S(attackSpeed), GetUnitX(whichUnit), GetUnitY(whichUnit));
+
+		hundreds = R2I(attackSpeed) / 100 + 1;
+		tens = ModuloNPos(R2I(attackSpeed) / 10, 10) + 1;
+		ones = ModuloNPos(R2I(attackSpeed), 10) + 1;
+
+		if (attackSpeed > 0.0) {
+			SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_ONES, ones);
+			SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_TENS, tens);
+			SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_HUNDREDS, hundreds);
+			SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_ONES, 1);
+			SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_TENS, 1);
+			SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_HUNDREDS, 1);
+		} else {
+			SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_ONES, 1);
+			SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_TENS, 1);
+			SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_HUNDREDS, 1);
+			SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_ONES, ones);
+			SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_TENS, tens);
+			SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_HUNDREDS, hundreds);
+		}
+
+		Reset();
+		IsRunAS = false;
+		
+		return attackSpeed;
+	}
+
+	function onInit() {
+		EVENT_ATTACK_SPEED = CreateEvent("EVENT_ATTACK_SPEED");
+
+		static if (IS_DEV) {
+			AS_ABILITY_BONUS_ONES = 'A001';
+			AS_ABILITY_BONUS_TENS = 'A002';
+			AS_ABILITY_BONUS_HUNDREDS = 'A003';
+			AS_ABILITY_PENALTY_ONES = 'A006';
+			AS_ABILITY_PENALTY_TENS = 'A007';
+			AS_ABILITY_PENALTY_HUNDREDS = 'A009';
+		}
+
+		RegisterAction(EVENT_ENTER, function() {
+			AddAbilitiesToUnit(GetTriggerUnit());
+		});
+
+		ForGroup(INIT_UNITS, function() {
+			AddAbilitiesToUnit(GetEnumUnit());
+		});
+
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_ATTACKED), function() {GetUnitAttackSpeed(GetAttacker());});
+		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_LEVEL), function() {GetUnitAttackSpeed(GetLevelingUnit());});
+		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_SKILL), function() {GetUnitAttackSpeed(GetLearningUnit());});
+		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_REVIVABLE), function() {GetUnitAttackSpeed(GetRevivableUnit());});
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DROP_ITEM), function() {GetUnitAttackSpeed(GetTriggerUnit());});
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_PICKUP_ITEM), function() {GetUnitAttackSpeed(GetTriggerUnit());});
+		RegisterAction(EVENT_ENTER, function() {GetUnitAttackSpeed(GetTriggerUnit());});
+		RegisterAction(EVENT_BUFF, function() {GetUnitAttackSpeed(GetTriggerBuffTarget());});
+
+		ForGroup(INIT_UNITS, function() {
+			GetUnitAttackSpeed(GetEnumUnit());
+		});
+
+		// Для аур нужно настроить отдельные обработчики,
+	}
+
+}
+

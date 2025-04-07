@@ -73,5 +73,5 @@ library UnitDamaged initializer initRect requires TechUtils
 		call TriggerAddAction(onSpawn, function onUnitSpawn)
 		call TriggerAddAction(onDecay, function onUnitDecay)
 	endfunction
-	
+
 endlibrary

@@ -1,6 +1,6 @@
-library Illusions requires Events {
+library Illusions requires Events, AttackSpeed {
 
-	/* Modified illusion system by Flux
+	/* Modified illusion system by KaneThaumaturge
 	 *
 	 * CREDITS:
 	 * Flux - original author
@@ -117,31 +117,56 @@ library Illusions requires Events {
 		return illusion.damageGiven;
 	}
 
+	public function GetHeroStatHook(integer whichStat, unit whichHero, boolean includeBonuses) -> integer {
+		if (IsUnitIllusionEx(whichHero)) {
+			if (whichStat == bj_HEROSTAT_STR) {
+				return GetUnitIllusion(whichHero).str;
+			} else if (whichStat == bj_HEROSTAT_AGI) {
+				return GetUnitIllusion(whichHero).agi;
+			} else if (whichStat == bj_HEROSTAT_INT) {
+				return GetUnitIllusion(whichHero).int;
+			}	
+		}
+		if (whichStat == bj_HEROSTAT_STR) {
+			return GetHeroStr(whichHero, includeBonuses);
+		} else if (whichStat == bj_HEROSTAT_AGI) {
+			return GetHeroAgi(whichHero, includeBonuses);
+		} else if (whichStat == bj_HEROSTAT_INT) {
+			return GetHeroInt(whichHero, includeBonuses);
+		}
+
+		return 0;
+	}
+
 // Structures
 
 	// Instance Structure
 	public struct Illusion {
 		unit unit;
+		unit source;
 		real damageTaken;
 		real damageGiven;
+		integer agi;
+		integer str;
+		integer int;
 
 		static unit Dummy;
 		static unit EnteredIllusion;
 
 		static key ILLUSION_HID;
 
-		static method create(player owner, unit source, real x, real y, real facing) -> Illusion {
+		static method create(player owner, unit sourceUnit, real x, real y, real facing) -> Illusion {
 			Illusion this;
 			EnteredIllusion = null;
 
-			if (source != null && UnitAlive(source)) {
-				SetUnitX(Dummy, GetUnitX(source));
-				SetUnitY(Dummy, GetUnitY(source));
-				SetUnitOwner(Dummy, GetOwningPlayer(source), false);
-				if (IssueTargetOrderById(Dummy, 852274, source)) {
+			if (sourceUnit != null && UnitAlive(sourceUnit)) {
+				SetUnitX(Dummy, GetUnitX(sourceUnit));
+				SetUnitY(Dummy, GetUnitY(sourceUnit));
+				SetUnitOwner(Dummy, GetOwningPlayer(sourceUnit), false);
+				if (IssueTargetOrderById(Dummy, 852274, sourceUnit)) {
 					if (EnteredIllusion != null) {
 						SetUnitOwner(EnteredIllusion, owner, true);
-						if (IsUnitType(source, UNIT_TYPE_STRUCTURE)) {
+						if (IsUnitType(sourceUnit, UNIT_TYPE_STRUCTURE)) {
 							SetUnitPosition(EnteredIllusion, x, y);
 						} else if (x != 0. || y != 0.) {
 							SetUnitX(EnteredIllusion, x);
@@ -149,25 +174,36 @@ library Illusions requires Events {
 							SetUnitFacing(EnteredIllusion, facing);
 						}
 					} else {
-						dbgT("Error I1: Не удалось создать иллюзию для объекта(" + GetUnitName(source) + ").");
+						debug Error("I1", "Не удалось создать иллюзию для объекта(" + GetUnitName(sourceUnit) + ").");
 						SetUnitOwner(Dummy, DUMMY_OWNER, false);
 						return 0;
 					}
 				} else {
-					dbgT("Error I2: Не удалось создать иллюзию для объекта(" + GetUnitName(source) + "). Приказ невозможно выполнить.");
+					debug Error("I2", "Не удалось создать иллюзию для объекта(" + GetUnitName(sourceUnit) + "). Приказ невозможно выполнить.");
 					return 0;
 				}
 			} else {
-				dbgT("Error I3: Не удалось создать иллюзию для объекта(" + GetUnitName(source) + "). Нет источника или он мертв.");
+				debug Error("I3", "Не удалось создать иллюзию для объекта(" + GetUnitName(sourceUnit) + "). Нет источника или он мертв.");
 				return 0;
 			}
 
 			this = Illusion.allocate();
 			this.unit = EnteredIllusion;
+			this.source = sourceUnit;
+			if (IsUnitType(sourceUnit, UNIT_TYPE_HERO)) {
+				this.agi = GetHeroAgi(sourceUnit, true);
+				this.str = GetHeroStr(sourceUnit, true);
+				this.int = GetHeroInt(sourceUnit, true);
+			} else {
+				this.agi = 0;
+				this.str = 0;
+				this.int = 0;
+			}
 			this.damageTaken = 1.0;
 			this.damageGiven = 1.0;
 			SetUnitAnimation(EnteredIllusion, "stand");
 			SaveInteger(HT, GetHandleId(unit), ILLUSION_HID, this);
+			GetUnitAttackSpeed(unit);
 			EnteredIllusion = null;
 
 			LAST_CREATED_ILLUSION_GET = this;
@@ -185,6 +221,7 @@ library Illusions requires Events {
 
 			RemoveSavedInteger(HT, GetHandleId(unit), ILLUSION_HID);
 
+			source = null;
 			unit = null;
 			this.deallocate();
 		}

@@ -163,7 +163,7 @@ library Crystals requires Events {
 			SetUnitColor(ring, GetPlayerColor(capturingPlayer));
 			SetUnitTimeScale(ring, captureSpeed * captureSpeedMultiplier * DEFAULT_SPEED_MULTIPLIER);
 
-			//dbgT("CS=" + I2S(R2I(captureSpeedMultiplier*100.)) + "% CP=" + I2S(R2I(captureProgress*100.)) + "%");
+			//Debug("CS=" + I2S(R2I(captureSpeedMultiplier*100.)) + "% CP=" + I2S(R2I(captureProgress*100.)) + "%");
 		}
 	}
 

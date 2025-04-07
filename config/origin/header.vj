@@ -63,4 +63,18 @@ globals
 	region bRegion = CreateRegion()
 	item bItem
 	timer bTimer
+	unit CasterUnit
+	unit OwnerUnit
+	unit TargetUnit
+	real Value
+	unit AuraOwnerUnit
+	unit AuraTargetUnit
+	boolean IsEntered
+	boolean IsOut
+	boolean IsActions
+	boolean IsTransfer
+	integer ActionsId
+	integer BuffId
+	timer BuffStack
+	real TIMER_PERIOD = 0.03125
 endglobals

@@ -14,7 +14,7 @@ library Armor initializer init requires TechUtils
 
 		private boolean IS_EVAL_DAMAGE_GET = false
 	endglobals
-	
+
 	function DebugMsg takes string s returns nothing
 		debug call DisplayTimedTextToPlayer(GetLocalPlayer(), 0., 0., 5., s)
 	endfunction
@@ -33,11 +33,11 @@ library Armor initializer init requires TechUtils
 			call UnitDamageTarget(whichUnit, target, damage, false, false, attackType, damageType, WEAPON_TYPE_WHOKNOWS)
 		endif
 	endfunction
-	
+
 	function GetUnitReduction takes unit u, unit attacking, boolean isSpell returns real
 		local integer id = GetHandleId(u)
 		local real armorReduction
-		
+
 		call SaveBoolean(Hash, ParentKey, id, false)
 		call SaveInteger(Hash, ParentKey, id, 1)
 
@@ -73,7 +73,7 @@ library Armor initializer init requires TechUtils
 	function GetUnitSpellReduction takes unit u, unit attacking returns real
 		return GetUnitReduction(u, attacking, true)
 	endfunction
-	
+
 	function EvalArmor takes nothing returns boolean
 		local integer id = GetHandleId(GetTriggerUnit())
 		local real reduction
@@ -120,7 +120,7 @@ library Armor initializer init requires TechUtils
 		endif
 		return false
 	endfunction
-	
+
 	//function CleanGroup takes nothing returns nothing
 	//    local unit u
 	//    
@@ -143,11 +143,11 @@ library Armor initializer init requires TechUtils
 	//        call GroupAddUnit(TrackedUnits, u)
 	//    endloop
 	//endfunction
-	
+
 	private function init takes nothing returns nothing
 		set LogBase = Ln(1. - ArmorDamageReductionMultiplier)
 		
 		//call TimerStart(Timer, CleanPeriod, true, function CleanGroup)
 	endfunction
-	
+
 endlibrary

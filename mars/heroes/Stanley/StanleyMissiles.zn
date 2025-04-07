@@ -1,4 +1,4 @@
-library StanleyMissiles requires StaticProjectiles {
+library StanleyMissiles requires DamageAPI {
 	constant integer ABILITY_MISSILES_ID = 'A064';
 	constant integer UNIT_MISSILE_ID = 'h00M';
 	constant integer TALENT_CD_ID = 'A0E3';

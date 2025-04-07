@@ -1,4 +1,4 @@
-library Lightning requires SpellGetters, Filters {
+library MassLightning requires SpellGetters, Filters, Lightning {
 
 	//Разветленная молния
 	public function CastLightning(

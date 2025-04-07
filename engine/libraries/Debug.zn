@@ -1,6 +1,14 @@
 library Debug requires Math {
 
-	public function dbgXY(string s, real x, real y) {
+	function dbg(string msg) {
+		integer i;
+		if (!DEBUG_ENABLED) return;
+		for (0 <= i <= bj_MAX_PLAYERS) {
+			DisplayTimedTextToPlayer(Player(i), 0, 0, 20, msg);
+		}
+	}
+
+	public function DebugXY(string s, real x, real y) {
 		texttag tt;
 		if (!DEBUG_ENABLED) {
 			return;
@@ -10,29 +18,34 @@ library Debug requires Math {
 		SetTextTagPermanent(tt, false);
 		SetTextTagLifespan(tt, 1.60);
 		SetTextTagFadepoint(tt, 0.80);
-		SetTextTagVelocityBJ(tt ,GetRandomInt(70, 90), GetRandomInt(80,110));
+		SetTextTagVelocityBJ(tt, GetRandomInt(70, 90), GetRandomInt(80,110));
 		tt = null;
 	}
-	
-	public function dbgT(string msg) {
-		integer i;
-		if (!DEBUG_ENABLED) {
-			return;
-		}
-		for (0 <= i <= bj_MAX_PLAYERS) {
-			DisplayTimedTextToPlayer(Player(i), 0, 0, 20, msg);
-		}
+
+	public function Debug(string msg) {
+		if (!DEBUG_ENABLED) return;
+		dbg("|cff2163ff:|r " + msg);
+	}
+
+	public function Warning(string id, string msg) {
+		if (!DEBUG_ENABLED) return;
+		dbg("|cffffa500Warning " + id + ":|r " + msg);
+	}
+
+	public function Error(string id, string msg) {
+		if (!DEBUG_ENABLED) return;
+		dbg("|cffff0000Error " + id + ":|r " + msg);
 	}
 
 	function onInit() {
 		trigger t;
-			
+
 		if (DEBUG_ENABLED) {
 			t = CreateTrigger();
-			TriggerRegisterPlayerChatEvent(t, Player(0), "-debugmode", true);
+			TriggerRegisterPlayerChatEvent(t, Player(0), "-debug", true);
 			TriggerAddAction(t, function() {
 				DEBUG_ENABLED = !DEBUG_ENABLED;
-				dbgT("DEBUG = " + GetBooleanValue(DEBUG_ENABLED));
+				Warning("DEBUG", GetBooleanValue(DEBUG_ENABLED));
 			});
 
 			t = CreateTrigger();
@@ -42,9 +55,9 @@ library Debug requires Math {
 			}));
 			TriggerAddAction(t, function() {
 				DebugDmg = !DebugDmg;
-				dbgT("DEBUG_DMG = " + GetBooleanValue(DebugDmg));
+				Warning("DEBUG_DMG",GetBooleanValue(DebugDmg));
 			});
-		
+
 			t = CreateTrigger();
 			TriggerRegisterPlayerChatEvent(t, Player(0), "-debugstun", true);
 			TriggerAddCondition(t, Condition(function() -> boolean {
@@ -52,7 +65,7 @@ library Debug requires Math {
 			}));
 			TriggerAddAction(t, function() {
 				DebugStun = !DebugStun;
-				dbgT("DEBUG_STUN = " + GetBooleanValue(DebugStun));
+				Warning("DEBUG_STUN", GetBooleanValue(DebugStun));
 			});
 
 			t = CreateTrigger();
@@ -62,8 +75,13 @@ library Debug requires Math {
 			}));
 			TriggerAddAction(t, function() {
 				DebugHero = !DebugHero;
-				dbgT("DEBUG_HERO = " + GetBooleanValue(DebugHero));
+				Warning("DEBUG_HERO", GetBooleanValue(DebugHero));
 			});
+
+			Warning("DEBUG", GetBooleanValue(DEBUG_ENABLED));
+			Warning("DEBUG_DMG",GetBooleanValue(DebugDmg));
+			Warning("DEBUG_STUN", GetBooleanValue(DebugStun));
+			Warning("DEBUG_HERO", GetBooleanValue(DebugHero));
 		}
 
 		t = null;

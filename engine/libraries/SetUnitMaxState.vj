@@ -8,7 +8,7 @@ library SetUnitMaxState uses Filters
 		endif
 		return 0
 	endfunction
-	
+
 	function SetUnitMaxState takes unit whichUnit, unitstate whichUnitState, integer newVal returns boolean
 		local integer c = newVal-R2I(GetUnitStateHook(whichUnit, whichUnitState))
 		local integer i = MaxStateModifierId(whichUnitState)

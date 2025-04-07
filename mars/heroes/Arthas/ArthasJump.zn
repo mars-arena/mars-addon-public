@@ -1,4 +1,4 @@
-library ArthasJump requires Filters {
+library ArthasJump requires UnitUnstuck {
 
 	constant integer ABILITY_ID = 'A24D';			//равкод способности
 	constant integer ABILITY_SLAM_ID = 'A24E';		//равкод способности при ударе молотом

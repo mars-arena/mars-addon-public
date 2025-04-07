@@ -1,7 +1,7 @@
 library Constants {
 
 	// вкл/выкл возможность дебага
-	public boolean DEBUG_ENABLED = false;
+	public boolean DEBUG_ENABLED = DEBUG_MODE;
 
 	// максимальное количество игроков
 	public constant integer MAX_PLAYERS = 16;
@@ -11,10 +11,6 @@ library Constants {
 	public constant integer BUFF_2_ID = 'B06I';
 	public constant integer BUFF_S1_ID = 'B02P';	// специальная атака (автокаст)
 	public constant integer BUFF_S2_ID = 'sat2';
-
-	public constant integer KVINSHPAGA_ID = 'I051';
-	public constant integer SFERA_EDEMA_ID = 'I01Y';
-	public constant integer FOX_MISSABILITY_ID = 'A04Z';
 
 	// NegateDamage
 	public constant integer MAX_LIFE_BONUS_ABILITY = 'A08F';

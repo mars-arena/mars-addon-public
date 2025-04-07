@@ -295,7 +295,6 @@ library CoordUtils
 		return towardAngel
 	endfunction
 
-
 	// Вычисляет площадь треугольника по координатам его вершин.
 	//
 	// * @arg real `x1, y1` координаты первой вершины.

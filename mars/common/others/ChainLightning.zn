@@ -1,4 +1,4 @@
-library ChainLightning requires SpellGetters, Filters {
+library ChainLightning requires SpellGetters, Filters, Lightning {
 
 	//Цепная молния\\
 	struct ChainLightning {

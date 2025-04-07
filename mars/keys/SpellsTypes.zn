@@ -1,4 +1,4 @@
-library SpellsTypes requires GameUtils {
+library SpellsTypes requires TechUtils {
 
 	public key chakram_tid;
         public key rane5effect_tid;

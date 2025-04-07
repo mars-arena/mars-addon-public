@@ -1,4 +1,4 @@
-library Buffs requires GameUtils {
+library Buffs requires TechUtils {
 	constant integer MaxCountBuffTarget = 100; //Максимальное количество типов бафов, которые могут действовать на одну цель
 	
 	key BuffTarget_hid;
@@ -513,7 +513,7 @@ library Buffs requires GameUtils {
 			}
 			for (1 <= i <= bTarget.countBuffs) {
 				if (bTarget.buffs[i] == buf) {
-					dbgT("Error BT1: Регистрация уже зарегестрированного бафа для объекта(" + GetUnitName(u) + ").");
+					debug Error("BT1", "Регистрация уже зарегестрированного бафа для объекта(" + GetUnitName(u) + ").");
 					return;
 				}
 			}
@@ -531,7 +531,7 @@ library Buffs requires GameUtils {
 			BuffTarget bTarget = LoadInteger(HT, GetHandleId(u), BuffTarget_hid);
 			integer i = 0;
 			if (bTarget == 0) {
-				dbgT("Error BT2: Удаление бафа для не существующего объекта(" + GetUnitName(u) + "). id" + I2S(buf.unitId));
+				debug Warning("BT2", "Удаление бафа для не существующего объекта(" + GetUnitName(u) + "). id" + I2S(buf.unitId));
 				return;
 			}
 			
@@ -560,7 +560,7 @@ library Buffs requires GameUtils {
 			BuffTarget bTarget = LoadInteger(HT, hashId, BuffTarget_hid);
 			integer i = 0;
 			if (bTarget == 0) {
-				dbgT("Error BT3: Удаление бафа для не существующего объекта(" + I2S(hashId) + ").");
+				debug Warning("BT3", "Удаление бафа для не существующего объекта(" + I2S(hashId) + ").");
 				return;
 			}
 			
@@ -756,7 +756,7 @@ library Buffs requires GameUtils {
 			timer whichTm;
 			
 			if (whichStacks == 0) {
-				dbgT("Error BuffStacks: Удаление таймера для несуществующего баффа юнита (" + I2S(buf) + ")");
+				debug Error("BS0", "Удаление таймера для несуществующего баффа юнита (" + I2S(buf) + ")");
 				return;
 			}
 			

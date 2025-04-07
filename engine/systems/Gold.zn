@@ -1,0 +1,124 @@
+library Gold requires Events {
+
+// Variables
+
+	// Event Variables
+	unit GoldModifierUnit = null;		// event unit
+	real GoldModifierFlat = 0.0;		// flat 
+	real GoldModifierPenalty = 0.0;		// flat
+	real GoldModifierIncrease = 0.0;	// percentage
+	real GoldModifierDecrease = 0.0;	// percentage
+	Point2D GoldModifierPosition = 0;	// point
+
+	unit GoldUnit = null;				// event unit
+	real GoldValue = 0.0;				// flat 
+	Point2D GoldPosition = 0;			// point
+
+// API
+
+	// Event Getters
+
+	public function GetHealAmount() -> real {return HealAmount;}
+	public function GetHealedUnit() -> unit {return HealedUnit;}
+	public function GetHealingUnit() -> unit {return HealingUnit;}
+	public function GetOverHeal() -> real {return OverHeal;}
+
+	public function GetLifestealAmount() -> real {return LifestealAmount;}
+	public function GetLifestealedUnit() -> unit {return LifestealedUnit;}
+	public function GetOverLifesteal() -> real {return OverLifesteal;}
+
+	public function GetRestoredAmount() -> real {return RestoredAmount;}
+	public function GetRestoredUnit() -> unit {return RestoredUnit;}
+	public function GetRestoringUnit() -> unit {return RestoringUnit;}
+	public function GetOverRestore() -> real {return OverRestore;}
+
+	// Event Setters
+
+	public function SetHealAmount(real healAmount) {HealAmount = healAmount;}
+	public function SetLifestealAmount(real lifestealAmount) {LifestealAmount = lifestealAmount;}
+	public function SetRestoredAmount(real restoredAmount) {RestoredAmount = restoredAmount;}
+
+	// Functions
+
+	public function HealUnit(unit healingUnit, unit healedUnit, real amount) {
+		HealAmount = amount;
+		HealedUnit = healedUnit;
+		HealingUnit = healingUnit;
+		OverHeal = 0.0;
+
+		ExecuteEvent(EVENT_HEAL_MODIFIER);
+
+		if (HealAmount > 0.0) {
+			OverHeal = MaxReal(0, HealAmount - (GetUnitMaxLife(HealedUnit) - GetUnitState(HealedUnit, UNIT_STATE_LIFE)));
+			SetUnitState(HealedUnit, UNIT_STATE_LIFE, GetUnitState(HealedUnit, UNIT_STATE_LIFE) + HealAmount);
+			ExecuteEvent(EVENT_HEAL);
+		}
+
+		HealAmount = 0.0;
+		HealedUnit = null;
+		HealingUnit = null;
+		OverHeal = 0.0;
+	}
+
+	public function LifestealUnit(unit whichUnit, real amount) {
+		LifestealAmount = amount;
+		LifestealedUnit = whichUnit;
+		OverLifesteal = 0.0;
+
+		ExecuteEvent(EVENT_LIFESTEAL_MODIFIER);
+
+		if (LifestealAmount > 0.0) {
+			OverLifesteal = MaxReal(0, LifestealAmount - (GetUnitMaxLife(LifestealedUnit) - GetUnitState(LifestealedUnit, UNIT_STATE_LIFE)));
+			SetUnitState(LifestealedUnit, UNIT_STATE_LIFE, GetUnitState(LifestealedUnit, UNIT_STATE_LIFE) + LifestealAmount);
+			ExecuteEvent(EVENT_LIFESTEAL);
+		}
+
+		LifestealAmount = 0.0;
+		LifestealedUnit = null;
+		OverLifesteal = 0.0;
+	}
+
+	public function RestoreManaUnit(unit restoringUnit, unit restoredUnit, real amount) {
+		RestoredAmount = amount;
+		RestoredUnit = restoredUnit;
+		RestoringUnit = restoringUnit;
+		OverRestore = 0.0;
+
+		ExecuteEvent(EVENT_RESTORE_MODIFIER);
+
+		if (RestoredAmount > 0.0) {
+			OverRestore = MaxReal(0, RestoredAmount - (GetUnitState(RestoredUnit, UNIT_STATE_MAX_MANA) - GetUnitState(RestoredUnit, UNIT_STATE_MANA)));
+			SetUnitState(RestoredUnit, UNIT_STATE_MANA, GetUnitState(RestoredUnit, UNIT_STATE_MANA) + RestoredAmount);
+			ExecuteEvent(EVENT_RESTORE);
+		}
+
+		RestoredAmount = 0.0;
+		RestoredUnit = null;
+		RestoringUnit = null;
+		OverRestore = 0.0;
+	}
+
+	function onInit() {
+		RegisterAction(EVENT_HEAL, function() {
+			TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(GetHealingUnit()), GetHealedUnit(), HEAL_TEXT, GetHealAmount(), "");
+			TempText.showToPlayer(GetOwningPlayer(GetHealedUnit()));
+			if (IsMapDuel())
+				TempText.showToObservers();
+		});
+
+		RegisterAction(EVENT_LIFESTEAL, function() {
+			TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(GetLifestealedUnit()), GetLifestealedUnit(), HEAL_TEXT, GetLifestealAmount(), "");
+			if (IsMapDuel())
+				TempText.showToObservers();
+			DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\Undead\\VampiricAura\\VampiricAuraTarget.mdx", GetLifestealedUnit(), "origin"));
+		});
+
+		RegisterAction(EVENT_RESTORE, function() {
+			TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(GetRestoredUnit()), GetRestoredUnit(), MANA_TEXT, GetRestoredAmount(), "");
+			if (IsMapDuel())
+				TempText.showToObservers();
+		});
+	}
+
+}
+

@@ -1,23 +1,5 @@
-library GameUtils requires Modifiers, Stuns {
-	public unit CasterUnit;
-	public unit OwnerUnit;
-	public unit TargetUnit;
-	public real Value;
-	public unit AuraOwnerUnit;
-	public unit AuraTargetUnit;
-	public boolean IsEntered;
-	public boolean IsOut;
-	public boolean IsActions;
-	public boolean IsTransfer;
-	public integer ActionsId;
-	public integer BuffId;
-	public timer BuffStack;
+library Lightning requires TechUtils {	
 
-	//local constants
-	constant real TIMER_PERIOD = 0.03125;
-	
-	//Создание молнии\\
-	
 	struct Lightning {
 		unit caster, target;
 		real time, expire, maxDist, lightningZ, timeZ, expireZ;
@@ -109,6 +91,5 @@ library GameUtils requires Modifiers, Stuns {
 		current = Lightning.create(caster, target, lightningType, effectCasterModel, effectCasterAttach, effectTargetModel, effectTargetAttach, duration, maxDistance, lightningZ, decayTime, destroyEffects);
 		return current;
 	}
-	//\\
 
 }

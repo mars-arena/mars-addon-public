@@ -59,4 +59,5 @@ library VectorAPI requires Vector {
 		toReflect.sub(terrainNormal.scale(2.0*DotProduct(terrainNormal, toReflect)));
 		terrainNormal.destroy();
 	}
+
 }

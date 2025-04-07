@@ -7,7 +7,7 @@ library HashCleaner requires Stuns, Auras, Buffs {
 		timer tm;
 		integer count;
 		static integer CK_HID = 0;
-				
+	
 		static method create(unit u) -> ClearUnit {
 			ClearUnit this = ClearUnit.allocate();
 			this.u = u;
@@ -21,7 +21,7 @@ library HashCleaner requires Stuns, Auras, Buffs {
 			
 			return this;
 		}
-		
+
 		method destroy() {
 			PauseTimer(tm);
 			DestroyTimer(tm);
@@ -29,7 +29,7 @@ library HashCleaner requires Stuns, Auras, Buffs {
 			u = null;
 			this.deallocate();
 		}
-		
+
 		static method check() {
 			ClearUnit this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
 			count = count + 1;
@@ -49,11 +49,11 @@ library HashCleaner requires Stuns, Auras, Buffs {
 		}
 		
 	}
-	
+
 	function onInit() {
 		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DEATH),  function() {
 			ClearUnit.create(GetTriggerUnit());
 		});
 	}
-	
+
 }

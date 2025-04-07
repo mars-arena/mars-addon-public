@@ -105,9 +105,9 @@ library TexttagUtils requires TechUtils {
 		real sizeBonus;
 		real timeLife;
 		real timeLifeConst;
-		
+
 		timer tm;
-		
+
 		// New fields for parabolic motion
 		real startX;
 		real startY;
@@ -119,7 +119,7 @@ library TexttagUtils requires TechUtils {
 
 		static real INTERVAL = 0.03125;
 		static integer CK_HID = 1;
-		
+
 		static method create(unit u, string s, real sizeMin, real sizeBonus, real timeLife, real timeFade, real zOffset, real lowSpeed, real maxSpeed, real lowAngle, real maxAngle, real gravity) -> FlyingText {
 			FlyingText this = FlyingText.allocate();
 			real angle = GetRandomReal(lowAngle, maxAngle);
@@ -134,36 +134,36 @@ library TexttagUtils requires TechUtils {
 			if (!IsUnitFogged(u, GetLocalPlayer()) && IsUnitVisible(u, GetLocalPlayer())) {
 				SetTextTagVisibility(tt, true);
 			}
-			
+
 			this.startX = GetUnitX(u) - 25.;
 			this.startY = GetUnitY(u);
 			this.startZ = zOffset + MaxReal(GetUnitFlyHeight(u) - 60., 0);
-			
+
 			this.speedX = speed * Cos(angle);
 			this.speedY = speed * Sin(angle);
 			this.speedZ = speed / 2; // Initial vertical speed
-			
+
 			this.gravity = gravity;
-			
+
 			SetTextTagPos(this.tt, this.startX, this.startY, this.startZ);
 			SetTextTagPermanent(this.tt, false);
 			SetTextTagLifespan(this.tt, timeLife);
 			SetTextTagFadepoint(this.tt, timeFade);
 			SetTextTagText(this.tt, s, TextTagSize2Height(sizeMin) + TextTagSize2Height(sizeBonus) * Sin(bj_PI*(timeLife / timeLifeConst)));
-			
+
 			this.tm = CreateTimer();
 			SaveInteger(HT, GetHandleId(this.tm), CK_HID, this);
 			TimerStart(this.tm, INTERVAL, true, function FlyingText.callback);
 			return this;
 		}
-		
+
 		method destroy() {
 			PauseTimer(tm); DestroyTimer(tm); tm = null;
 			DestroyTextTag(tt); tt = null;
 			s = null;
 			this.deallocate();
 		}
-		
+
 		static method callback() {
 			timer tm = GetExpiredTimer();
 			integer tmId = GetHandleId(tm);
@@ -187,6 +187,5 @@ library TexttagUtils requires TechUtils {
 			tm = null;
 		}
 	}
-	
 
 }

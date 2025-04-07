@@ -1,4 +1,4 @@
-library FloatingText requires TechUtils {
+library SummativeText requires TechUtils {
 
 	// @const максимальное количество типов плавающего текста
 	constant integer MAX_COUNT_TYPE_TEXTS = 6;
@@ -24,7 +24,7 @@ library FloatingText requires TechUtils {
 	public constant real CRITICAL_MAX_ANGLE = 360.;
 
 	// @const цвета урона
-	public constant string CRITICAL_STRIKE_COLOR = "|cffff0303";
+	public constant string CRITICAL_PHYS_COLOR = "|cffff0303";
 	public constant string CRITICAL_MAGIC_COLOR = "|cffeb2a74";
 	public constant string CRITICAL_PURE_COLOR = "|cffff8420";
 	//public constant string CRITICAL_DMG_COLOR ="|cffd33933";
@@ -78,9 +78,13 @@ library FloatingText requires TechUtils {
 
 		static real INTERVAL = 1./32.;
 
-		static method create(integer textType) -> VelocityTextTag {
+		static method create(integer textType, player owner) -> VelocityTextTag {
 			VelocityTextTag this = VelocityTextTag.allocate();
-			this.tag = CreateTextTag();
+			if (owner == GetLocalPlayer()) {
+				this.tag = CreateTextTag();
+			} else {
+				this.tag = null;
+			}
 			this.velocity = 0;
 			this.timeLife = MaxLifeTime[textType];
 			this.textType = textType;
@@ -102,7 +106,7 @@ library FloatingText requires TechUtils {
 			real p = 1 - (timeLife + VELOCITY_DELAY) / MaxLifeTime[textType];
 			velocity = VelocityY[textType] * MaxReal(0., p);
 			timeLife = timeLife - INTERVAL;
-			SetTextTagVelocity(tag, 0, velocity);
+			if (tag != null) SetTextTagVelocity(tag, 0, velocity);
 			if (timeLife <= 0 && destroyOnExpire) {
 				this.destroy();
 			}
@@ -115,33 +119,15 @@ library FloatingText requires TechUtils {
 		player owner;
 		unit target;
 		integer textType;
+		string prefix;
 
 		real value;
 
 		timer tm;
 
-		static integer TotalTexts = 1;
-		static integer RemoveIndex = 1;
-
 		static method create(player owner, unit target, integer textType) -> SummativeText {
-			SummativeText this;
-			SummativeText old;
-			if (TotalTexts == 90) {
-				dbgT("Remove textag " + I2S(RemoveIndex));
-				old = SummativeText.load(RemoveIndex);
-				if (IsSet(old)) {
-					old.destroy();
-				}
-				RemoveIndex = (RemoveIndex + 1);
-				if (RemoveIndex > 90) {
-					RemoveIndex = 1;
-				}
-			} else {
-				TotalTexts = TotalTexts + 1;
-			}
-			
-			this = SummativeText.allocate();
-			this.vtag = VelocityTextTag.create(textType);
+			SummativeText this = SummativeText.allocate();
+			this.vtag = VelocityTextTag.create(textType, owner);
 			this.owner = owner;
 			this.target = target;
 			this.textType = textType;
@@ -157,77 +143,79 @@ library FloatingText requires TechUtils {
 			return this;
 		}
 
-		static method load(integer index) -> SummativeText {
-			return index;
-		}
-
-		method showValue(real addValue, string prefix) -> SummativeText {
+		method addValue(real addValue, string prefix) -> SummativeText {
 			value += addValue;
 			if (TimerGetElapsed(tm) > ADD_UP_TIME) {
 				vtag.destroyOnExpire = true; 
-				vtag = VelocityTextTag.create(textType);
+				vtag = VelocityTextTag.create(textType, owner);
 				value = addValue;
 			}
-			if (prefix == "")
-				prefix = Prefix[textType];
+			if (prefix == "") {
+				this.prefix = Prefix[textType];
+			} else {
+				this.prefix = prefix;
+			}	
 			vtag.timeLife = MaxLifeTime[textType];
+			if (vtag.tag != null) {
+				this.makeTextTag();
+				if (!IsUnitFogged(target, owner) && IsUnitVisible(target, owner) && GetLocalPlayer() == owner) {
+					SetTextTagVisibility(this.vtag.tag, true);
+				}
+			}
+			PauseTimer(tm);
+			TimerStart(tm, MaxLifeTime[textType], false, function SummativeText.expired);
+			return this;
+		}
+
+		method makeTextTag() -> SummativeText {
 			SetTextTagText(vtag.tag, prefix + I2S(R2I(value + 0.5)) + Postfix[textType], TextTagSize2Height(MinReal(MaxSize[textType], MinSize[textType] + MaxBonusSize[textType] * (value / MaxBonusValue[textType]))));
-			if (PositionOnOverhead[textType]) 
+			if (PositionOnOverhead[textType]) {
 				SetTextTagPosUnit(vtag.tag, target, OffsetHeight[textType]);
-			else 
+			} else {
 				SetTextTagPos(vtag.tag, GetUnitX(target) + OffsetX[textType], GetUnitY(target) + OffsetY[textType], OffsetHeight[textType] + MaxReal(GetUnitFlyHeight(target) - 60., 0));
+			}
 			SetTextTagVelocity(vtag.tag, 0, 0);
 			SetTextTagAge(vtag.tag, 0);
 			SetTextTagPermanent(vtag.tag, false);
 			SetTextTagLifespan(vtag.tag, MaxLifeTime[textType]);
 			SetTextTagFadepointBJ(vtag.tag, ADD_UP_TIME);
 			SetTextTagVisibility(this.vtag.tag, false);
-			if (!IsUnitFogged(target, owner) && IsUnitVisible(target, owner) && GetLocalPlayer() == owner)
-				SetTextTagVisibility(this.vtag.tag, true);
-			PauseTimer(tm);
-			TimerStart(tm, MaxLifeTime[textType], false, function SummativeText.expired);
-			return this;
+			return this; 
 		}
 
 		method showToPlayer(player participant) -> SummativeText {
-			if (!IsUnitFogged(target, participant) && IsUnitVisible(target, participant) && GetLocalPlayer() == participant)
+			if (!IsUnitFogged(target, participant) && IsUnitVisible(target, participant) && GetLocalPlayer() == participant) {
+				if (vtag.tag == null) {
+					this.vtag.tag = CreateTextTag();
+					this.makeTextTag();
+				}
 				SetTextTagVisibility(this.vtag.tag, true);
+			}
 			return this;
 		}
 
 		method hideToPlayer(player participant) -> SummativeText {
-			if (!IsUnitFogged(target, participant) && IsUnitVisible(target, participant) && GetLocalPlayer() == participant)
+			if (vtag.tag != null && !IsUnitFogged(target, participant) && IsUnitVisible(target, participant) && GetLocalPlayer() == participant) {
 				SetTextTagVisibility(this.vtag.tag, false);
+			}
 			return this;
-		}
-
-		method showToAll() -> SummativeText {
-			SetTextTagVisibility(this.vtag.tag, true);
-			return this;
-			 
 		}
 
 		method showToObservers() -> SummativeText {
-			if (IsPlayerInForce(owner, udg_Observers)) {
+			if (IsPlayerInForce(owner, GetObserverForce())) {
 				SetTextTagVisibility(this.vtag.tag, false);
 				return this;
 			}
 
 			This = this;
-			ForForce(udg_Observers, function() {
+			ForForce(GetObserverForce(), function() {
 				SummativeText this = This;
-				if (!IsUnitFogged(target, GetEnumPlayer()) &&
-					IsUnitVisible(target, GetEnumPlayer()) &&
-					GetLocalPlayer() == GetEnumPlayer()
-				) {
-					SetTextTagVisibility(this.vtag.tag, true);
-				}
+				this.showToPlayer(GetEnumPlayer());
 			});
 			return this;
 		}
 
 		method destroy() {
-			TotalTexts -= 1;
 			Remove(owner, target, textType);
 			vtag.destroy();
 			owner = null;
@@ -260,7 +248,7 @@ library FloatingText requires TechUtils {
 		string prefix
 	) -> SummativeText {
 		SummativeText summativeText = GetSummativeTextByUnitAndPlayerAndTextType(owner, target, textType);
-		summativeText.showValue(value, prefix);
+		summativeText.addValue(value, prefix);
 		return summativeText;
 	}
 

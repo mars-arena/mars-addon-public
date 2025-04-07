@@ -19,7 +19,7 @@ library Heroes requires Modifiers {
 // Tech Fucntions
 
 	function dbg(string msg) {
-		if (DebugHero) dbgT(msg);
+		if (DebugHero) Debug(msg);
 	}
 
 // API
@@ -68,7 +68,6 @@ library Heroes requires Modifiers {
 	public function SetHeroAttackValue(unit whichHero, real attackValue) {
 		Hero this = Hero.get(whichHero);
 		this.attackValue = attackValue;
-		//dbg(GetUnitName(this.u) + "|r: AttackValue=" + R2S(attackValue));
 	}
 
 	// Возвращает общую серию убийств героя.
@@ -156,7 +155,7 @@ library Heroes requires Modifiers {
 			Hero this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
 			shortStreak = 0;
 
-			dbg(GetUnitName(u) + "|r: SS=0");
+			debug dbg(GetUnitName(u) + "|r: SS=0");
 		}
 
 		method died(Hero killingHero) {
@@ -180,16 +179,18 @@ library Heroes requires Modifiers {
 			killingHero.kill(killedHero);
 			killedHero.died(killingHero);
 
-			dbg(GetUnitName(killingHero.u) + "|r:"
-				+ " TS=" + I2S(killingHero.totalStreak)
-				+ " SS=" + I2S(killingHero.shortStreak)
-				+ " PS=" + I2S(killingHero.playerStreak[GetPlayerId(GetOwningPlayer(killedHero.u))])
-			);
-			dbg(GetUnitName(killedHero.u) + "|r:"
-				+ " TS=" + I2S(killedHero.totalStreak)
-				+ " SS=" + I2S(killedHero.shortStreak)
-				+ " PS=" + I2S(killedHero.playerStreak[GetPlayerId(GetOwningPlayer(killingHero.u))])
-			);
+			debug {
+				dbg(GetUnitName(killingHero.u) + "|r:"
+					+ " TS=" + I2S(killingHero.totalStreak)
+					+ " SS=" + I2S(killingHero.shortStreak)
+					+ " PS=" + I2S(killingHero.playerStreak[GetPlayerId(GetOwningPlayer(killedHero.u))])
+				);
+				dbg(GetUnitName(killedHero.u) + "|r:"
+					+ " TS=" + I2S(killedHero.totalStreak)
+					+ " SS=" + I2S(killedHero.shortStreak)
+					+ " PS=" + I2S(killedHero.playerStreak[GetPlayerId(GetOwningPlayer(killingHero.u))])
+				);
+			}
 		}
 
 	}

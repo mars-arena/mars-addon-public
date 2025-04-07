@@ -1,5 +1,4 @@
-library HortArena requires Auras {
-
+library HortArena requires Auras, DamageAPI {
 	constant integer ABILITY_ID = 'A0P6';
 	constant integer ARENA_ID = 'e021';
 	constant integer TALENT_ID = 'A1EP';

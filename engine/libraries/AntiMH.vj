@@ -28,7 +28,7 @@ library AntiMH initializer Init
 		private boolean b = true
 		private rect rectMH
 	endglobals
-	
+
 	public function Run takes nothing returns nothing
 		local integer i = 0
 		loop
@@ -52,7 +52,7 @@ library AntiMH initializer Init
 			call ExecuteFunc("AntiMH_Run")
 		endif
 	endfunction
-	
+
 	private function Init takes nothing returns nothing
 		set rectMH = gg_rct________________038
 		set maxX = GetRectMaxX(rectMH)

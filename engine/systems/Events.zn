@@ -1,182 +1,69 @@
 library Events requires Heroes {
 
-	trigger EVENT_TRIGGERS[500];
+	public boolean DEBUG_EVENT = false;
 
-	// Событие оглушения юнита
-	//
-	// GetTriggerStun() -> Stun
-	// GetStunningUnit() -> unit
-	// GetStunnedUnit() -> unit
-	// GetStunTypeId() -> integer
-	// GetStunDuration() -> real
-	// GetStunIsEnter() -> boolean
-	// GetStunIsOut() -> boolean
-	// GetStunIsFirst() -> boolean
-	public constant integer EVENT_STUN = 301;
+	trigger EventTriggers[500];
+	boolean EventIsRun[500];
+	string EventName[500];
+	integer EventId = GetHandleId(EVENT_UNIT_PAWN_ITEM) + 1;
 
-	// Событие модификатора уворота
-	//
-	// AddModifierDodgeChance(real dodgeChance)
-	// AddModifierMissChance(real missChance)
-	// AddModifierTrueStrikeChance(real trueStrikeChance)
-	// GetModifierAttackedUnit() -> unit
-	// GetModifierAttackingUnit() -> unit
-	// GetModifierDodgeChance() -> real
-	// GetModifierMissChance() -> real
-	// GetModifierTrueStrikeChance() -> real
-	// IsModifierAttack() -> boolean
-	// SetModifierDodgeChance(real dodgeChance)
-	// SetModifierMissChance(real missChance)
-	// SetModifierTrueStrikeChance(real trueStrikeChance)
-	public constant integer EVENT_DODGE_MODIFIER = 302;
+	integer RunningId[100];
+	integer RunningCount = 0;
 
-	// Событие предществующего модификатора урона
-	//
-	// GetModifierAttackedUnit() -> unit
-	// GetModifierAttackingUnit() -> unit
-	// IsModifierAttack() -> boolean
-	// IsModifierIgnoreBlock() -> boolean
-	// IsModifierMagical() -> boolean
-	// IsModifierNoRepeat() -> boolean
-	// IsModifierPhysical() -> boolean
-	// IsModifierPure() -> boolean
-	// IsModifierReflection() -> boolean
-	// IsModifierSimulate() -> boolean
-	// IsModifierSpecAttack() -> boolean
-	//
-	// AddModifierPierceRate(real pierceRate)
-	// GetModifierPierceRate() -> real
-	// SetModifierPierceRate(real pierceRate)
-	// SetModifierPierceType(integer pierceType)
-	//
-	// AddModifierDMGAdd(real dmgAdd)
-	// GetModifierDMGAdd() -> real
-	// SetModifierDMGAdd(real dmgAdd)
-	//
-	// AddModifierDMGAmplifier(integer typeAmplifier, real dmgAmplifier)
-	// GetModifierDMGAmplifier(integer typeAmplifier) -> real
-	// SetModifierDMGAmplifier(integer typeAmplifier, real dmgAmplifier)
-	public constant integer EVENT_PRECEDING_MODIFIER = 303;
+	public function CreateEvent(string name) -> integer {
+		EventId += 1;
+		EventTriggers[EventId] = CreateTrigger();
+		EventIsRun[EventId] = false;
+		EventName[EventId] = name;
+		return EventId;
+	}
 
-	// Событие уникальных модификаторов (работает один из)
-	//
-	// GetModifierAttackedUnit() -> unit
-	// GetModifierAttackingUnit() -> unit
-	// IsModifierAttack() -> boolean
-	// IsModifierIgnoreBlock() -> boolean
-	// IsModifierMagical() -> boolean
-	// IsModifierNoRepeat() -> boolean
-	// IsModifierPhysical() -> boolean
-	// IsModifierPure() -> boolean
-	// IsModifierReflection() -> boolean
-	// IsModifierSimulate() -> boolean
-	// IsModifierSpecAttack() -> boolean
-	//
-	// AddModifierBash(integer typeId, real bashDamage, real duration)
-	// AddModifierCriticalDamage(integer typeId, real criticalDamage) 
-	// AddModifierCriticalRate(integer typeId, real criticalRate)
-	// GetModifierCriticalType() -> integer
-	// PlusModifierCriticalRate(real criticalRate)
-	public constant integer EVENT_UNIQUE_MODIFIER = 304;
+	public function IsEventRun(integer eventId) -> boolean {
+		return EventIsRun[eventId];
+	}
 
-	// Событие пост модификатора урона
-	//
-	// GetModifierAttackedUnit() -> unit
-	// GetModifierAttackingUnit() -> unit
-	// IsModifierAttack() -> boolean
-	// IsModifierCritical() -> boolean
-	// IsModifierDodge() -> boolean
-	// IsModifierIgnoreBlock() -> boolean
-	// IsModifierMagical() -> boolean
-	// IsModifierNoRepeat() -> boolean 
-	// IsModifierPhysical() -> boolean
-	// IsModifierPure() -> boolean
-	// IsModifierReflection() -> boolean
-	// IsModifierSimulate() -> boolean
-	// IsModifierSpecAttack() -> boolean
-	//
-	// GetBlockedFromAmount(real amount) -> real
-	//
-	// GetModifierDamageGiven() -> real
-	// SetModifierDamageGiven(real dmgGiven)
-	//
-	// GetModifierDamageTaken() -> real
-	// SetModifierDamageTaken(real dmgTaken)
-	//
-	// GetModifierDamageMax() -> real
-	// SetModifierDamageMax(real dmgMax)
-	public constant integer EVENT_POST_MODIFIER_INDEX_DAMAGE = 305;
-	public constant integer EVENT_POST_MODIFIER_INDEX_PERCENT = 306;
-	public constant integer EVENT_POST_MODIFIER_INDEX_AMOUNT = 307;
-	public constant integer EVENT_POST_MODIFIER_INDEX_PASS = 308;
+	public function GetEventName(integer eventId) -> string {
+		return EventName[eventId];
+	}
 
-	// Событие любого урона
-	//
-	// GetDamageAttackedUnit() -> unit
-	// GetDamageAttackingUnit() -> unit
-	// GetDamageBash() -> real
-	// GetDamageBashDuration() -> real
-	// GetDamageBlocked() -> real
-	// GetDamageGiven() -> real
-	// GetDamageIgnoreBlock() -> boolean
-	// GetDamageIsAttack() -> boolean
-	// GetDamageIsBlocked() -> boolean
-	// GetDamageIsCritical() -> boolean
-	// GetDamageIsDodge() -> boolean
-	// GetDamageIsMagical() -> boolean
-	// GetDamageIsNoRepeat() -> boolean 
-	// GetDamageIsPhysical() -> boolean
-	// GetDamageIsPure() -> boolean
-	// GetDamageIsReflection() -> boolean
-	// GetDamageIsSimulate() -> boolean
-	// GetDamageIsSpecAttack() -> boolean
-	// GetDamageLifeAttackedUnit() -> real
-	public constant integer EVENT_DAMAGE = 309;
+	public function GetEventId() -> integer {
+		return RunningId[RunningCount];
+	}
 
-	// Событие баффа
-	//
-	// GetTriggerBuffOwner() -> unit
-	// GetTriggerBuffTarget() -> unit
-	// GetTriggerBuffIsEntered() -> boolean
-	// GetTriggerBuffIsOut() -> boolean
-	// GetTriggerBuffIsActions() -> boolean
-	// GetTriggerBuffIsTransfer() -> boolean
-	// GetTriggerBuffActionsId() -> integer
-	// GetTriggerBuffId() -> integer
-	// GetTriggerBuffStack() -> timer
-	public constant integer EVENT_BUFF = 310;
+	public function DebugEvent(integer eventId) {
+		if (!IsEventRun(eventId)) Error("E3", "Использованиe API ивента вне его области: " + GetEventName(eventId));
+	}
 
-	public constant integer EVENT_HEAL_MODIFIER = 311;
+	public function ExecuteEvent(integer eventId) {
+		debug if (IsEventRun(eventId)) Error("E3", "Повторная инициализиация ивента: " + GetEventName(eventId));
+		RunningCount = RunningCount + 1;
+		RunningId[RunningCount] = eventId;
+		EventIsRun[eventId] = true;
+		TriggerExecute(EventTriggers[eventId]);
+		EventIsRun[GetEventId()] = false;
+		RunningId[RunningCount] = 0;
+		RunningCount = RunningCount - 1;
+	}
 
-	public constant integer EVENT_HEAL = 312;
-
-	public constant integer EVENT_LIFESTEAL_MODIFIER = 313;
-
-	public constant integer EVENT_LIFESTEAL = 314;
-
-	public constant integer EVENT_RESTORE_MODIFIER = 315;
-
-	public constant integer EVENT_RESTORE = 316;
-
-	public constant integer EVENT_ENTER = 317;
+	public integer EVENT_ENTER;
 
 	public function RegisterAction(integer eventId, code action) -> triggeraction {
-		if (EVENT_TRIGGERS[eventId] == null) {
+		if (EventTriggers[eventId] == null) {
 			// GAME EVENTS
 			if (eventId >= GetHandleId(EVENT_GAME_VICTORY) && eventId <= GetHandleId(EVENT_GAME_BUILD_SUBMENU) ||
 				eventId >= GetHandleId(EVENT_GAME_LOADED) && eventId <= GetHandleId(EVENT_GAME_SAVE)
 			) {
-				EVENT_TRIGGERS[eventId] = CreateTrigger();
-				TriggerRegisterGameEvent(EVENT_TRIGGERS[eventId], ConvertGameEvent(eventId));
+				EventTriggers[eventId] = CreateTrigger();
+				TriggerRegisterGameEvent(EventTriggers[eventId], ConvertGameEvent(eventId));
 			} else
 
 			// PLAYER EVENTS
 			if (eventId >= GetHandleId(EVENT_PLAYER_STATE_LIMIT) && eventId <= GetHandleId(EVENT_PLAYER_END_CINEMATIC) ||
 				eventId >= GetHandleId(EVENT_PLAYER_ARROW_LEFT_DOWN) && eventId <= GetHandleId(EVENT_PLAYER_ARROW_UP_UP)
 			) {
-				EVENT_TRIGGERS[eventId] = CreateTrigger();
+				EventTriggers[eventId] = CreateTrigger();
 				for (0 <= Index < bj_MAX_PLAYER_SLOTS) {
-					TriggerRegisterPlayerEvent(EVENT_TRIGGERS[eventId], Player(Index), ConvertPlayerEvent(eventId));
+					TriggerRegisterPlayerEvent(EventTriggers[eventId], Player(Index), ConvertPlayerEvent(eventId));
 				}
 			} else
 
@@ -184,36 +71,35 @@ library Events requires Heroes {
 			if (eventId >= GetHandleId(EVENT_PLAYER_UNIT_ATTACKED) && eventId <= GetHandleId(EVENT_PLAYER_UNIT_LOADED) ||
 				eventId >= GetHandleId(EVENT_PLAYER_UNIT_SELL) && eventId <= GetHandleId(EVENT_PLAYER_UNIT_PAWN_ITEM)
 			) {
-				EVENT_TRIGGERS[eventId] = CreateTrigger();
+				EventTriggers[eventId] = CreateTrigger();
 				for (0 <= Index < bj_MAX_PLAYER_SLOTS) {
-					TriggerRegisterPlayerUnitEvent(EVENT_TRIGGERS[eventId], Player(Index), ConvertPlayerUnitEvent(eventId), null);
+					TriggerRegisterPlayerUnitEvent(EventTriggers[eventId], Player(Index), ConvertPlayerUnitEvent(eventId), null);
 				}
 			} else
 			
 			{
-				dbgT("Error E1: Попытка зарегистрировать действия для неизвестного события ID:" + I2S(eventId));
+				debug Error("E1", "Попытка зарегистрировать действие для неизвестного события ID:" + I2S(eventId));
 				return null;
 			}
 		}
-		return TriggerAddAction(EVENT_TRIGGERS[eventId], action);
+		return TriggerAddAction(EventTriggers[eventId], action);
 	}
 
 	public function UnregisterAction(integer eventId, triggeraction action) {
-		if (EVENT_TRIGGERS[eventId] == null) {
-			dbgT("Error E2: Попытка зарегистрировать действия для незарегистриованного события ID:" + I2S(eventId));
+		if (EventTriggers[eventId] == null) {
+			debug Error("E2", "Попытка очистить действие для неизвестного события ID:" + I2S(eventId));
 			return;
 		}
-		TriggerRemoveAction(EVENT_TRIGGERS[eventId], action);
-	}
-
-	public function ExecuteEvent(integer eventId) {
-		TriggerExecute(EVENT_TRIGGERS[eventId]);
+		TriggerRemoveAction(EventTriggers[eventId], action);
 	}
 
 	function onInit() {
-		for (EVENT_STUN <= Index <= EVENT_ENTER)
-			EVENT_TRIGGERS[Index] = CreateTrigger();
-		TriggerRegisterEnterRectSimple(EVENT_TRIGGERS[EVENT_STUN], bj_mapInitialPlayableArea);
+		region mapArea = CreateRegion();
+		EVENT_ENTER = CreateEvent("EVENT_ENTER");
+		RegionAddRect(mapArea, GetWorldBounds());
+		TriggerRegisterEnterRegion(EventTriggers[EVENT_ENTER], mapArea, Condition(function() -> boolean {
+			return !IsUnitDummy(GetTriggerUnit());
+		}));
 	}
 
 }

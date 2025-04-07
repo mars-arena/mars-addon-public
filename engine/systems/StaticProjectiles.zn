@@ -1,4 +1,4 @@
-library StaticProjectiles requires GameUtils, Parabolas {
+library StaticProjectiles requires TechUtils, Parabolas {
 
 	// Constants
 	constant real FOCUS_LOST_DISTANCE = 200.;

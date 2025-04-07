@@ -1,5 +1,18 @@
 library BuffActions requires Buffs, SetUnitMaxState, HealLifestealRestore {
 
+	// Событие баффа
+	//
+	// GetTriggerBuffOwner() -> unit
+	// GetTriggerBuffTarget() -> unit
+	// GetTriggerBuffIsEntered() -> boolean
+	// GetTriggerBuffIsOut() -> boolean
+	// GetTriggerBuffIsActions() -> boolean
+	// GetTriggerBuffIsTransfer() -> boolean
+	// GetTriggerBuffActionsId() -> integer
+	// GetTriggerBuffId() -> integer
+	// GetTriggerBuffStack() -> timer
+	public integer EVENT_BUFF;
+
 	unit BUFF_OWNER_UNIT_GET;
 	unit BUFF_TARGET_UNIT_GET;
 	boolean BUFF_IS_ENTERED_GET;
@@ -10,15 +23,50 @@ library BuffActions requires Buffs, SetUnitMaxState, HealLifestealRestore {
 	integer BUFF_ID_GET;
 	timer BUFF_STACK_GET;
 
-	public function GetTriggerBuffOwner() -> unit {return BUFF_OWNER_UNIT_GET;}
-	public function GetTriggerBuffTarget() -> unit {return BUFF_TARGET_UNIT_GET;}
-	public function GetTriggerBuffIsEntered() -> boolean {return BUFF_IS_ENTERED_GET;}
-	public function GetTriggerBuffIsOut() -> boolean {return BUFF_IS_OUT_GET;}
-	public function GetTriggerBuffIsActions() -> boolean {return BUFF_IS_ACTIONS_GET;}
-	public function GetTriggerBuffIsTransfer() -> boolean {return BUFF_IS_TRANSFER_GET;}
-	public function GetTriggerBuffActionsId() -> integer {return BUFF_ACTIONS_ID_GET;}
-	public function GetTriggerBuffId() -> integer {return BUFF_ID_GET;}
-	public function GetTriggerBuffStack() -> timer {return BUFF_STACK_GET;}
+	public function GetTriggerBuffOwner() -> unit {
+		debug DebugEvent(EVENT_BUFF);
+		return BUFF_OWNER_UNIT_GET;
+	}
+
+	public function GetTriggerBuffTarget() -> unit {
+		debug DebugEvent(EVENT_BUFF);
+		return BUFF_TARGET_UNIT_GET;
+	}
+
+	public function GetTriggerBuffIsEntered() -> boolean {
+		debug DebugEvent(EVENT_BUFF);
+		return BUFF_IS_ENTERED_GET;
+	}
+
+	public function GetTriggerBuffIsOut() -> boolean {
+		debug DebugEvent(EVENT_BUFF);
+		return BUFF_IS_OUT_GET;
+	}
+
+	public function GetTriggerBuffIsActions() -> boolean {
+		debug DebugEvent(EVENT_BUFF);
+		return BUFF_IS_ACTIONS_GET;
+	}
+
+	public function GetTriggerBuffIsTransfer() -> boolean {
+		debug DebugEvent(EVENT_BUFF);
+		return BUFF_IS_TRANSFER_GET;
+	}
+
+	public function GetTriggerBuffActionsId() -> integer {
+		debug DebugEvent(EVENT_BUFF);
+		return BUFF_ACTIONS_ID_GET;
+	}
+
+	public function GetTriggerBuffId() -> integer {
+		debug DebugEvent(EVENT_BUFF);
+		return BUFF_ID_GET;
+	}
+
+	public function GetTriggerBuffStack() -> timer {
+		debug DebugEvent(EVENT_BUFF);
+		return BUFF_STACK_GET;
+	}
 
 	public function BuffActions() {
 		unit ownerUnit = OwnerUnit;
@@ -1959,5 +2007,8 @@ library BuffActions requires Buffs, SetUnitMaxState, HealLifestealRestore {
 		BUFF_STACK_GET = null;
 	}
 
+	function onInit() {
+		EVENT_BUFF = CreateEvent("EVENT_BUFF");
+	}
 
 }

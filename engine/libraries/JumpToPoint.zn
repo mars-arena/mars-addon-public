@@ -1,4 +1,4 @@
-library JumpToPoint requires GameUtils, Parabolas {
+library JumpToPoint requires Stuns, Parabolas {
 
 	constant real APSIS = 220.;
 	constant real MAX_DIST = 600.;

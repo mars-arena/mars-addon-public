@@ -52,7 +52,6 @@ library Points {
 			return LoadInteger(HT, GetHandleId(whichHandle), childKey);
 		}
 
-	
 		// Math
 		method distTo(Point2D another) -> real {
 			return DistanceBetweenCoords(this.x, this.y, another.x, another.y);
@@ -90,7 +89,7 @@ library Points {
 			this.y = GetPolarOffsetY(this.y, distance, angle);
 			return this;
 		}
-	
+
 		method getTerrainZ() -> real {
 			return GetTerrainZ(this.x, this.y);
 		}

@@ -23,28 +23,28 @@ library TechUtils initializer init uses HashId, CoordUtils
 		integer array SmartEnd[100]
 		integer SmartCount = 0
 	endglobals
-	
+
 	function InitSmartLoopStart takes integer start returns nothing
 		set SmartCount = SmartCount + 1
 		set SmartIndex[SmartCount] = start
 	endfunction
-	
+
 	function InitSmartLoopEnd takes integer endValue returns nothing
 		set SmartEnd[SmartCount] = endValue
 	endfunction
-	
+
 	function GetSmartLoopIndex takes nothing returns integer
 		return SmartIndex[SmartCount]
 	endfunction
-	
+
 	function GetSmartLoopIndexEnd takes nothing returns integer
 		return SmartEnd[SmartCount]
 	endfunction
-	
+
 	function PlusSmartLoopIndex takes integer step returns nothing
 		set SmartIndex[SmartCount] = SmartIndex[SmartCount] + step
 	endfunction
-	
+
 	function EndSmartLoop takes nothing returns nothing
 		set SmartCount = SmartCount - 1
 	endfunction
@@ -65,12 +65,12 @@ library TechUtils initializer init uses HashId, CoordUtils
 	function IsUnitInvulnerable takes unit u returns boolean
 		return GetUnitAbilityLevel(u, 'Avul') > 0 or GetUnitAbilityLevel(u, 'A1XU') > 0 or GetUnitAbilityLevel(u, 'A1T5') > 0 or GetUnitAbilityLevel(u, 'A1QG') > 0 or GetUnitAbilityLevel(u, 'A228') > 0 or GetUnitAbilityLevel(u, 'A20N') > 0 or GetUnitAbilityLevel(u, INVUL_ABILITY_ID) > 0
 	endfunction
-	
+
 	//Добавление юнитов в группу, с учётом их физ. размера\\
 	globals
 		private group GroupEnumG = CreateGroup()
 	endglobals
-	
+
 	function GroupEnumUnitsInRangeFiz takes group whichGroup, real x, real y, real r, boolexpr filter returns nothing
 		local unit u
 		call GroupClear(GroupEnumG)
@@ -86,7 +86,7 @@ library TechUtils initializer init uses HashId, CoordUtils
 		set u = null
 	endfunction
 	//\\
-	
+
 	//Применяет время жизни для эффекта\\
 	private function EffectApplyTimedLifeEnd takes nothing returns nothing
 		local integer tmId = GetHandleId(GetExpiredTimer())
@@ -95,8 +95,7 @@ library TechUtils initializer init uses HashId, CoordUtils
 		call PauseTimer(GetExpiredTimer())
 		call DestroyTimer(GetExpiredTimer())
 	endfunction
-	
-	
+
 	function EffectApplyTimedLife takes effect eff, real endTime returns nothing
 		local timer tm = CreateTimer()
 		call SaveEffectHandle(HT, GetHandleId(tm), 0, eff)
@@ -104,7 +103,7 @@ library TechUtils initializer init uses HashId, CoordUtils
 		set tm = null
 	endfunction
 	//\\
-	
+
 	//Применяет время жизни для юнита\\
 	private function UnitApplyTimeLifeEnd takes nothing returns nothing
 		local integer tmId = GetHandleId(GetExpiredTimer())
@@ -113,8 +112,7 @@ library TechUtils initializer init uses HashId, CoordUtils
 		call PauseTimer(GetExpiredTimer())
 		call DestroyTimer(GetExpiredTimer())
 	endfunction
-	
-	
+
 	function UnitApplyTimeLife takes unit u, real endTime returns unit
 		local timer tm = CreateTimer()
 		call SaveUnitHandle(HT, GetHandleId(tm), 0, u)
@@ -123,7 +121,7 @@ library TechUtils initializer init uses HashId, CoordUtils
 		return u
 	endfunction
 	//\\
-	
+
 	//Применяет время жизни для юнита со скрытием\\
 	private function UnitApplyTimeLifeEndHide takes nothing returns nothing
 		local integer tmId = GetHandleId(GetExpiredTimer())
@@ -133,8 +131,7 @@ library TechUtils initializer init uses HashId, CoordUtils
 		call PauseTimer(GetExpiredTimer())
 		call DestroyTimer(GetExpiredTimer())
 	endfunction
-	
-	
+
 	function UnitApplyTimeLifeHide takes unit u, real endTime returns nothing
 		local timer tm = CreateTimer()
 		call SaveUnitHandle(HT, GetHandleId(tm), 0, u)
@@ -142,7 +139,7 @@ library TechUtils initializer init uses HashId, CoordUtils
 		set tm = null
 	endfunction
 	//\\
-	
+
 	//Применяет способность в точку\\
 	private function ApplyAbilityEnd takes nothing returns nothing
 		local integer tmId = GetHandleId(GetExpiredTimer())
@@ -151,7 +148,7 @@ library TechUtils initializer init uses HashId, CoordUtils
 		call PauseTimer(GetExpiredTimer())
 		call DestroyTimer(GetExpiredTimer())
 	endfunction
-	
+
 	function ApplyAbility takes unit whichUnit, real x, real y, integer abilityId, integer abilityLvl, string order returns nothing
 		local unit dummy = CreateUnit(GetOwningPlayer(whichUnit), DUMMY_ID, GetUnitX(whichUnit), GetUnitY(whichUnit), 360.)
 		local timer tm = CreateTimer()
@@ -163,7 +160,7 @@ library TechUtils initializer init uses HashId, CoordUtils
 		set tm = null
 		set dummy = null
 	endfunction
-	
+
 	//Применяет способность для юнита\\
 	function ApplyAbilityToUnit takes unit whichUnit, unit targetUnit, integer abilityId, integer abilityLvl, string order returns nothing
 		local unit dummy = CreateUnit(GetOwningPlayer(whichUnit), DUMMY_ID, GetUnitX(whichUnit), GetUnitY(whichUnit), 360.)
@@ -177,11 +174,11 @@ library TechUtils initializer init uses HashId, CoordUtils
 		set dummy = null
 	endfunction
 	//\\
-	
+
 	globals
 		key UNIT_DUMMY_HID
 	endglobals
-	
+
 	//Атакаовать юнита даммиком\\
 	function DummyAttackUnit takes player whichPlayer, unit targetUnit, integer abilityId, integer abilityLvl returns unit
 		local unit dummy = CreateUnit(whichPlayer, DUMMY_ATC_ID, GetUnitX(targetUnit), GetUnitY(targetUnit), 360.)
@@ -199,7 +196,7 @@ library TechUtils initializer init uses HashId, CoordUtils
 		return ReturnedUnit
 	endfunction
 	//\\
-	
+
 	//Есть ли у юнита предмет типа
 	function UnitHasItemType takes unit whichUnit, integer itemId returns boolean
 		local integer index
@@ -229,14 +226,14 @@ library TechUtils initializer init uses HashId, CoordUtils
 		endloop
 		return count
 	endfunction
-	
+
 	//Звук для игрока
 	function StartSoundToPlayer takes sound snd, player pl returns nothing
 		if (GetLocalPlayer() == pl)then
 			call StartSound(snd)
 		endif
 	endfunction
-	
+
 	//Возвращает цвет игрока
 	function GetPlayerTextColor takes player whichplayer returns string
 		local playercolor colorL = GetPlayerColor(whichplayer)
@@ -276,9 +273,9 @@ library TechUtils initializer init uses HashId, CoordUtils
 		if (colorL == PLAYER_COLOR_BROWN) then
 			return "4E2A04"
 		endif
-		return "error"
+		return "Error"
 	endfunction
-	
+
 	//Добавление перманентной абилки юниту
 	function UnitAddAbilityPermanent takes unit u, integer aId returns nothing
 		call UnitAddAbility(u, aId)
@@ -331,7 +328,7 @@ library TechUtils initializer init uses HashId, CoordUtils
 			set invAdded = true
 			call UnitAddAbility(u, INV_ID)
 		endif
-		
+
 		if UnitAddItem(u, it) == false then
 			set added = false
 		elseif GetWidgetLife(it) > 0.00 then
@@ -339,11 +336,11 @@ library TechUtils initializer init uses HashId, CoordUtils
 		endif
 		
 		if not added then
-			call dbgT(GetUnitName(u) + " X " + GetItemName(it))
+			debug call Error("PU0", "Не удалось добавить предмет " + GetItemName(it) + " к " + GetUnitName(u))
 		endif
 
 		call RemoveItem(it)
-		
+
 		if invAdded then
 			call UnitRemoveAbility(u, INV_ID)
 		endif
@@ -477,6 +474,14 @@ library TechUtils initializer init uses HashId, CoordUtils
 
 	function IsMapDuel takes nothing returns boolean
 		return udg_Rev_Duel
+	endfunction
+
+	function IsUnitDummy takes unit whichUnit returns boolean
+		return IsUnitType(whichUnit, UNIT_TYPE_MECHANICAL)
+	endfunction
+
+	function GetObserverForce takes nothing returns force
+		return udg_Observers
 	endfunction
 
 	private function init takes nothing returns nothing
@@ -639,5 +644,5 @@ library TechUtils initializer init uses HashId, CoordUtils
 
 		set MULTI_MODIFIERS_NAME[15] = "NON_STACK_TYPE_LIFESTEAL"
 	endfunction
-	
+
 endlibrary

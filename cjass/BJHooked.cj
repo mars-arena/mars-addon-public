@@ -8,7 +8,7 @@ library BJHooked uses NegateDamageLib, Filters
 	//! nocjass
 
 	function UnitDamageTargetHook takes unit whichUnit, unit targetUnit, real value, attacktype attackType, damagetype damageType returns nothing
-	call  UnitDamageToTarget(whichUnit, targetUnit, value, attackType, damageType, true, false, false, false, false)
+		call  UnitDamageToTarget(whichUnit, targetUnit, value, attackType, damageType, true, false, false, false, false)
 	endfunction
 	
 	function MultiboardSetItemValueKT takes multiboard mb, integer col, integer row, string val returns nothing
@@ -825,6 +825,7 @@ library BJHooked uses NegateDamageLib, Filters
 		GetUnitStatePercent(whichUnit, whichState, whichMaxState) = GetUnitStatePercentHook(whichUnit, whichState, whichMaxState)
 		GetUnitLifePercent(whichUnit) = GetUnitLifePercentHook(whichUnit)
 		UnitDamageTargetBJ(whichUnit, targetUnit, value, attackType, damageType) = UnitDamageTargetHook(whichUnit, targetUnit, value, attackType, damageType)
+		GetHeroStatBJ(whichUnit, whichHero, includeBonuses) = GetHeroStatHook(whichUnit, whichHero, includeBonuses)
 	enddefine
 	
 endlibrary

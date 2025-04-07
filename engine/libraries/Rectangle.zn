@@ -2,7 +2,7 @@ library Rectangle {
 
 	public struct Rectangle {
 		real cx, cy, tx, ty, lx, ly, rx, ry, bx, by;
-	
+
 		real tlx, tly, trx, try, blx, bly, brx, bry;
 
 		real radians;
@@ -44,7 +44,7 @@ library Rectangle {
 			d = diagonal * .5;
 
 			this.radians = radians - 2 * bj_PI * R2I(radians / (bj_PI * 2));
-			
+	
 			tx = cx + hh * Cos(this.radians);
 			ty = cy + hh * Sin(this.radians);
 
@@ -109,7 +109,7 @@ library Rectangle {
 			real y = cy + distance * Sin(radians);
 			return translateOffset(x - cx, y - cy);
 		}
-		
+
 		method rotate(real ox, real oy, real radians) -> thistype {
 			real cos = Cos(radians);
 			real sin = Sin(radians);

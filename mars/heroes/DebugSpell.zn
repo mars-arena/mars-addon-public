@@ -83,7 +83,7 @@ library DebugSpell requires Buffs {
 				
 			}
 			if (GetSpellAbilityId() == 'A1RL') {
-				dbgT(GetUnitName(GetTriggerUnit()) +  " -> (slow) " + GetUnitName(GetSpellTargetUnit()));
+				Debug(GetUnitName(GetTriggerUnit()) +  " -> (slow) " + GetUnitName(GetSpellTargetUnit()));
 			}
 			*/
 		});

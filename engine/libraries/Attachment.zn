@@ -44,7 +44,7 @@ library Attachment requires TechUtils {
 			FlushTimer(updateTm); updateTm = null;
 			this.deallocate();
 		}
-	
+
 		static method updatePosition() {
 			Attachment this = LoadHandleDataInt(GetExpiredTimer());
 			real x = GetUnitX(target);
@@ -61,7 +61,7 @@ library Attachment requires TechUtils {
 			SetUnitZ(attached, z);
 		}
 	}
-	
+
 	public function AttachUnitToUnit(unit attached, unit target, real offsetX, real offsetY, real offsetZ) -> Attachment {
 		Attachment this = Attachment.load(attached);
 
@@ -71,7 +71,7 @@ library Attachment requires TechUtils {
 		
 		return Attachment.create(attached, target, offsetX, offsetY, offsetZ);
 	}
-	
+
 	public function DetachUnit(unit attached) {
 		Attachment this = Attachment.load(attached);
 
@@ -79,5 +79,5 @@ library Attachment requires TechUtils {
 			this.destroy();
 		}
 	}
-	
+
 }

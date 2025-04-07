@@ -1,4 +1,4 @@
-library ModifiersList requires TechUtils {
+library ModifiersList {
 
 	//Аддитивные модификаторы\\
 	public key INC_OUT_HEAL;                //увеличение исходящего хила

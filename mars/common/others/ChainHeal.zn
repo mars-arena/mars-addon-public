@@ -1,4 +1,4 @@
-library ChainHeal requires SpellGetters, Filters, HealLifestealRestore {
+library ChainHeal requires SpellGetters, Filters, HealLifestealRestore, Lightning {
 
 	struct ChainHeal {
 		unit caster;

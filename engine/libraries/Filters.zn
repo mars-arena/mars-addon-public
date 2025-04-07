@@ -58,10 +58,6 @@ library Filters requires Stuns, Buffs {
 		;
 	}
 
-	public function IsUnitDummy(unit whichUnit) -> boolean {
-		return IsUnitType(whichUnit, UNIT_TYPE_MECHANICAL);
-	}
-
 	public function IsUnitStructure(unit whichUnit) -> boolean {
 		return IsUnitType(whichUnit, UNIT_TYPE_STRUCTURE) || IsUnitType(whichUnit, ConvertUnitType(20));
 	}
@@ -79,7 +75,7 @@ library Filters requires Stuns, Buffs {
 			RAbsBJ((ModuloReal(AngleBetweenCoords(GetUnitX(udg_AttackingUnit), GetUnitY(udg_AttackingUnit), GetUnitX(udg_AttackedUnit), GetUnitY(udg_AttackedUnit)) + 180, 360.00) - 180) - (ModuloReal(AngleBetweenCoords(GetUnitX(udg_AttackingUnit), GetUnitY(udg_AttackingUnit), GetUnitX(filterUnit), GetUnitY(filterUnit)) + 180, 360.00) - 180)) < SplashAngle
 		;
 	}
-	
+
 	public function FilterSplash() -> boolean {
 		filterUnit = GetFilterUnit();
 		return
@@ -91,7 +87,7 @@ library Filters requires Stuns, Buffs {
 			IsUnitEnemy(filterUnit, GetOwningPlayer(udg_AttackingUnit))
 		;
 	}
-	
+
 	public function FilterRectangleSplash() -> boolean {
 		filterUnit = GetFilterUnit();
 		return
@@ -104,7 +100,7 @@ library Filters requires Stuns, Buffs {
 			IsUnitEnemy(filterUnit,  GetOwningPlayer(GetFilterOwnerUnit()))
 		;
 	}
-	
+
 	public function FilterAbsorb() -> boolean {
 		filterUnit = GetFilterUnit();
 		return
@@ -116,7 +112,7 @@ library Filters requires Stuns, Buffs {
 			IsUnitEnemy(filterUnit, GetOwningPlayer(udg_AttackedUnit))
 		;
 	}
-	
+
 	public function FilterLightning() -> boolean {
 		filterUnit = GetFilterUnit();
 		return

@@ -1,0 +1,40 @@
+library SmartLoop {
+
+	globals
+		integer array SmartIndex[100]
+		integer array SmartEnd[100]
+		integer SmartCount = 0
+	endglobals
+
+	function InitSmartLoopStart takes integer start returns nothing
+		set SmartCount = SmartCount + 1
+		set SmartIndex[SmartCount] = start
+	endfunction
+
+	function InitSmartLoopEnd takes integer end returns nothing
+		set SmartEnd[SmartCount] = end
+	endfunction
+	
+	function InitSmartLoop takes integer start, integer end returns nothing
+		set SmartCount = SmartCount + 1
+		set SmartEnd[SmartCount] = end
+		set SmartIndex[SmartCount] = start
+	endfunction
+
+	function GetSmartLoopIndex takes nothing returns integer
+		return SmartIndex[SmartCount]
+	endfunction
+
+	function GetSmartLoopIndexEnd takes nothing returns integer
+		return SmartEnd[SmartCount]
+	endfunction
+
+	function PlusSmartLoopIndex takes integer step returns nothing
+		set SmartIndex[SmartCount] = SmartIndex[SmartCount] + step
+	endfunction
+
+	function EndSmartLoop takes nothing returns nothing
+		set SmartCount = SmartCount - 1
+	endfunction
+
+}

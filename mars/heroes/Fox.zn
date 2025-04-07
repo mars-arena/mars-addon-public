@@ -1,5 +1,7 @@
 library Fox requires CliffMiss {
 
+	constant integer FOX_MISSABILITY_ID = 'A04Z';
+
 	function onInit() {
 		RegisterAction(EVENT_DODGE_MODIFIER, function() {
 			if (IsModifierAttack() &&

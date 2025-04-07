@@ -1,4 +1,4 @@
-library AurasTypes requires GameUtils {
+library AurasTypes requires TechUtils {
 
 	public key hortbuff_tid;
 	public key wormytox_tid;

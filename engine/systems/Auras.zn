@@ -1,4 +1,4 @@
-library Auras requires GameUtils {
+library Auras requires TechUtils {
 	constant integer MaxCountAurasTarget = 100; //Максимальное количество аур, которые могут действовать на одну цель
 	constant integer MaxCountAurasOwner = 100; //Максимальное количество аур, которые может излучать один юнит
 	
@@ -332,7 +332,7 @@ library Auras requires GameUtils {
 			}
 			for (1 <= i <= aTarget.countAuras) {
 				if (aTarget.auras[i] == aura) {
-					dbgT("Error AT1: Регистрация уже зарегестрированной ауры для объекта(" + GetUnitName(u) + ").");
+					debug Error("AT1", "Регистрация уже зарегестрированной ауры для объекта(" + GetUnitName(u) + ").");
 					return;
 				}
 			}
@@ -345,7 +345,7 @@ library Auras requires GameUtils {
 			AuraTarget aTarget = LoadInteger(HT, GetHandleId(u), AuraTarget_hid);
 			integer i = 0;
 			if (aTarget == 0) {
-				dbgT("Error AT2: Удаление ауры для не существующего объекта(" + GetUnitName(u) + ").");
+				debug Warning("AT2", "Удаление ауры для не существующего объекта(" + GetUnitName(u) + ").");
 				return;
 			}
 			
@@ -444,7 +444,7 @@ library Auras requires GameUtils {
 			}
 			for (1 <= i <= aOwner.countAuras) {
 				if (aOwner.auras[i] == aura) {
-					dbgT("Error AO1: Регистрация уже зарегестрированной ауры для объекта(" + GetUnitName(u) + ").");
+					debug Error("AO1", "Регистрация уже зарегестрированной ауры для объекта(" + GetUnitName(u) + ").");
 					return;
 				}
 			}
@@ -458,7 +458,7 @@ library Auras requires GameUtils {
 			integer i = 0;
 			Aura BuferAura;
 			if (aOwner == 0) {
-				dbgT("Error AO2: Удаление регистрации ауры для не существующего объекта(" + GetUnitName(u) + ").");
+				debug Warning("AO2", "Удаление регистрации ауры для не существующего объекта(" + GetUnitName(u) + ").");
 				return;
 			}
 			for (1 <= i <= aOwner.countAuras) {
