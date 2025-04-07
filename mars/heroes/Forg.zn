@@ -1,5 +1,0 @@
-library Forg requires Events {
-
-	public constant integer FORG_IMMUNE_ID = 'A0O2';
-
-}
