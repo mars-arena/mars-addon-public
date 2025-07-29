@@ -4,12 +4,7 @@
 
 However, because the repository omits the proprietary game content such as hero abilities, item logic, or object data. It cannot be used to build the full Mars Arena map on its own – it’s meant as an engine reference and development resource rather than a standalone game content.
 
-## What This Repository Contains
-
 This repo includes **the foundational systems and engine logic**.
-
-TODO list
-
 All components are written in a modular and reusable way. They form the infrastructure of the map, ensuring that shared functionality (like applying buffs, calculating regeneration, or spawning projectiles) behaves consistently across all code that uses it.
 
 ## Installation
