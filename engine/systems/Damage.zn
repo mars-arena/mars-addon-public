@@ -314,41 +314,35 @@ library Damage requires Events {
 	}
 
 	public function DebugModifierDamage() {
-		if (
-			!IsEventRun(EVENT_DODGE_MODIFIER) &&
-			!IsEventRun(EVENT_PRECEDING_MODIFIER) &&
-			!IsEventRun(EVENT_UNIQUE_MODIFIER) &&
-			!IsEventRun(EVENT_POST_MODIFIER_INDEX_DAMAGE) &&
-			!IsEventRun(EVENT_POST_MODIFIER_INDEX_PERCENT) &&
-			!IsEventRun(EVENT_POST_MODIFIER_INDEX_AMOUNT) &&
-			!IsEventRun(EVENT_POST_MODIFIER_INDEX_PASS)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
+		debug DebugEvent
+			.a(EVENT_DODGE_MODIFIER)
+			.a(EVENT_PRECEDING_MODIFIER)
+			.a(EVENT_UNIQUE_MODIFIER)
+			.a(EVENT_POST_MODIFIER_INDEX_DAMAGE)
+			.a(EVENT_POST_MODIFIER_INDEX_PERCENT)
+			.a(EVENT_POST_MODIFIER_INDEX_AMOUNT)
+			.a(EVENT_POST_MODIFIER_INDEX_PASS)
+		.run();
 	}
 
 	public function DebugPostDamage() {
-		if (
-			!IsEventRun(EVENT_POST_MODIFIER_INDEX_DAMAGE) &&
-			!IsEventRun(EVENT_POST_MODIFIER_INDEX_PERCENT) &&
-			!IsEventRun(EVENT_POST_MODIFIER_INDEX_AMOUNT) &&
-			!IsEventRun(EVENT_POST_MODIFIER_INDEX_PASS)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
+		debug DebugEvent
+			.a(EVENT_POST_MODIFIER_INDEX_DAMAGE)
+			.a(EVENT_POST_MODIFIER_INDEX_PERCENT)
+			.a(EVENT_POST_MODIFIER_INDEX_AMOUNT)
+			.a(EVENT_POST_MODIFIER_INDEX_PASS)
+		.run();
 	}
 
-	public function DebugUniqueDamage() {
-		if (
-			!IsEventRun(EVENT_PRECEDING_MODIFIER) &&
-			!IsEventRun(EVENT_UNIQUE_MODIFIER) &&
-			!IsEventRun(EVENT_POST_MODIFIER_INDEX_DAMAGE) &&
-			!IsEventRun(EVENT_POST_MODIFIER_INDEX_PERCENT) &&
-			!IsEventRun(EVENT_POST_MODIFIER_INDEX_AMOUNT) &&
-			!IsEventRun(EVENT_POST_MODIFIER_INDEX_PASS)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
+	public function DebugUniqueDamage(integer int) {
+		debug DebugEvent
+			.a(EVENT_PRECEDING_MODIFIER)
+			.a(EVENT_UNIQUE_MODIFIER)
+			.a(EVENT_POST_MODIFIER_INDEX_DAMAGE)
+			.a(EVENT_POST_MODIFIER_INDEX_PERCENT)
+			.a(EVENT_POST_MODIFIER_INDEX_AMOUNT)
+			.a(EVENT_POST_MODIFIER_INDEX_PASS)
+		.run();
 	}
 
 	public function GetModifierAttackedUnit() -> unit {
@@ -393,142 +387,142 @@ library Damage requires Events {
 	}
 
 	public function IsModifierMagical() -> boolean {
-		debug DebugUniqueDamage();
+		debug DebugUniqueDamage(1);
 		return IsMagical;
 	}
 
 	public function IsModifierNoRepeat() -> boolean  {
-		debug DebugUniqueDamage();
+		debug DebugUniqueDamage(2);
 		return IsNoRepeat;
 	}
 
 	public function IsModifierPhysical() -> boolean {
-		debug DebugUniqueDamage();
+		debug DebugUniqueDamage(3);
 		return IsPhys;
 	}
 
 	public function IsModifierPure() -> boolean {
-		debug DebugUniqueDamage();
+		debug DebugUniqueDamage(4);
 		return IsPure;
 	}
 
 	public function IsModifierReflection() -> boolean {
-		debug DebugUniqueDamage();
+		debug DebugUniqueDamage(5);
 		return IsReflection;
 	}
 
 	public function IsModifierSimulate() -> boolean {
-		debug DebugUniqueDamage();
+		debug DebugUniqueDamage(6);
 		return IsSimulate;
 	}
 
 	public function IsModifierSpecAttack() -> boolean {
-		debug DebugUniqueDamage();
+		debug DebugUniqueDamage(7);
 		return IsSpecAttack;
 	}
 
 	public function AddModifierDodgeChance(real dodgeChance) {
-		debug DebugEvent(EVENT_DODGE_MODIFIER);
+		debug DebugEvent.a(EVENT_DODGE_MODIFIER).run();
 		DodgeChance = RMinBJ((1 - (1 - DodgeChance) * (1 - dodgeChance)), 1.00);
 	}
 
 	public function GetModifierDodgeChance() -> real {
-		debug DebugEvent(EVENT_DODGE_MODIFIER);
+		debug DebugEvent.a(EVENT_DODGE_MODIFIER).run();
 		return DodgeChance;
 	}
 
 	public function SetModifierDodgeChance(real dodgeChance) {
-		debug DebugEvent(EVENT_DODGE_MODIFIER);
+		debug DebugEvent.a(EVENT_DODGE_MODIFIER).run();
 		DodgeChance = dodgeChance;
 	}
 	
 	public function AddModifierMissChance(real missChance) {
-		debug DebugEvent(EVENT_DODGE_MODIFIER);
+		debug DebugEvent.a(EVENT_DODGE_MODIFIER).run();
 		MissChance = RMinBJ((1 - (1 - MissChance) * (1 - missChance)), 1.00);
 	}
 
 	public function GetModifierMissChance() -> real {
-		debug DebugEvent(EVENT_DODGE_MODIFIER);
+		debug DebugEvent.a(EVENT_DODGE_MODIFIER).run();
 		return MissChance;
 	}
 
 	public function SetModifierMissChance(real missChance) {
-		debug DebugEvent(EVENT_DODGE_MODIFIER);
+		debug DebugEvent.a(EVENT_DODGE_MODIFIER).run();
 		MissChance = missChance;
 	}
 	
 	public function AddModifierTrueStrikeChance(real trueStrikeChance) {
-		debug DebugEvent(EVENT_DODGE_MODIFIER);
+		debug DebugEvent.a(EVENT_DODGE_MODIFIER).run();
 		TrueStrikeChance = RMinBJ((1 - (1 - TrueStrikeChance) * (1 - trueStrikeChance)), 1.00);
 	}
 
 	public function GetModifierTrueStrikeChance() -> real {
-		debug DebugEvent(EVENT_DODGE_MODIFIER);
+		debug DebugEvent.a(EVENT_DODGE_MODIFIER).run();
 		return TrueStrikeChance;
 	}
 
 	public function SetModifierTrueStrikeChance(real trueStrikeChance) {
-		debug DebugEvent(EVENT_DODGE_MODIFIER);
+		debug DebugEvent.a(EVENT_DODGE_MODIFIER).run();
 		TrueStrikeChance = trueStrikeChance;
 	}
 
 	public function AddModifierPierceRate(real pierceRate) {
-		debug DebugEvent(EVENT_PRECEDING_MODIFIER);
+		debug DebugEvent.a(EVENT_PRECEDING_MODIFIER).run();
 		PierceRate = RMinBJ((1 - (1 - PierceRate) * (1 - pierceRate)), 1.00);
 	}
 
 	public function GetModifierPierceRate() -> real {
-		debug DebugEvent(EVENT_PRECEDING_MODIFIER);
+		debug DebugEvent.a(EVENT_PRECEDING_MODIFIER).run();
 		return PierceRate;
 	}
 
 	public function SetModifierPierceRate(real pierceRate) {
-		debug DebugEvent(EVENT_PRECEDING_MODIFIER);
+		debug DebugEvent.a(EVENT_PRECEDING_MODIFIER).run();
 		PierceRate = pierceRate;
 	}
 
 	public function SetModifierPierceType(integer pierceType) {
-		debug DebugEvent(EVENT_PRECEDING_MODIFIER);
+		debug DebugEvent.a(EVENT_PRECEDING_MODIFIER).run();
 		PierceType = pierceType;
 	}
 	
 	public function AddModifierDMGAdd(real dmgAdd) {
-		debug DebugEvent(EVENT_PRECEDING_MODIFIER);
+		debug DebugEvent.a(EVENT_PRECEDING_MODIFIER).run();
 		DMGAdd = DMGAdd + dmgAdd;
 	}
 
 	public function GetModifierDMGAdd() -> real {
-		debug DebugEvent(EVENT_PRECEDING_MODIFIER);
+		debug DebugEvent.a(EVENT_PRECEDING_MODIFIER).run();
 		return DMGAdd;
 	}
 
 	public function SetModifierDMGAdd(real dmgAdd) {
-		debug DebugEvent(EVENT_PRECEDING_MODIFIER);
+		debug DebugEvent.a(EVENT_PRECEDING_MODIFIER).run();
 		DMGAdd = dmgAdd;
 	}
 	
 	public function AddModifierDMGAmplifier(integer typeAmplifier, real dmgAmplifier) {
-		debug DebugEvent(EVENT_PRECEDING_MODIFIER);
+		debug DebugEvent.a(EVENT_PRECEDING_MODIFIER).run();
 		DMGAmplifier[typeAmplifier] = DMGAmplifier[typeAmplifier] + dmgAmplifier;
 	}
 
 	public function GetModifierDMGAmplifier(integer typeAmplifier) -> real {
-		debug DebugEvent(EVENT_PRECEDING_MODIFIER);
+		debug DebugEvent.a(EVENT_PRECEDING_MODIFIER).run();
 		return DMGAmplifier[typeAmplifier];
 	}
 
 	public function SetModifierDMGAmplifier(integer typeAmplifier, real dmgAmplifier) {
-		debug DebugEvent(EVENT_PRECEDING_MODIFIER);
+		debug DebugEvent.a(EVENT_PRECEDING_MODIFIER).run();
 		DMGAmplifier[typeAmplifier] = dmgAmplifier;
 	}
 
 	public function GetModifierCriticalType() -> integer {
-		debug DebugEvent(EVENT_UNIQUE_MODIFIER);
+		debug DebugEvent.a(EVENT_UNIQUE_MODIFIER).run();
 		return CriticalType;
 	}
 
 	public function AddModifierCriticalRate(integer typeId, real criticalRate) {
-		debug DebugEvent(EVENT_UNIQUE_MODIFIER);
+		debug DebugEvent.a(EVENT_UNIQUE_MODIFIER).run();
 		if (UniquePower < DMGMax * criticalRate &&
 			GetUnitAbilityLevel(GetModifierAttackedUnit(), FORG_IMMUNE_ID) <= 0
 		) {
@@ -543,7 +537,7 @@ library Damage requires Events {
 	}
 
 	public function PlusModifierCriticalRate(real criticalRate) {
-		debug DebugEvent(EVENT_UNIQUE_MODIFIER);
+		debug DebugEvent.a(EVENT_UNIQUE_MODIFIER).run();
 		if (CritRate > 0.) {
 			BashDamage = 0;
 			BashDuration = 0;
@@ -554,7 +548,7 @@ library Damage requires Events {
 	}
 
 	public function AddModifierCriticalDamage(integer typeId, real criticalDamage) {
-		debug DebugEvent(EVENT_UNIQUE_MODIFIER);
+		debug DebugEvent.a(EVENT_UNIQUE_MODIFIER).run();
 		if (UniquePower < DMGMax + criticalDamage &&
 			GetUnitAbilityLevel(GetModifierAttackedUnit(), FORG_IMMUNE_ID) <= 0
 		) {
@@ -569,7 +563,7 @@ library Damage requires Events {
 	}
 
 	public function AddModifierBash(integer typeId, real bashDamage, real duration) {
-		debug DebugEvent(EVENT_UNIQUE_MODIFIER);
+		debug DebugEvent.a(EVENT_UNIQUE_MODIFIER).run();
 		if (UniquePower < DMGMax + bashDamage * 2 + duration * 200 &&
 			!IsUnitIllusion(GetModifierAttackingUnit())
 		) {
@@ -622,113 +616,112 @@ library Damage requires Events {
 	}
 
 	public function GetDamageAttackedUnit() -> unit {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return ATTACKED_UNIT_GET;
 	}
 
 	public function GetDamageAttackingUnit() -> unit {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return ATTACKING_UNIT_GET;
 	}
 
 	public function GetDamageSourceUnit() -> unit {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return SOURCE_UNIT;
 	}
 
 	public function GetDamageSourcePosition() -> Point2D {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		if (!IsSet(SOURCE_POSITION)) SOURCE_POSITION = Point2D.createAtWidget(SOURCE_UNIT);
 		return SOURCE_POSITION;
 	}
 
 	public function GetDamageBash() -> real {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return BUSH_DAMAGE;
 	}
 
 	public function GetDamageBashDuration() -> real {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return BUSH_DURATION;
 	}
 
 	public function GetDamageBlocked() -> real {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return DMG_BLOCKED_GET;
 	}
 
 	public function GetDamageGiven() -> real {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return DMG_GIVEN_GET;
 	}
 
 	public function GetDamageIgnoreBlock() -> boolean {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return IGNORE_BLOCK;
 	}
 
 	public function GetDamageIsAttack() -> boolean {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return IS_ATTACK;
 	}
 
 	public function GetDamageIsBlocked() -> boolean {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return IS_BLOCKED;
 	}
 
 	public function GetDamageIsCritical() -> boolean {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return IS_CRITICAL;
 	}
 
 	public function GetDamageIsDodge() -> boolean {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return IS_DODGE;
 	}
 
 	public function GetDamageIsMagical() -> boolean {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return IS_MAGICAL;
 	}
 
 	public function GetDamageIsNoRepeat() -> boolean  {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return IS_NO_REPEAT;
 	}
 
 	public function GetDamageIsPhysical() -> boolean {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return IS_PHYS;
 	}
 
 	public function GetDamageIsPure() -> boolean {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return IS_PURE;
 	}
 
 	public function GetDamageIsReflection() -> boolean {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return IS_REFLECTION;
 	}
 
 	public function GetDamageIsSimulate() -> boolean {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return IS_SIMULATE;
 	}
 
 	public function GetDamageIsSpecAttack() -> boolean {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return IS_SPEC_ATTACK;
 	}
 
 	public function GetDamageLifeAttackedUnit() -> real {
-		debug DebugEvent(EVENT_DAMAGE);
+		debug DebugEvent.a(EVENT_DAMAGE).run();
 		return LIFE_ATTACKED_UNIT;
 	}
 
 	public function GetDamageIsRunPass() -> boolean {
-		debug DebugEvent(EVENT_DAMAGE);
 		return IsRunPass;
 	}
 
@@ -1032,11 +1025,11 @@ library Damage requires Events {
 	unit KILLING_UNIT_GET = null;
 	unit KILLED_UNIT_GET = null;
 	public function GetDeathKillingUnit() -> unit {
-		debug DebugEvent(EVENT_DEATH);
+		debug DebugEvent.a(EVENT_DEATH).run();
 		return KILLING_UNIT_GET;
 	}
 	public function GetDeathKilledUnit() -> unit {
-		debug DebugEvent(EVENT_DEATH);
+		debug DebugEvent.a(EVENT_DEATH).run();
 		return KILLED_UNIT_GET;
 	}
 
@@ -1452,6 +1445,16 @@ library Damage requires Events {
  
 
 	function onInit() {
+		EVENT_DODGE_MODIFIER = CreateEvent("EVENT_DODGE_MODIFIER");
+		EVENT_PRECEDING_MODIFIER = CreateEvent("EVENT_PRECEDING_MODIFIER");
+		EVENT_UNIQUE_MODIFIER = CreateEvent("EVENT_UNIQUE_MODIFIER");
+		EVENT_POST_MODIFIER_INDEX_DAMAGE = CreateEvent("EVENT_POST_MODIFIER_INDEX_DAMAGE");
+		EVENT_POST_MODIFIER_INDEX_PERCENT = CreateEvent("EVENT_POST_MODIFIER_INDEX_PERCENT");
+		EVENT_POST_MODIFIER_INDEX_AMOUNT = CreateEvent("EVENT_POST_MODIFIER_INDEX_AMOUNT");
+		EVENT_POST_MODIFIER_INDEX_PASS = CreateEvent("EVENT_POST_MODIFIER_INDEX_PASS");
+		EVENT_DAMAGE = CreateEvent("EVENT_DAMAGE");
+		EVENT_DEATH = CreateEvent("EVENT_DEATH");
+
 		AnyUnitDamagedEvent(DamageTrigger);
 		TriggerAddAction(DamageTrigger, function Actions);
 
@@ -1464,15 +1467,6 @@ library Damage requires Events {
 			}
 		});
 
-		EVENT_DODGE_MODIFIER = CreateEvent("EVENT_DODGE_MODIFIER");
-		EVENT_PRECEDING_MODIFIER = CreateEvent("EVENT_PRECEDING_MODIFIER");
-		EVENT_UNIQUE_MODIFIER = CreateEvent("EVENT_UNIQUE_MODIFIER");
-		EVENT_POST_MODIFIER_INDEX_DAMAGE = CreateEvent("EVENT_POST_MODIFIER_INDEX_DAMAGE");
-		EVENT_POST_MODIFIER_INDEX_PERCENT = CreateEvent("EVENT_POST_MODIFIER_INDEX_PERCENT");
-		EVENT_POST_MODIFIER_INDEX_AMOUNT = CreateEvent("EVENT_POST_MODIFIER_INDEX_AMOUNT");
-		EVENT_POST_MODIFIER_INDEX_PASS = CreateEvent("EVENT_POST_MODIFIER_INDEX_PASS");
-		EVENT_DAMAGE = CreateEvent("EVENT_DAMAGE");
-		EVENT_DEATH = CreateEvent("EVENT_DEATH");
 	}
 
 }

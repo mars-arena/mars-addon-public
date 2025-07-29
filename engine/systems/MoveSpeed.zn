@@ -1,0 +1,195 @@
+library MoveSpeed requires Events, Buffs, Auras {
+
+// Variables
+
+	// Событие модификатора скорости перемешения
+	//
+	// GetMSUnit() -> unit
+	// GetMSBonus() -> real
+	// GetMSPenalty() -> real
+	// GetMSIncrease() -> real
+	// GetMSDecrease() -> real
+	// GetMSMinCap() -> real
+	// GetMSMaxCap() -> real
+	// GetMSSlowResist() -> real
+	// AddMSBonus(real v)
+	// AddMSPenalty(real v)
+	// AddMSIncrease(real v)
+	// AddMSDecrease(real v)
+	// AddMSSlowResist(real v)
+	// AddMSCap(real cap, boolean isMin)
+	public integer EVENT_MOVE_SPEED;
+
+	// Hash Variables
+	key MOVE_SPEED_HID;
+
+	// Event Variables
+	unit MSUnit = null;
+	real MSBonus = 0.0;
+	real MSPenalty = 0.0;
+	real MSIncrease = 0.0;
+	real MSDecrease = 0.0;
+	real MSMin = 0.0;
+	real MSMax = 522.0;
+	real MSSlowResist = 0.0;  // resistance to slows (0..1)
+
+// Debug
+
+	boolean Debug = true;
+	boolean IsRun = false;
+
+	function dbg(string msg, real x, real y) {
+		if (Debug) DebugXY(msg, x, y);
+	}
+
+// Event API
+
+	// Event Getters
+	public function GetMSUnit() -> unit { debug DebugEvent.a(EVENT_MOVE_SPEED).run(); return MSUnit; }
+	public function GetMSBonus() -> real { debug DebugEvent.a(EVENT_MOVE_SPEED).run(); return MSBonus; }
+	public function GetMSPenalty() -> real { debug DebugEvent.a(EVENT_MOVE_SPEED).run(); return MSPenalty; }
+	public function GetMSIncrease() -> real { debug DebugEvent.a(EVENT_MOVE_SPEED).run(); return MSIncrease; }
+	public function GetMSDecrease() -> real { debug DebugEvent.a(EVENT_MOVE_SPEED).run(); return MSDecrease; }
+	public function GetMSMinCap() -> real { debug DebugEvent.a(EVENT_MOVE_SPEED).run(); return MSMin; }
+	public function GetMSMaxCap() -> real { debug DebugEvent.a(EVENT_MOVE_SPEED).run(); return MSMax; }
+	public function GetMSSlowResist() -> real { debug DebugEvent.a(EVENT_MOVE_SPEED).run(); return MSSlowResist; }
+
+	// Event Adders
+	public function AddMSBonus(real v) { debug DebugEvent.a(EVENT_MOVE_SPEED).run(); MSBonus += v; }
+	public function AddMSPenalty(real v) { debug DebugEvent.a(EVENT_MOVE_SPEED).run(); MSPenalty += v * (1.0 - MSSlowResist); }
+	public function AddMSIncrease(real v) { debug DebugEvent.a(EVENT_MOVE_SPEED).run(); MSIncrease += v; }
+	public function AddMSDecrease(real v) { debug DebugEvent.a(EVENT_MOVE_SPEED).run(); MSDecrease = RMinBJ((1.0 - (1.0 - MSDecrease) * (1.0 - v * (1.0 - MSSlowResist))), 1.0); }
+	public function AddMSSlowResist(real v) { debug DebugEvent.a(EVENT_MOVE_SPEED).run(); MSSlowResist = RMaxBJ(MSSlowResist + v, 0.0); }
+	public function AddMSCap(real cap, boolean isMin) { debug DebugEvent.a(EVENT_MOVE_SPEED).run(); cap = RMaxBJ(RMinBJ(cap, 522.0), 0.0); if (isMin) MSMin = RMaxBJ(MSMin, cap); else MSMax = RMinBJ(MSMax, cap); }
+
+// System
+
+	public function UpdateUnitMoveSpeed(unit whichUnit) -> real {
+		real baseSpeed = GetUnitDefaultMoveSpeed(whichUnit);
+		real moveSpeed;
+
+		if (whichUnit == null) {
+			debug Warning("MS1", "Unit is null");
+			return 0.0;
+		}
+		if (baseSpeed <= 0.0) {
+			debug Warning("MS2", "Unit has 0 speed " + GetUnitName(whichUnit));
+			return 0.0;
+		}
+		if (IsRun) {
+			Error("MS3", "Внутренее иницирование системы!");
+			return 0.0;
+		}
+
+		IsRun = true;
+
+		MSUnit = whichUnit;
+		MSMin = 0.0; 
+		MSMax = 522.0;
+		MSBonus = 0.0;
+		MSPenalty = 0.0;
+		MSIncrease = 0.0;
+		MSDecrease = 0.0;
+		MSSlowResist = 0.0;
+
+		ExecuteEvent(EVENT_MOVE_SPEED);
+
+		moveSpeed = (baseSpeed + MSBonus) * (1.0 + MSIncrease) * (1.0 - MSDecrease) - MSPenalty;
+
+		if (moveSpeed > MSMax) {
+			moveSpeed = MSMax;
+		} else if (moveSpeed < MSMin) {
+			moveSpeed = MSMin;
+		}
+
+		debug dbg("ms:" + R2S(moveSpeed), GetUnitX(whichUnit), GetUnitY(whichUnit));
+
+		SetUnitMoveSpeed(whichUnit, moveSpeed);
+		IsRun = false;
+
+		return moveSpeed;
+	}
+
+	public struct MoveSpeed {
+		unit whichUnit;
+		real moveSpeed = 0.0;
+		boolean needUpdate = false;
+
+		timer tm;
+
+		static real INTERVAL = 0.25;
+
+		static method create(unit whichUnit) -> MoveSpeed {
+			MoveSpeed this = MoveSpeed.allocate();
+
+			this.whichUnit = whichUnit;
+			SaveInteger(HT, GetHandleId(whichUnit), MOVE_SPEED_HID, this);
+
+			this.tm = CreateTimer();
+			SaveHandleDataInt(tm, this);
+			TimerStart(tm, INTERVAL, true, function MoveSpeed.callback);
+
+			return this;
+		}
+
+		static method load(integer hashId) -> MoveSpeed {
+			return LoadInteger(HT, hashId, MOVE_SPEED_HID);
+		}
+
+		static method get(unit whichUnit) -> MoveSpeed {
+			MoveSpeed this = MoveSpeed.load(GetHandleId(whichUnit)); 
+			if (!IsSet(this))
+				this = MoveSpeed.create(whichUnit);
+			return this;
+		}
+
+		method destroy() {
+			FlushTimer(tm); tm = null;
+			whichUnit = null;
+			this.deallocate();
+		}
+
+		method update() {
+			needUpdate = true;
+		}
+
+		static method callback() {
+			MoveSpeed this = LoadHandleDataInt(GetExpiredTimer());
+
+			if (!UnitAlive(whichUnit)) return;
+
+			if (needUpdate) {
+				UpdateUnitMoveSpeed(whichUnit);
+			}
+
+			needUpdate = false;
+		}
+
+	}
+
+	function Update(unit whichUnit) {
+		if (IsUnitDummy(whichUnit) ||
+			GetUnitDefaultMoveSpeed(whichUnit) <= 0.0 ||
+			whichUnit == null
+		) {
+			return;
+		}
+		MoveSpeed.get(whichUnit).update();
+	}
+
+	function onInit() {
+		EVENT_MOVE_SPEED = CreateEvent("EVENT_MOVE_SPEED");
+
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_ATTACKED), function() { Update(GetAttacker()); });
+		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_LEVEL), function() { Update(GetLevelingUnit()); });
+		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_SKILL), function() { Update(GetLearningUnit()); });
+		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_REVIVABLE), function() { Update(GetRevivableUnit()); });
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DROP_ITEM), function() { Update(GetTriggerUnit()); });
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_PICKUP_ITEM), function() { Update(GetTriggerUnit()); });
+		RegisterAction(EVENT_ENTER, function() { Update(GetTriggerUnit()); });
+		RegisterAction(EVENT_BUFF, function() { Update(GetTriggerBuffTarget()); });
+		RegisterAction(EVENT_AURA, function() { Update(GetAuraOwnerUnit()); });
+		RegisterAction(EVENT_TALENT_CHOSEN, function() { Update(GetTalentHero()); });
+		ForGroup(INIT_UNITS, function() { Update(GetEnumUnit()); });
+	}
+}

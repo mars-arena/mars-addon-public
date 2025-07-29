@@ -1,0 +1,26 @@
+{
+  "name": "mars-addon-code",
+  "version": "1.0.0",
+  "description": "Заходит улитка в бар. А бармен говорит: \"У нас строгая политика в отношении улиток\".",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "generate": "ts-node ./generateDeclarations.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IlliaKorzhov/mars-addon-code.git"
+  },
+  "keywords": [],
+  "author": "Illia Korzhov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IlliaKorzhov/mars-addon-code/issues"
+  },
+  "homepage": "https://github.com/IlliaKorzhov/mars-addon-code#readme",
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}

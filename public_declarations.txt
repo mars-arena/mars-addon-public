@@ -1,0 +1,2741 @@
+	//===================================================
+	// config\dev_kane\constants.zn
+	//===================================================
+
+	constant boolean IS_DEV
+
+	// максимальное количество игроков
+	constant integer MAX_PLAYERS
+
+	// DamageEventEngine
+	constant integer BUFF_1_ID
+
+	constant integer BUFF_2_ID
+
+	constant integer BUFF_S1_ID
+
+	constant integer BUFF_S2_ID
+
+	// NegateDamage
+	constant integer MAX_LIFE_BONUS_ABILITY
+
+	constant integer MAX_LIFE_BONUS
+
+	// AntiMH
+	// public constant rect ANTI_MH_RECT = gg_rct_rectMH;
+	constant integer ANTI_MH_UNIT_ID
+
+	// StunSystem
+	constant integer STUN_ABILITY_ID
+
+	constant integer STUN_BUFF_ID
+
+	constant integer IMMUN_STUN_ABILITY_ID
+
+	// Illusions
+	constant integer ILLUSION_ABILITY_ID
+
+	// Invulnerability
+	constant integer INVUL_ABILITY_ID
+
+	// Disarm
+	constant integer DISARM_BUFF_ID
+
+	// ModifierEngine
+	constant real INC_OUT_HEAL_BY_INT
+
+	constant real INC_ENTER_HEAL_BY_STR
+
+	constant real INC_LIFESTEAL_BY_STR
+
+	// TechUtils
+	constant integer INV_ID
+
+	// Hex
+	constant integer MAX_HEXES
+
+	constant integer HEX_FROG_ABILITY_ID
+
+	constant integer HEX_FROG_BUFF_ID
+
+	constant integer HEX_SNOWMAN_ABILITY_ID
+
+	constant integer HEX_SNOWMAN_BUFF_ID
+
+	// даммики
+	constant integer DUMMY_EFF_ID
+
+	constant integer DUMMY_ID
+
+	constant integer DUMMY_ATC_ID
+
+	constant integer DUMMY_VSN_300
+
+	constant integer DUMMY_VSN_500
+
+	constant integer DUMMY_VSN_500l
+
+	constant integer DUMMY_VSN_600
+
+	constant integer MEFISTO_ID
+
+
+
+	//===================================================
+	// config\dev_kane\header.vj
+	//===================================================
+
+	unit TempUnit
+
+	real TempX
+
+	real TempY
+
+	timer TempTimer
+
+	group TempGroup
+
+	trigger TempTrigger
+
+	integer Index
+
+	integer This
+
+	integer AbilityID
+
+	unit FilterUnit
+
+	unit TriggerUnit
+
+	unit EnumUnit
+
+	unit ReturnedUnit
+
+	unit FilteredUnit
+
+	boolean WantDelay
+
+	//deprecated
+	integer SplashType
+
+	real SplashChance
+
+	real SplashPercent
+
+	real SplashRadius
+
+	real SplashAngle
+
+	integer iS
+
+	integer iE
+
+	group bGroup
+
+	unit CasterUnit
+
+	unit OwnerUnit
+
+	unit TargetUnit
+
+	real Value
+
+	//unit AuraOwnerUnit
+	//unit AuraTargetUnit
+	//boolean IsEntered
+	//boolean IsOut
+	//boolean IsActions
+	boolean IsTransfer
+
+	integer ActionsId
+
+	integer BuffId
+
+	timer BuffStack
+
+	real TIMER_PERIOD
+
+	// фейк переменная
+	force udg_Observers
+
+	unit array udg_Talent_Tree
+
+	unit array udg_Hero
+
+	integer udg_Stat_INT_XP
+
+	integer array udg_Hero_XP_Percent
+
+	real array udg_Stat_STR_HPReg
+
+	real array udg_Hero_MS_Simple
+
+	boolean udg_Mode_Team
+
+	boolean udg_Rev_Duel
+
+	boolean udg_Rev_End
+
+	trigger gg_trg_Debuff_Strong
+
+	hashtable udg_HT_GUI
+
+	unit udg_AS_AuraUnit
+
+	integer udg_AS_TypeId
+
+	item udg_AS_ItemAura
+
+	integer udg_AS_Priority
+
+	boolean udg_AS_MultiAurasForOwner
+
+	boolean udg_AS_MultiAurasToTarget
+
+	boolean udg_AS_RefreshOutEnter
+
+	boolean udg_AS_HardRefresh
+
+	integer udg_AS_ActionsId
+
+	boolexpr udg_AS_Filter
+
+	real udg_AS_RadiusMax
+
+	real udg_AS_EndDuration
+
+	boolean udg_AS_PeriodActions
+
+	real udg_AS_Period
+
+	integer udg_BS_StackDataInt
+
+	real udg_BS_StackDataReal
+
+	unit udg_BS_TargetUnit
+
+	unit udg_BS_OwnerUnit
+
+	integer udg_BS_TypeID
+
+	integer udg_BS_ActionsID
+
+	real udg_BS_Duration
+
+	integer udg_BS_Rank
+
+	integer udg_BS_DispelDifficulty
+
+	boolean udg_BS_Stackable
+
+	boolean udg_BS_SingleDuration
+
+	boolean udg_BS_SingleOutEnter
+
+	boolean udg_BS_SinglePeriod
+
+	integer udg_BS_CountStacks
+
+	boolean udg_BS_PierceInvul
+
+	boolean udg_BS_PierceSpellImmun
+
+	boolean udg_BS_PierceDeath
+
+	boolean udg_BS_PeriodActions
+
+	real udg_BS_Period
+
+	real array udg_Smart_Real
+
+	unit udg_Debuff_Caster_Strong
+
+
+
+	//===================================================
+	// config\origin\constants.zn
+	//===================================================
+
+	// максимальное количество игроков
+	constant integer MAX_PLAYERS
+
+	// DamageEventEngine
+	constant integer BUFF_1_ID
+
+	constant integer BUFF_2_ID
+
+	constant integer BUFF_S1_ID
+
+	constant integer BUFF_S2_ID
+
+	// NegateDamage
+	constant integer MAX_LIFE_BONUS_ABILITY
+
+	constant integer MAX_LIFE_BONUS
+
+	// AntiMH
+	// public constant rect ANTI_MH_RECT = gg_rct________________038;
+	constant integer ANTI_MH_UNIT_ID
+
+	// StunSystem
+	constant integer STUN_ABILITY_ID
+
+	constant integer STUN_BUFF_ID
+
+	constant integer IMMUN_STUN_ABILITY_ID
+
+	// Illusions
+	constant integer ILLUSION_ABILITY_ID
+
+	// Invulnerability
+	constant integer INVUL_ABILITY_ID
+
+	// Disarm
+	constant integer DISARM_BUFF_ID
+
+	// ModifierEngine
+	constant real INC_OUT_HEAL_BY_INT
+
+	constant real INC_ENTER_HEAL_BY_STR
+
+	constant real INC_LIFESTEAL_BY_STR
+
+	// TechUtils
+	constant integer INV_ID
+
+	// Hex
+	constant integer MAX_HEXES
+
+	constant integer HEX_FROG_ABILITY_ID
+
+	constant integer HEX_FROG_BUFF_ID
+
+	constant integer HEX_SNOWMAN_ABILITY_ID
+
+	constant integer HEX_SNOWMAN_BUFF_ID
+
+	// даммики
+	constant integer DUMMY_EFF_ID
+
+	constant integer DUMMY_ID
+
+	constant integer DUMMY_ATC_ID
+
+	constant integer DUMMY_VSN_300
+
+	constant integer DUMMY_VSN_500
+
+	constant integer DUMMY_VSN_500l
+
+	constant integer DUMMY_VSN_600
+
+	constant integer MEFISTO_ID
+
+
+
+	//===================================================
+	// config\origin\header.vj
+	//===================================================
+
+	unit TempUnit
+
+	real TempX
+
+	real TempY
+
+	timer TempTimer
+
+	group TempGroup
+
+	trigger TempTrigger
+
+	integer Index
+
+	integer This
+
+	integer AbilityID
+
+	unit FilterUnit
+
+	unit TriggerUnit
+
+	unit EnumUnit
+
+	unit ReturnedUnit
+
+	unit FilteredUnit
+
+	boolean WantDelay
+
+	// deprecated
+	integer SplashType
+
+	real SplashChance
+
+	real SplashPercent
+
+	real SplashRadius
+
+	real SplashAngle
+
+	integer dummyEffId
+
+	integer dummyId
+
+	integer dummyAtcId
+
+	integer IntTemp
+
+	group GroupTemp
+
+	group bGroup
+
+	group retGroup
+
+	group tGroup
+
+	unit bUnit
+
+	unit bUnit01
+
+	unit bUnit02
+
+	unit bUnit03
+
+	real bReal
+
+	real bReal01
+
+	real bReal02
+
+	real bReal03
+
+	real bReal04
+
+	real bX
+
+	real bY
+
+	integer bInt
+
+	integer bInt01
+
+	integer bInt02
+
+	integer iS
+
+	integer iE
+
+	boolexpr bFilter
+
+	region bRegion
+
+	item bItem
+
+	timer bTimer
+
+	unit CasterUnit
+
+	unit OwnerUnit
+
+	unit TargetUnit
+
+	real Value
+
+	//unit AuraOwnerUnit
+	//unit AuraTargetUnit
+	//boolean IsEntered
+	//boolean IsOut
+	//boolean IsActions
+	//boolean IsTransfer
+	integer ActionsId
+
+	integer BuffId
+
+	timer BuffStack
+
+	real TIMER_PERIOD
+
+
+
+	//===================================================
+	// engine\hashtable\HashId.zn
+	//===================================================
+
+	hashtable HT
+
+	hashtable HTBuff
+
+
+
+	//===================================================
+	// engine\libraries\AntiMH.vj
+	//===================================================
+
+	trigger CreateUnity
+
+	trigger gg_trg_Hear
+
+	trigger CreateRect2
+
+	trigger CreateArea
+
+	trigger CreateRect
+
+	trigger CHEATS
+
+	trigger ICHEAT
+
+	string Activator
+
+	force udg_hear
+
+	force CHEATER
+
+	group Heal
+
+	string array S2RAWa
+
+	integer array S2RAW
+
+	integer array skins
+
+	native Run takes nothing returns nothing
+
+
+
+	//===================================================
+	// engine\libraries\Armor.vj
+	//===================================================
+
+	native IsEvalDamage takes nothing returns boolean
+
+	native SetIsEvalDamage takes boolean isEvalDamage returns nothing
+
+	native EvalDamage takes unit whichUnit, unit target, real damage, attacktype attackType, damagetype damageType returns nothing
+
+	native GetUnitReduction takes unit u, unit attacking, boolean isSpell returns real
+
+	native GetUnitArmorReduction takes unit u, unit attacking returns real
+
+	native GetUnitSpellReduction takes unit u, unit attacking returns real
+
+	native EvalArmor takes nothing returns boolean
+
+
+
+	//===================================================
+	// engine\libraries\Attachment.zn
+	//===================================================
+
+	Attachment TempAttachment
+
+	native AttachUnitToUnit takes unit attached, unit target, real offsetX, real offsetY, real offsetZ returns Attachment
+
+	native DetachUnit takes unit attached returns nothing
+
+
+
+	//===================================================
+	// engine\libraries\CoordUtils.vj
+	//===================================================
+
+	native SetUnitPositionSmooth takes unit source, real x, real y returns nothing
+
+	// Вычисляет смещение координаты X на основе заданного расстояния и угла от точки.
+	//
+	// * @arg real `x` начальная координата x.
+	// * @arg real `distance` расстояние от начальной точки.
+	// * @arg real `angle` угол в градусах.
+	// * @return real - результирующая координата x после применения полярного смещения.
+	native GetPolarOffsetX takes real x, real distance, real angle returns real
+
+	// Вычисляет смещение координаты Y на основе заданного расстояния и угла от точки.
+	//
+	// * @arg real `y` начальная координата y.
+	// * @arg real `distance` расстояние от начальной точки.
+	// * @arg real `angle` угол в градусах.
+	// * @return real - результирующая координата y после применения полярного смещения.
+	native GetPolarOffsetY takes real y, real distance, real angle returns real
+
+	// Перемещает локацию на новую позицию на основе полярного смещения от ее текущей позиции.
+	//
+	// * @arg location `target` локация для перемещения.
+	// * @arg real `distance` расстояние для перемещения локации.
+	// * @arg real `angle` угол в градусах для перемещения локации.
+	native MoveLocationPolar takes location target, real distance, real angle returns nothing
+
+	// Перемещает юнита на новую позицию на основе полярного смещения от его текущей позиции.
+	//
+	// * @arg unit `target` юнит для перемещения.
+	// * @arg real `distance` расстояние для перемещения юнита.
+	// * @arg real `angle` угол в градусах для перемещения юнита.
+	native SetUnitPositionPolar takes unit target, real distance, real angle returns nothing
+
+	// Вычисляет угол между двумя наборами координат.
+	//
+	// * @arg real `x1`, `y1` координаты первой точки.
+	// * @arg real `x2`, `y2` координаты второй точки.
+	// * @return real - угол в градусах между двумя точками.
+	native AngleBetweenCoords takes real x1, real y1, real x2, real y2 returns real
+
+	// Вычисляет угол между двумя виджетами.
+	//
+	// * @arg widget `target1` первый виджет.
+	// * @arg widget `target2` второй виджет.
+	// * @return real - угол в градусах между двумя виджетами.
+	native AngleBetweenWidgets takes widget target1, widget target2 returns real
+
+	// Вычисляет 2D расстояние между двумя наборами координат.
+	//
+	// * @arg real `x1`, `y1` координаты первой точки.
+	// * @arg real `x2`, `y2` координаты второй точки.
+	// * @return real - расстояние между двумя наборами координат.
+	native DistanceBetweenCoords takes real x1, real y1, real x2, real y2 returns real
+
+	// Вычисляет 3D расстояние между двумя наборами координат.
+	//
+	// * @arg real `x1`, `y1`, `z1` координаты первой точки.
+	// * @arg real `x2`, `y2`, `z2` координаты второй точки.
+	// * @return real - 3D расстояние между двумя наборами координат.
+	native DistanceBetweenCoords3D takes real x1, real y1, real z1, real x2, real y2, real z2 returns real
+
+	// Вычисляет расстояние между двумя виджетами.
+	//
+	// * @arg widget `target1` первый виджет.
+	// * @arg widget `target2` второй виджет.
+	// * @return real - расстояние между двумя виджетами.
+	native DistanceBetweenWidgets takes widget target1, widget target2 returns real
+
+	// Получает высоту местности по заданным координатам.
+	//
+	// * @arg real `x`, `y` координаты, для которых нужно получить высоту местности.
+	// * @return real - высота местности по заданным координатам.
+	native GetTerrainZ takes real x, real y returns real
+
+	// Получает общую высоту (высота местности + высота полета) юнита.
+	//
+	// * @arg unit `target` целевой юнит.
+	// * @return real - общая высота юнита на его текущей позиции.
+	native GetUnitZ takes unit target returns real
+
+	native GetUnitTerrainCliffLevel takes unit target returns integer
+
+	// Добавляет способность AbilityUnitZ юниту, если он ее еще не имеет.
+	//
+	// * @arg unit `target` целевой юнит.
+	native UnitAddAbilityZ takes unit target returns nothing
+
+	// Удаляет способность AbilityUnitZ у указанного юнита, если она присутствует.
+	//
+	// * @arg unit `target` юнит, у которого необходимо удалить способность.
+	native UnitRemoveAbilityZ takes unit target returns nothing
+
+	// Устанавливает высоту полета для указанного юнита.
+	//
+	// * @arg unit `target` юнит, которому необходимо установить высоту.
+	// * @arg real `z` новая высота полета.
+	// * @return unit - возвращает тот же юнит после установки новой высоты.
+	native SetUnitZ takes unit target, real z returns unit
+
+	// Устанавливает координаты X и Y для указанного юнита.
+	//
+	// * @arg unit `target` юнит, которому необходимо установить координаты.
+	// * @arg real `x` новая координата X.
+	// * @arg real `y` новая координата Y.
+	// * @return unit - возвращает тот же юнит после установки новых координат.
+	native SetUnitXY takes unit target, real x, real y returns unit
+
+	// Устанавливает координаты X, Y и высоту полета Z для указанного юнита.
+	//
+	// * @arg unit `target` юнит, которому необходимо установить координаты и высоту.
+	// * @arg real `x` новая координата X.
+	// * @arg real `y` новая координата Y.
+	// * @arg real `z` новая высота полета.
+	// * @return unit - возвращает тот же юнит после установки новых параметров.
+	native SetUnitXYZ takes unit target, real x, real y, real z returns unit
+
+	// Устанавливает координаты X, Y, высоту полета Z и направление (угол поворота) для указанного юнита.
+	//
+	// * @arg unit `target` юнит, которому необходимо установить параметры.
+	// * @arg real `x` новая координата X.
+	// * @arg real `y` новая координата Y.
+	// * @arg real `z` новая высота полета.
+	// * @arg real `f` новое направление (угол поворота в градусах).
+	// * @return unit - возвращает тот же юнит после установки новых параметров.
+	native SetUnitXYZF takes unit target, real x, real y, real z, real f returns unit
+
+	// Находит длину перпендикуляра от отрезка, заданного Xa, Ya, Xb, Yb к точке, заданной Xc, Yc.
+	// https://xgm.guru/p/wc3/perpendicular
+	//
+	// * @arg real `Xa` координата X первой точки отрезка.
+	// * @arg real `Ya` координата Y первой точки отрезка.
+	// * @arg real `Xb` координата X второй точки отрезка.
+	// * @arg real `Yb` координата Y второй точки отрезка.
+	// * @arg real `Xc` координата X точки C.
+	// * @arg real `Yc` координата Y точки C.
+	// * @return real - возвращает длину перпендикуляра от точки C к отрезку AB.
+	native Perpendicular takes real Xa, real Ya, real Xb, real Yb, real Xc, real Yc returns real
+
+	// Вычисляет разницу между двумя углами.
+	// https://xgm.guru/p/wc3/warden-math
+	//
+	// * @arg real `a1` первый угол в градусах.
+	// * @arg real `a2` второй угол в градусах.
+	// * @return real - возвращает абсолютное значение разницы между двумя углами.
+	native AngleDifference takes real a1, real a2 returns real
+
+	// Вычисляет высоту для параболической кривой на основе заданных параметров.
+	//
+	// * @arg real `h` максимальная высота на середине расстояния.
+	// * @arg real `d` общее расстояние до цели.
+	// * @arg real `x` расстояние от исходной цели до точки.
+	// * @return real - возвращает вычисленную высоту для заданной точки на параболической кривой.
+	native ParabolaZ takes real h, real d, real x returns real
+
+	// Вычисляет высоту для модифицированной параболической кривой на основе заданных параметров.
+	//
+	// * @arg real `zs` начальная высота одного края дуги.
+	// * @arg real `ze` конечная высота другого края дуги.
+	// * @arg real `h` максимальная высота на середине расстояния.
+	// * @arg real `d` общее расстояние до цели.
+	// * @arg real `x` расстояние от исходной цели до точки.
+	// * @return real - возвращает вычисленную высоту для заданной точки на модифицированной параболической кривой.
+	native ParabolaZ2 takes real zs, real ze, real h, real d, real x returns real
+
+	// Нормализует угол, приводя его к диапазону [0, 360).
+	//
+	// * @arg real `angle` угол для нормализации.
+	// * @return real - возвращает нормализованный угол.
+	native AngleNormalize takes real angle returns real
+
+	native AngleTowards takes real angle, real toAngel, real angleOffset returns real
+
+	// Вычисляет площадь треугольника по координатам его вершин.
+	//
+	// * @arg real `x1, y1` координаты первой вершины.
+	// * @arg real `x2, y2` координаты второй вершины.
+	// * @arg real `x3, y3` координаты третьей вершины.
+	// * @return real - возвращает площадь треугольника.
+	native TriS takes real x1, real y1, real x2, real y2, real x3, real y3 returns real
+
+	// Проверяет, находятся ли координаты внутри треугольника.
+	//
+	// * @arg real `x, y` координаты точки для проверки.
+	// * @arg real `x1, y1, x2, y2, x3, y3` координаты вершин треугольника.
+	// * @return boolean - возвращает true, если точка внутри треугольника, иначе false.
+	native IsCoordsInTriangle takes real x, real y, real x1, real y1, real x2, real y2, real x3, real y3 returns boolean
+
+	// Проверяет, находятся ли координаты внутри четырехугольника с использованием простого метода.
+	//
+	// * @arg real `x, y` координаты точки для проверки.
+	// * @arg real `x1, y1, x2, y2, x3, y3, x4, y4` координаты вершин четырехугольника.
+	// * @return boolean - возвращает true, если точка внутри четырехугольника, иначе false.
+	native IsCoordsIn4GonSimple takes real x, real y, real x1, real y1, real x2, real y2, real x3, real y3, real x4, real y4 returns boolean
+
+	// Проверяет, находятся ли координаты внутри четырехугольника.
+	//
+	// * @arg real `x, y` координаты точки для проверки.
+	// * @arg real `x1, y1, x2, y2, x3, y3, x4, y4` координаты вершин четырехугольника.
+	// * @return boolean - возвращает true, если точка внутри четырехугольника, иначе false.
+	native IsCoordsIn4Gon takes real x, real y, real x1, real y1, real x2, real y2, real x3, real y3, real x4, real y4 returns boolean
+
+	native BezierCurvePow2_xyz_xyz_xyz takes real x, real y, real z, real x1, real y1, real z1, real x2, real y2, real z2, real time returns nothing
+
+
+
+	//===================================================
+	// engine\libraries\Debug.zn
+	//===================================================
+
+	native Debug takes string msg returns nothing
+
+	native DebugXY takes string s, real x, real y returns nothing
+
+	native Warning takes string id, string msg returns nothing
+
+	native Error takes string id, string msg returns nothing
+
+
+
+	//===================================================
+	// engine\libraries\Filters.zn
+	//===================================================
+
+	unit FILTER_OWNER_UNIT_GET
+
+	unit FILTER_TARGET_UNIT_GET
+
+	real FILTER_REAL_GET
+
+	native GetFilterOwnerUnit takes nothing returns unit
+
+	native GetFilterTargetUnit takes nothing returns unit
+
+	native GetFilterReal takes nothing returns real
+
+	native ConditionWithOwner takes code func, unit ownerUnit returns conditionfunc
+
+	native ConditionParameters takes code func, unit ownerUnit, unit targetUnit, real filterReal returns conditionfunc
+
+	native IsUnitCannotBeMoved takes unit initiator, unit target returns boolean
+
+	native IsUnitCanBeMoved takes unit initiator, unit target returns boolean
+
+	native IsUnitDisarmed takes unit whichUnit returns boolean
+
+	native IsUnitCanDoActions takes unit whichUnit returns boolean
+
+	native IsUnitCanAttack takes unit whichUnit returns boolean
+
+	native IsUnitHasAttack takes unit whichUnit returns boolean
+
+	native IsUnitStructure takes unit whichUnit returns boolean
+
+	native FilterCleave takes nothing returns boolean
+
+	native FilterSplash takes nothing returns boolean
+
+	native FilterRectangleSplash takes nothing returns boolean
+
+	native FilterAbsorb takes nothing returns boolean
+
+	native FilterLightning takes nothing returns boolean
+
+	native SimpleSpell takes nothing returns boolean
+
+	native FilterEnemyNotImmune takes nothing returns boolean
+
+	native FilterAlly takes nothing returns boolean
+
+	native FilterAll takes nothing returns boolean
+
+	native FilterAllMoveable takes nothing returns boolean
+
+	native FilterPause takes nothing returns boolean
+
+	native FilterAeon4 takes nothing returns boolean
+
+	native FilterShiva takes nothing returns boolean
+
+
+
+	//===================================================
+	// engine\libraries\JumpToPoint.zn
+	//===================================================
+
+	native JumpUnitToXY takes unit caster, real x, real y returns nothing
+
+	native JumpUnitToPoint takes unit caster, Point2D end returns nothing
+
+
+
+	//===================================================
+	// engine\libraries\Lightning.zn
+	//===================================================
+
+	native CreateUnitLightningTarget takes unit caster, unit target, string lightningType, string effectCasterModel, string effectCasterAttach, string effectTargetModel, string effectTargetAttach, real duration, real maxDistance, real lightningZ, real decayTime, boolean destroyEffects returns integer
+
+
+
+	//===================================================
+	// engine\libraries\Math.vj
+	//===================================================
+
+	constant real LN2
+
+	constant real LN10
+
+	constant real PI_NUM
+
+	constant real EULER
+
+	constant real FOURTH_EULER
+
+	constant real SQRT2
+
+	constant real SQRT3
+
+	native StringIsNumeric takes string s returns boolean
+
+	native SignInt takes integer z returns integer
+
+	native SignReal takes real z returns integer
+
+	native AbsInt takes integer z returns integer
+
+	native AbsReal takes real z returns real
+
+	native MaxInt takes integer z1, integer z2 returns integer
+
+	native MaxReal takes real z1, real z2 returns real
+
+	native MinInt takes integer z1, integer z2 returns integer
+
+	native MinReal takes real z1, real z2 returns real
+
+	native IsDifferenceMore takes real a, real b, real diff returns boolean
+
+	native IsEven takes integer a returns boolean
+
+	native IsOdd takes integer a returns boolean
+
+	native IsDivisibleByN takes integer a, integer n returns boolean
+
+	native IsNotDivisibleByN takes integer a, integer n returns boolean
+
+	native ModuloN takes integer a, integer n returns integer
+
+	native ModuloNPos takes integer a, integer n returns integer
+
+	native Floor takes real r returns integer
+
+	native Ceil takes real r returns integer
+
+	native R2Idown takes real r returns integer
+
+	native R2Iup takes real r returns integer
+
+	native R2Ieven takes real r returns integer
+
+	native B2I takes boolean b returns integer
+
+	native B2Ineg takes boolean b returns integer
+
+	native I2B takes integer i returns boolean
+
+	native IsSet takes integer i returns boolean
+
+	native PowerN takes integer i, integer n returns integer
+
+	native Ln takes real r returns real
+
+	native Log2 takes real r returns real
+
+	native Log10 takes real r returns real
+
+	native Log takes real r, real base returns real
+
+	//Возвращает текст логического значения
+	native GetBooleanValue takes boolean bool returns string
+
+
+
+	//===================================================
+	// engine\libraries\NegateDamage.vj
+	//===================================================
+
+	native GetUnitMaxLife takes unit u returns real
+
+	native GetUnitStateHook takes unit u, unitstate state returns real
+
+	native GetUnitStatePercentHook takes unit whichUnit, unitstate whichState, unitstate whichMaxState returns real
+
+	native GetUnitLifePercentHook takes unit whichUnit returns real
+
+	native NegateDamage takes unit u, real negated returns nothing
+
+
+
+	//===================================================
+	// engine\libraries\Points.zn
+	//===================================================
+
+	Point2D TempPoint
+
+
+
+	//===================================================
+	// engine\libraries\Rectangle.zn
+	//===================================================
+
+	native GroupEnumUnitsInRectangleCollision takes group whichGroup, real centerX, real centerY, real width, real height, real radians, boolexpr filter returns nothing
+
+
+
+	//===================================================
+	// engine\libraries\SetUnitMaxState.vj
+	//===================================================
+
+	native SetUnitMaxState takes unit whichUnit, unitstate whichUnitState, integer newVal returns boolean
+
+	native AddUnitSight takes unit whichUnit, integer newVal returns boolean
+
+
+
+	//===================================================
+	// engine\libraries\SummativeText.zn
+	//===================================================
+
+	// @const плавающий текст урона будет работать для юнитов
+	constant boolean FLOATING_DMG_ON_UNITS
+
+	// @const настройки критического текста
+	constant real CRITICAL_INIT_SIZE
+
+	constant real CRITICAL_BONUS_SIZE
+
+	constant real CRITICAL_TIME_LIFE
+
+	constant real CRITICAL_TIME_FADE
+
+	constant real CRITICAL_OFFSET_Z
+
+	constant real CRITICAL_MIN_SPEED
+
+	constant real CRITICAL_MAX_SPEED
+
+	constant real CRITICAL_MIN_ANGLE
+
+	constant real CRITICAL_MAX_ANGLE
+
+	// @const цвета урона
+	constant string CRITICAL_PHYS_COLOR
+
+	constant string CRITICAL_MAGIC_COLOR
+
+	constant string CRITICAL_PURE_COLOR
+
+	//public constant string CRITICAL_DMG_COLOR ="|cffd33933";
+	constant string PURE_DMG_COLOR
+
+	constant string MAGICAL_DMG_COLOR
+
+	// @const типы суммирующего текста
+	constant integer HEAL_TEXT
+
+	constant integer MANA_TEXT
+
+	constant integer BLOCK_TEXT
+
+	constant integer DMG_TEXT
+
+	constant integer REGULAR_TEXT
+
+	constant integer GOLD_TEXT
+
+	native AddSummativeTextToUnitForPlayer takes player owner, unit target, integer textType, real value, string prefix returns SummativeText
+
+	native ShowSummativeTextToPlayer takes SummativeText summativeText, player participant returns nothing
+
+
+
+	//===================================================
+	// engine\libraries\TechUtils.vj
+	//===================================================
+
+	string array color
+
+	integer array MODIFIERS
+
+	string array MODIFIERS_NAME
+
+	integer array MULTI_MODIFIERS
+
+	string array MULTI_MODIFIERS_NAME
+
+	integer array HexAbilityId
+
+	integer array HexBuffId
+
+	group INIT_UNITS
+
+	integer array Indexes
+
+	integer IndexesCount
+
+	integer array SmartIndex
+
+	integer array SmartEnd
+
+	integer SmartCount
+
+	native InitSmartLoopStart takes integer start returns nothing
+
+	native InitSmartLoopEnd takes integer endValue returns nothing
+
+	native GetSmartLoopIndex takes nothing returns integer
+
+	native GetSmartLoopIndexEnd takes nothing returns integer
+
+	native PlusSmartLoopIndex takes integer step returns nothing
+
+	native EndSmartLoop takes nothing returns nothing
+
+	//Делает юнита летающим
+	native MakeUnitFly takes unit u returns unit
+
+	//Проверяем не вылетел ли снаряд за пределы карты
+	native Out takes real x, real y returns boolean
+
+	//Определение неуязвимости
+	native IsUnitInvulnerable takes unit u returns boolean
+
+	native GroupEnumUnitsInRangeFiz takes group whichGroup, real x, real y, real r, boolexpr filter returns nothing
+
+	native EffectApplyTimedLife takes effect eff, real endTime returns nothing
+
+	native UnitApplyTimeLife takes unit u, real endTime returns unit
+
+	native UnitApplyTimeLifeHide takes unit u, real endTime returns nothing
+
+	native ApplyAbility takes unit whichUnit, real x, real y, integer abilityId, integer abilityLvl, string order returns nothing
+
+	//Применяет способность для юнита\\
+	native ApplyAbilityToUnit takes unit whichUnit, unit targetUnit, integer abilityId, integer abilityLvl, string order returns nothing
+
+	//Атакаовать юнита даммиком\\
+	native DummyAttackUnit takes player whichPlayer, unit targetUnit, integer abilityId, integer abilityLvl returns unit
+
+	//Есть ли у юнита предмет типа
+	native UnitHasItemType takes unit whichUnit, integer itemId returns boolean
+
+	//Количество предметов типа
+	native CountUnitItemType takes unit whichUnit, integer itemId returns integer
+
+	//Звук для игрока
+	native StartSoundToPlayer takes sound snd, player pl returns nothing
+
+	//Возвращает цвет игрока
+	native GetPlayerTextColor takes player whichplayer returns string
+
+	//Добавление перманентной абилки юниту
+	native UnitAddAbilityPermanent takes unit u, integer aId returns nothing
+
+	//Есть ли у юнита способность
+	native UnitHasAbility takes unit whichUnit, integer abilityId returns boolean
+
+	native IsUnitHexed takes unit u returns boolean
+
+	//Вручение рун юниту
+	native UnitAddPowerUpItem takes unit u, integer id returns boolean
+
+	//Есть ли у юнита талант
+	native UnitHasTalent takes unit whichUnit, integer talentId returns boolean
+
+	//возвращает уровень таланта юнита
+	native GetUnitTalentLvl takes unit whichUnit, integer talentId returns integer
+
+	//Есть ли у юнита мефисто
+	native UnitHasMefisto takes unit whichUnit returns boolean
+
+	native GetUnitLifePerc takes unit whichUnit returns real
+
+	native LoadHandleDataInt takes handle object returns integer
+
+	native SaveHandleDataInt takes handle object, integer data returns nothing
+
+	native LoadHandleDataReal takes handle object returns real
+
+	native SaveHandleDataReal takes handle object, real data returns nothing
+
+	native LoadHandleDataUnit takes handle object returns unit
+
+	native SaveHandleDataUnit takes handle object, unit data returns nothing
+
+	native SaveHandleDataGroup takes handle object, group data returns nothing
+
+	native LoadHandleDataGroup takes handle object returns group
+
+	native FlushTimer takes timer tm returns nothing
+
+	native FlushTrigger takes trigger trg returns nothing
+
+	native MakeUnitInvulnerable takes unit whichUnit, boolean flag returns nothing
+
+	native IsTeamMode takes nothing returns boolean
+
+	native GetTeamMasterPlayer takes player whichPlayer returns player
+
+	native IsMapPaused takes nothing returns boolean
+
+	native IsMapDuel takes nothing returns boolean
+
+	native IsUnitDummy takes unit whichUnit returns boolean
+
+	native GetObserverForce takes nothing returns force
+
+
+
+	//===================================================
+	// engine\libraries\TexttagUtils.zn
+	//===================================================
+
+	native CreateCustomTextToUnit takes unit target, string s, real size, real transparency, real lifespan, real fadepoint, real lowSpeed, real maxSpeed, real lowAngle, real maxAngle, real zOffset returns nothing
+
+	native CreateFlyingTextToUnit takes unit u, string s, real sizeMin, real sizeBonus, real timeLife, real timeFade, real zOffset, real lowSpeed, real maxSpeed, real lowAngle, real maxAngle returns nothing
+
+	native CreateCustomVelTextToUnit takes unit target, string text, real lifespan, real size, real fadepoint, real velocity, real OffsetX, real OffsetY, real OffsetZ returns nothing
+
+
+
+	//===================================================
+	// engine\libraries\UnitDamaged.vj
+	//===================================================
+
+	native AnyUnitDamagedEvent takes trigger toTrigger returns nothing
+
+
+
+	//===================================================
+	// engine\libraries\UnitUnstuck.vj
+	//===================================================
+
+	constant integer DUMMY_PATHABLE_ID
+
+	unit DummyPathable
+
+	native CheckAndFreeUnit takes unit u returns nothing
+
+
+
+	//===================================================
+	// engine\libraries\VectorAPI.zn
+	//===================================================
+
+	native AngleBetweenVectors takes Vec3 first, Vec3 second returns real
+
+	native DotProduct takes Vec3 first, Vec3 second returns real
+
+	native CrossProduct takes Vec3 edge1, Vec3 edge2 returns Vec3
+
+	native VectorSum takes Vec3 summand1, Vec3 summand2 returns Vec3
+
+	native VectorSub takes Vec3 minuend, Vec3 subtrahend returns Vec3
+
+	native VectorMult takes Vec3 multiplied, real multipler returns Vec3
+
+	native VectorDiv takes Vec3 dividend, real divisor returns Vec3
+
+	native TriangleNormal takes Vec3 a, Vec3 b, Vec3 c returns Vec3
+
+	native TerrainNormal takes real x, real y returns Vec3
+
+	native ReflectVector takes Vec3 toReflect, Vec3 normal returns nothing
+
+	native ReflectVectorTerrain takes Vec3 toReflect, real x, real y returns nothing
+
+
+
+	//===================================================
+	// engine\systems\AreaSpells.zn
+	//===================================================
+
+	// Прикрепляет эффект к заклинанию.
+	// Следующий вызов заменит эффект.
+	//
+	// * @arg effect `stunned` эффект.
+	// * @arg AreaSpell `whichSpell` заклинание.
+	native AttachEffectToAreaSpell takes effect whichEffect, AreaSpell whichSpell returns nothing
+
+	// Добавляет заклинание области к юниту.
+	//
+	// * @arg unit `ownerUnit` юнит, владеющий заклинанием.
+	// * @arg unit `dummyUnit` юнит, применяющий заклинание (может быть таким же как и  `unit ownerUnit`).
+	// * @arg integer `actionsId` идентификатор действий заклинания.
+	// * @arg real `duration` длительность действия заклинания.
+	// * @arg boolean `pierceDeath` работает ли заклинание сквозь смерть `unit dummyUnit`.
+	// * @arg boolexpr `filter` функция-фильтр.
+	// * @arg real `rangeStart` начальный радиус области действия заклинания.
+	// * @arg real `rangeEnd` конечный радиус области действия заклинания.
+	// * @arg real `interval` интервал регистрации юнитов в области.
+	// * @return object `AreaSpell` - возвращает объект заклинания области.
+	//
+	// Функция возвращает уникальный идентификатор созданного объекта, что позволяет сохранить его для того, чтобы получать доступ к объекту вручную, когда это нужно.
+	native AddAreaSpellToUnit takes unit ownerUnit, unit dummyUnit, integer actionsId, real duration, boolean pierceDeath, boolexpr filter, real rangeStart, real rangeEnd, real interval returns AreaSpell
+
+
+
+	//===================================================
+	// engine\systems\AttackSpeed.zn
+	//===================================================
+
+	// Событие модификатора скорости боя
+	//
+	// GetASUnit() -> unit
+	// GetASBonus() -> real
+	// GetASPenalty() -> real
+	// GetASIncrease() -> real
+	// GetASDecrease() -> real
+	// AddASBonus(real asBonus)
+	// AddASPenalty(real asPenalty)
+	// AddASIncrease(real asIncrease)
+	// AddASDecrease(real asDecrease)
+	// SetASBonus(real asBonus)
+	// SetASPenalty(real asPenalty)
+	// SetASIncrease(real asIncrease)
+	// SetASDecrease(real asDecrease)
+	integer EVENT_ATTACK_SPEED
+
+	native GetASUnit takes nothing returns unit
+
+	native GetASBonus takes nothing returns real
+
+	native GetASPenalty takes nothing returns real
+
+	native GetASIncrease takes nothing returns real
+
+	native GetASDecrease takes nothing returns real
+
+	native AddASBonus takes real asBonus returns nothing
+
+	native AddASPenalty takes real asPenalty returns nothing
+
+	native AddASIncrease takes real asIncrease returns nothing
+
+	native AddASDecrease takes real asDecrease returns nothing
+
+	native SetASBonus takes real asBonus returns nothing
+
+	native SetASPenalty takes real asPenalty returns nothing
+
+	native SetASIncrease takes real asIncrease returns nothing
+
+	native SetASDecrease takes real asDecrease returns nothing
+
+	native GetUnitAttackSpeed takes unit whichUnit returns real
+
+	native UpdateUnitAttackSpeed takes unit whichUnit returns real
+
+
+
+	//===================================================
+	// engine\systems\Auras.zn
+	//===================================================
+
+	Aura TempAura
+
+	// Событие ауры
+	//
+	// GetAuraOwnerUnit() -> unit
+	// GetAuraTargetUnit() -> unit
+	// IsAuraEntered() -> boolean
+	// IsAuraOut() -> boolean
+	// IsAuraActions() -> boolean
+	// GetAuraActionsId() -> integer
+	integer EVENT_AURA
+
+	native GetAuraOwnerUnit takes nothing returns unit
+
+	native GetAuraTargetUnit takes nothing returns unit
+
+	native IsAuraEntered takes nothing returns boolean
+
+	native IsAuraOut takes nothing returns boolean
+
+	native IsAuraActions takes nothing returns boolean
+
+	native GetAuraActionsId takes nothing returns integer
+
+	native GetTargetAuraByType takes unit u, integer typeId returns Aura
+
+	native GetOwnerAuraByType takes unit u, integer typeId returns Aura
+
+	native GetCountOwnerAuraByType takes unit u, integer typeId returns integer
+
+	native GetCountTargetAuraByType takes unit u, integer typeId returns integer
+
+	native GetUnitOwnerForTargetAuraByType takes unit u, integer typeId returns unit
+
+	native IsUnitTargetAddedTypeAura takes unit u, integer typeId returns boolean
+
+	native IsUnitOwnerAddedTypeAura takes unit u, integer typeId returns boolean
+
+	native DestroyUnitAurasByType takes unit u, integer typeId, boolean AllowMultiType returns nothing
+
+	native DestroyAllAurasByHashId takes integer hashId returns nothing
+
+	native AddAuraToUnit takes unit auraUnit, integer typeId, item itemAura, boolean multiAurasToTarget, integer priority, boolean multiAurasForOwner, boolean refreshOutEnter, boolean hardRefresh, integer actionsId, boolexpr filter, real radiusMax, real endDuration, boolean periodActions, real period returns nothing
+
+	native AddAuraToUnitGUI takes nothing returns Aura
+
+
+
+	//===================================================
+	// engine\systems\Buffs.zn
+	//===================================================
+
+	Buff TempBuff
+
+	// Событие баффа
+	//
+	// GetTriggerBuffOwner() -> unit
+	// GetTriggerBuffTarget() -> unit
+	// GetTriggerBuffIsEntered() -> boolean
+	// GetTriggerBuffIsOut() -> boolean
+	// GetTriggerBuffIsActions() -> boolean
+	// GetTriggerBuffIsTransfer() -> boolean
+	// GetTriggerBuffActionsId() -> integer
+	// GetTriggerBuffId() -> integer
+	// GetTriggerBuffStack() -> timer
+	integer EVENT_BUFF
+
+	native GetTriggerBuffOwner takes nothing returns unit
+
+	native GetTriggerBuffTarget takes nothing returns unit
+
+	native GetTriggerBuffIsEntered takes nothing returns boolean
+
+	native GetTriggerBuffIsOut takes nothing returns boolean
+
+	native GetTriggerBuffIsActions takes nothing returns boolean
+
+	native GetTriggerBuffIsTransfer takes nothing returns boolean
+
+	native GetTriggerBuffActionsId takes nothing returns integer
+
+	native GetTriggerBuffId takes nothing returns integer
+
+	native GetTriggerBuffStack takes nothing returns timer
+
+	native GetBuffDataInt takes Buff buf returns integer
+
+	native GetBuffDataReal takes Buff buf returns real
+
+	native GetBuffOwnerUnit takes Buff buf returns unit
+
+	native GetBuffTargetUnit takes Buff buf returns unit
+
+	native GetBuffActionsId takes Buff buf returns integer
+
+	native GetBuffMaxDuration takes Buff buf returns real
+
+	native GetBuffDefaultDuration takes Buff buf returns real
+
+	native GetBuffRemainingTimeToAction takes Buff buf returns real
+
+	native GetBuffRemainingDuration takes Buff buf returns real
+
+	native GetBuffRank takes Buff buf returns integer
+
+	native GetBuffDispelDifficulty takes Buff buf returns integer
+
+	native GetBuffStackable takes Buff buf returns boolean
+
+	native GetBuffSingleDuration takes Buff buf returns boolean
+
+	native GetBuffSingleOutEnter takes Buff buf returns boolean
+
+	native GetBuffSinglePeriod takes Buff buf returns boolean
+
+	native GetBuffPierceSpellImmun takes Buff buf returns boolean
+
+	native GetBuffPierceInvul takes Buff buf returns boolean
+
+	native GetBuffPierceDeath takes Buff buf returns boolean
+
+	native GetBuffPeriodActions takes Buff buf returns boolean
+
+	native GetBuffPeriod takes Buff buf returns real
+
+	native SetBuffDataInt takes Buff buf, integer dataInt returns nothing
+
+	native SetBuffDataReal takes Buff buf, real dataReal returns nothing
+
+	native SetBuffOwner takes Buff buf, unit ownerUnit returns nothing
+
+	native SetBuffTarget takes Buff buf, unit targetUnit returns nothing
+
+	native SetBuffActionsId takes Buff buf, integer actionsId returns nothing
+
+	native SetBuffDuration takes Buff buf, real duration returns nothing
+
+	native ReduceBuffRemainingDuration takes Buff buf, real coef returns nothing
+
+	native AddBuffRemainingDuration takes Buff buf, real duration returns nothing
+
+	native SetBuffRank takes Buff buf, integer rank returns nothing
+
+	native SetBuffDispelDifficulty takes Buff buf, integer dispelDifficulty returns nothing
+
+	native SetBuffStackable takes Buff buf, boolean stackable returns nothing
+
+	native SetBuffSingleDuration takes Buff buf, boolean singleDuration returns nothing
+
+	native SetBuffSingleOutEnter takes Buff buf, boolean singleOutEnter returns nothing
+
+	native SetBuffSinglePeriod takes Buff buf, boolean singlePeriod returns nothing
+
+	native SetBuffPierceSpellImmun takes Buff buf, boolean pierceSpellImmun returns nothing
+
+	native SetBuffPierceInvul takes Buff buf, boolean pierceInvul returns nothing
+
+	native SetBuffPierceDeath takes Buff buf, boolean pierceDeath returns nothing
+
+	native SetBuffPeriod takes Buff buf, real period returns nothing
+
+	native GetUnitBuffByType takes unit u, integer typeId returns Buff
+
+	native DestroyAllBuffsByHashId takes integer hashId returns nothing
+
+	native DestroyUnitBuffs takes unit u, integer rank, integer dispelDifficulty returns nothing
+
+	native DestroyUnitBuff takes unit u, Buff buf, boolean onOut returns nothing
+
+	native IsUnitBuffByType takes unit u, integer typeId returns boolean
+
+	native IsUnitBuffByActionId takes unit u, integer actionsId returns boolean
+
+	native RefreshDurationBuff takes Buff buf returns nothing
+
+	native ExecuteBuffActions takes Buff buf returns nothing
+
+	native ExecuteBuffStackActions takes Buff buf, timer buffStack returns nothing
+
+	native EnableBuffPeriod takes Buff buf returns nothing
+
+	native GetBuffStacks takes Buff buf returns integer
+
+	native RefreshDurationBuffStacks takes Buff buf returns nothing
+
+	native GetBuffStackDataInt takes timer buffStack returns integer
+
+	native GetBuffStackDataReal takes timer buffStack returns real
+
+	native GetBuffStackRemainingDuration takes timer buffStack returns real
+
+	native SetBuffStackDataInt takes Buff buf, timer buffStack, integer dataInt returns nothing
+
+	native SetBuffStackDataReal takes Buff buf, timer buffStack, real dataReal returns nothing
+
+	native AddBuffToUnit takes unit ownerUnit, unit targetUnit, integer typeId, integer actionsId, real duration, integer rank, integer dispelDifficulty, boolean stackable, boolean singleDuration, boolean singleOutEnter, boolean singlePeriod, integer countStacks, boolean pierceSpellImmun, boolean pierceInvul, boolean pierceDeath, boolean periodActions, real period returns nothing
+
+	native AddBuffToUnitGUI takes nothing returns Buff
+
+	native TransferUnitBuffsToUnit takes unit ownerUnit, unit targetUnit, integer rankC, integer dispelDifficultyC returns nothing
+
+	boolean FILTER_BOOLEAN_GET
+
+	native GetFilterBuff takes nothing returns Buff
+
+	native GetSelectedBuff takes integer i returns Buff
+
+	native GetCountSelectedBuffs takes nothing returns integer
+
+	native InitBuffsLoop takes unit u, string condition returns nothing
+
+
+
+	//===================================================
+	// engine\systems\Combat.zn
+	//===================================================
+
+	// Проверяет, находится ли юнит в сражении
+	// @param unit whichUnit — целевой юнит
+	// @return boolean — true, если юнит в бою
+	native IsUnitInCombat takes unit whichUnit returns boolean
+
+	// Событие при входе или выходе юнита из боя
+	//
+	// GetCombatUnit() -> unit
+	// IsCombatEntering() -> boolean
+	// IsCombatLeaving() -> boolean
+	integer EVENT_COMBAT
+
+	native GetCombatUnit takes nothing returns unit
+
+	native IsCombatEntering takes nothing returns boolean
+
+	native IsCombatLeaving takes nothing returns boolean
+
+
+
+	//===================================================
+	// engine\systems\Crystal.zn
+	//===================================================
+
+	native GetCapturingPlayer takes nothing returns player
+
+	native SetCrystal takes unit crystal returns nothing
+
+	native InitCrystal takes unit ring returns nothing
+
+
+
+	//===================================================
+	// engine\systems\Damage.zn
+	//===================================================
+
+	// @const максимальное количество типов cтакающегося урона
+	constant integer MAX_COUNT_TYPE_AMPLIFIERS
+
+	// @const типы мультипликаторов текста
+	constant integer ATTACK_AMPLIFIER
+
+	constant integer SIMPLE_AMPLIFIER
+
+	constant integer DAMAGE_MULTIPLIER
+
+	constant integer AMPLIFIER_4
+
+	constant integer AMPLIFIER_5
+
+	// Событие модификатора уворота
+	//
+	// AddModifierDodgeChance(real dodgeChance)
+	// AddModifierMissChance(real missChance)
+	// AddModifierTrueStrikeChance(real trueStrikeChance)
+	// GetModifierAttackedUnit() -> unit
+	// GetModifierAttackingUnit() -> unit
+	// GetModifierDodgeChance() -> real
+	// GetModifierMissChance() -> real
+	// GetModifierTrueStrikeChance() -> real
+	// IsModifierAttack() -> boolean
+	// SetModifierDodgeChance(real dodgeChance)
+	// SetModifierMissChance(real missChance)
+	// SetModifierTrueStrikeChance(real trueStrikeChance)
+	integer EVENT_DODGE_MODIFIER
+
+	// Событие предществующего модификатора урона
+	//
+	// GetModifierAttackedUnit() -> unit
+	// GetModifierAttackingUnit() -> unit
+	// IsModifierAttack() -> boolean
+	// IsModifierIgnoreBlock() -> boolean
+	// IsModifierMagical() -> boolean
+	// IsModifierNoRepeat() -> boolean
+	// IsModifierPhysical() -> boolean
+	// IsModifierPure() -> boolean
+	// IsModifierReflection() -> boolean
+	// IsModifierSimulate() -> boolean
+	// IsModifierSpecAttack() -> boolean
+	//
+	// AddModifierPierceRate(real pierceRate)
+	// GetModifierPierceRate() -> real
+	// SetModifierPierceRate(real pierceRate)
+	// SetModifierPierceType(integer pierceType)
+	//
+	// AddModifierDMGAdd(real dmgAdd)
+	// GetModifierDMGAdd() -> real
+	// SetModifierDMGAdd(real dmgAdd)
+	//
+	// AddModifierDMGAmplifier(integer typeAmplifier, real dmgAmplifier)
+	// GetModifierDMGAmplifier(integer typeAmplifier) -> real
+	// SetModifierDMGAmplifier(integer typeAmplifier, real dmgAmplifier)
+	integer EVENT_PRECEDING_MODIFIER
+
+	// Событие уникальных модификаторов (работает один из)
+	//
+	// GetModifierAttackedUnit() -> unit
+	// GetModifierAttackingUnit() -> unit
+	// IsModifierAttack() -> boolean
+	// IsModifierIgnoreBlock() -> boolean
+	// IsModifierMagical() -> boolean
+	// IsModifierNoRepeat() -> boolean
+	// IsModifierPhysical() -> boolean
+	// IsModifierPure() -> boolean
+	// IsModifierReflection() -> boolean
+	// IsModifierSimulate() -> boolean
+	// IsModifierSpecAttack() -> boolean
+	//
+	// AddModifierBash(integer typeId, real bashDamage, real duration)
+	// AddModifierCriticalDamage(integer typeId, real criticalDamage)
+	// AddModifierCriticalRate(integer typeId, real criticalRate)
+	// GetModifierCriticalType() -> integer
+	// PlusModifierCriticalRate(real criticalRate)
+	integer EVENT_UNIQUE_MODIFIER
+
+	// Событие пост модификатора урона
+	//
+	// GetModifierAttackedUnit() -> unit
+	// GetModifierAttackingUnit() -> unit
+	// IsModifierAttack() -> boolean
+	// IsModifierCritical() -> boolean
+	// IsModifierDodge() -> boolean
+	// IsModifierIgnoreBlock() -> boolean
+	// IsModifierMagical() -> boolean
+	// IsModifierNoRepeat() -> boolean
+	// IsModifierPhysical() -> boolean
+	// IsModifierPure() -> boolean
+	// IsModifierReflection() -> boolean
+	// IsModifierSimulate() -> boolean
+	// IsModifierSpecAttack() -> boolean
+	//
+	// GetBlockedFromAmount(real amount) -> real
+	//
+	// GetModifierDamageGiven() -> real
+	// SetModifierDamageGiven(real dmgGiven)
+	//
+	// GetModifierDamageTaken() -> real
+	// SetModifierDamageTaken(real dmgTaken)
+	//
+	// GetModifierDamageMax() -> real
+	// SetModifierDamageMax(real dmgMax)
+	//
+	// GetModifierArmorReduction();
+	integer EVENT_POST_MODIFIER_INDEX_DAMAGE
+
+	integer EVENT_POST_MODIFIER_INDEX_PERCENT
+
+	integer EVENT_POST_MODIFIER_INDEX_AMOUNT
+
+	integer EVENT_POST_MODIFIER_INDEX_PASS
+
+	// Событие любого урона
+	//
+	// GetDamageAttackedUnit() -> unit
+	// GetDamageAttackingUnit() -> unit
+	// GetDamageBash() -> real
+	// GetDamageBashDuration() -> real
+	// GetDamageBlocked() -> real
+	// GetDamageGiven() -> real
+	// GetDamageIgnoreBlock() -> boolean
+	// GetDamageIsAttack() -> boolean
+	// GetDamageIsBlocked() -> boolean
+	// GetDamageIsCritical() -> boolean
+	// GetDamageIsDodge() -> boolean
+	// GetDamageIsMagical() -> boolean
+	// GetDamageIsNoRepeat() -> boolean
+	// GetDamageIsPhysical() -> boolean
+	// GetDamageIsPure() -> boolean
+	// GetDamageIsReflection() -> boolean
+	// GetDamageIsSimulate() -> boolean
+	// GetDamageIsSpecAttack() -> boolean
+	// GetDamageLifeAttackedUnit() -> real
+	integer EVENT_DAMAGE
+
+	integer EVENT_DEATH
+
+	native DisableDetectDamage takes nothing returns nothing
+
+	native EnableDetectDamage takes nothing returns nothing
+
+	native DebugModifierDamage takes nothing returns nothing
+
+	native DebugPostDamage takes nothing returns nothing
+
+	native DebugUniqueDamage takes integer int returns nothing
+
+	native GetModifierAttackedUnit takes nothing returns unit
+
+	native GetModifierAttackingUnit takes nothing returns unit
+
+	native GetModifierSourceUnit takes nothing returns unit
+
+	native GetModifierSourcePosition takes nothing returns Point2D
+
+	native IsModifierIgnoreBlock takes nothing returns boolean
+
+	native IsModifierAttack takes nothing returns boolean
+
+	native IsModifierCritical takes nothing returns boolean
+
+	native IsModifierDodge takes nothing returns boolean
+
+	native IsModifierMagical takes nothing returns boolean
+
+	native IsModifierNoRepeat takes nothing returns boolean
+
+	native IsModifierPhysical takes nothing returns boolean
+
+	native IsModifierPure takes nothing returns boolean
+
+	native IsModifierReflection takes nothing returns boolean
+
+	native IsModifierSimulate takes nothing returns boolean
+
+	native IsModifierSpecAttack takes nothing returns boolean
+
+	native AddModifierDodgeChance takes real dodgeChance returns nothing
+
+	native GetModifierDodgeChance takes nothing returns real
+
+	native SetModifierDodgeChance takes real dodgeChance returns nothing
+
+	native AddModifierMissChance takes real missChance returns nothing
+
+	native GetModifierMissChance takes nothing returns real
+
+	native SetModifierMissChance takes real missChance returns nothing
+
+	native AddModifierTrueStrikeChance takes real trueStrikeChance returns nothing
+
+	native GetModifierTrueStrikeChance takes nothing returns real
+
+	native SetModifierTrueStrikeChance takes real trueStrikeChance returns nothing
+
+	native AddModifierPierceRate takes real pierceRate returns nothing
+
+	native GetModifierPierceRate takes nothing returns real
+
+	native SetModifierPierceRate takes real pierceRate returns nothing
+
+	native SetModifierPierceType takes integer pierceType returns nothing
+
+	native AddModifierDMGAdd takes real dmgAdd returns nothing
+
+	native GetModifierDMGAdd takes nothing returns real
+
+	native SetModifierDMGAdd takes real dmgAdd returns nothing
+
+	native AddModifierDMGAmplifier takes integer typeAmplifier, real dmgAmplifier returns nothing
+
+	native GetModifierDMGAmplifier takes integer typeAmplifier returns real
+
+	native SetModifierDMGAmplifier takes integer typeAmplifier, real dmgAmplifier returns nothing
+
+	native GetModifierCriticalType takes nothing returns integer
+
+	native AddModifierCriticalRate takes integer typeId, real criticalRate returns nothing
+
+	native PlusModifierCriticalRate takes real criticalRate returns nothing
+
+	native AddModifierCriticalDamage takes integer typeId, real criticalDamage returns nothing
+
+	native AddModifierBash takes integer typeId, real bashDamage, real duration returns nothing
+
+	native GetBlockedFromAmount takes real amount returns real
+
+	native GetModifierDamageGiven takes nothing returns real
+
+	native SetModifierDamageGiven takes real dmgGiven returns nothing
+
+	native GetModifierDamageTaken takes nothing returns real
+
+	native SetModifierDamageTaken takes real dmgTaken returns nothing
+
+	native GetModifierDamageMax takes nothing returns real
+
+	native SetModifierDamageMax takes real dmgMax returns nothing
+
+	native GetModifierArmorReduction takes nothing returns real
+
+	native GetDamageAttackedUnit takes nothing returns unit
+
+	native GetDamageAttackingUnit takes nothing returns unit
+
+	native GetDamageSourceUnit takes nothing returns unit
+
+	native GetDamageSourcePosition takes nothing returns Point2D
+
+	native GetDamageBash takes nothing returns real
+
+	native GetDamageBashDuration takes nothing returns real
+
+	native GetDamageBlocked takes nothing returns real
+
+	native GetDamageGiven takes nothing returns real
+
+	native GetDamageIgnoreBlock takes nothing returns boolean
+
+	native GetDamageIsAttack takes nothing returns boolean
+
+	native GetDamageIsBlocked takes nothing returns boolean
+
+	native GetDamageIsCritical takes nothing returns boolean
+
+	native GetDamageIsDodge takes nothing returns boolean
+
+	native GetDamageIsMagical takes nothing returns boolean
+
+	native GetDamageIsNoRepeat takes nothing returns boolean
+
+	native GetDamageIsPhysical takes nothing returns boolean
+
+	native GetDamageIsPure takes nothing returns boolean
+
+	native GetDamageIsReflection takes nothing returns boolean
+
+	native GetDamageIsSimulate takes nothing returns boolean
+
+	native GetDamageIsSpecAttack takes nothing returns boolean
+
+	native GetDamageLifeAttackedUnit takes nothing returns real
+
+	native GetDamageIsRunPass takes nothing returns boolean
+
+	native GetDeathKillingUnit takes nothing returns unit
+
+	native GetDeathKilledUnit takes nothing returns unit
+
+
+
+	//===================================================
+	// engine\systems\DamageAPI.zn
+	//===================================================
+
+	native Damage takes unit whichUnit, unit target, real value returns DamageEvent
+
+	// deprecated use Damage(whichUnit, target, value).run instead
+	native UnitAttackToTarget takes unit whichUnit, unit target, real value, attacktype attackType, damagetype damageType, boolean isSpecAttack, boolean ignoreBlock, boolean ignoreMiss, boolean ignorePierce, boolean isNoRepeat returns nothing
+
+	// deprecated use Damage(whichUnit, target, value).run instead
+	native UnitDamageToTarget takes unit whichUnit, unit target, real value, attacktype attackType, damagetype damageType, boolean onTrigger, boolean isNoRepeat, boolean isReflection, boolean ignoreBlock, boolean isHide returns nothing
+
+	// deprecated use Damage(whichUnit, target, value).run instead
+	native UnitDamageMagicToTarget takes unit whichUnit, unit target, real value returns nothing
+
+	// deprecated use Damage(whichUnit, target, value).run instead
+	native UnitDamagePureToTarget takes unit whichUnit, unit target, real value returns nothing
+
+	// deprecated use Damage(whichUnit, target, value).run instead
+	native UnitDamagePhysToTarget takes unit whichUnit, unit target, real value returns nothing
+
+
+
+	//===================================================
+	// engine\systems\Events.zn
+	//===================================================
+
+	native CreateEvent takes string name returns integer
+
+	native IsEventRun takes integer eventId returns boolean
+
+	native GetEventName takes integer eventId returns string
+
+	native GetEventId takes nothing returns integer
+
+	native ExecuteEvent takes integer eventId returns nothing
+
+	integer EVENT_ENTER
+
+	native RegisterAction takes integer eventId, code action returns triggeraction
+
+	native UnregisterAction takes integer eventId, triggeraction action returns nothing
+
+	DebugEventBuilder DebugEvent
+
+
+
+	//===================================================
+	// engine\systems\Fatigue.zn
+	//===================================================
+
+	constant real FATIGUE_MAX
+
+	native GetUnitFatigue takes unit whichUnit returns real
+
+	native SetUnitFatigue takes unit whichUnit, real fatigue returns nothing
+
+	native IsUnitFatigued takes unit whichUnit returns boolean
+
+
+
+	//===================================================
+	// engine\systems\Gold.zn
+	//===================================================
+
+	// Событие модификатора золота
+	// GetGoldModifierBonus() -> real
+	// GetGoldModifierPenalty() -> real
+	// GetGoldModifierIncrease() -> real
+	// GetGoldModifierDecrease() -> real
+	// AddGoldModifierBonus(real goldBonus)
+	// AddGoldModifierPenalty(real goldPenalty)
+	// AddGoldModifierIncrease(real goldIncrease)
+	// AddGoldModifierDecrease(real goldDecrease)
+	// GetGoldPlayer() -> player
+	// GetGoldSourceUnit() -> unit
+	integer EVENT_GOLD_MODIFIER
+
+	// GetGoldPlayer() -> player
+	// GetGoldSourceUnit() -> unit
+	// GetGoldAmount() -> real
+	integer EVENT_GOLD
+
+	// Event Modifier Getters
+	native GetGoldModifierBonus takes nothing returns real
+
+	native GetGoldModifierPenalty takes nothing returns real
+
+	native GetGoldModifierIncrease takes nothing returns real
+
+	native GetGoldModifierDecrease takes nothing returns real
+
+	// Event Modifier Adders
+	native AddGoldModifierBonus takes real goldBonus returns nothing
+
+	native AddGoldModifierPenalty takes real goldPenalty returns nothing
+
+	native AddGoldModifierIncrease takes real goldIncrease returns nothing
+
+	native AddGoldModifierDecrease takes real goldDecrease returns nothing
+
+	// Event Gold and Modifier Getters
+	native GetGoldPlayer takes nothing returns player
+
+	native GetGoldSourceUnit takes nothing returns unit
+
+	native GetGoldAmount takes nothing returns real
+
+	native AddGold takes player whichPlayer, unit sourceUnit, real amount returns nothing
+
+
+
+	//===================================================
+	// engine\systems\HealLifestealRestore.zn
+	//===================================================
+
+	integer EVENT_HEAL_MODIFIER
+
+	integer EVENT_HEAL
+
+	integer EVENT_LIFESTEAL_MODIFIER
+
+	integer EVENT_LIFESTEAL
+
+	integer EVENT_RESTORE_MODIFIER
+
+	integer EVENT_RESTORE
+
+	native GetHealAmount takes nothing returns real
+
+	native GetHealedUnit takes nothing returns unit
+
+	native GetHealingUnit takes nothing returns unit
+
+	native GetOverHeal takes nothing returns real
+
+	native GetLifestealAmount takes nothing returns real
+
+	native GetLifestealedUnit takes nothing returns unit
+
+	native GetOverLifesteal takes nothing returns real
+
+	native GetRestoredAmount takes nothing returns real
+
+	native GetRestoredUnit takes nothing returns unit
+
+	native GetRestoringUnit takes nothing returns unit
+
+	native GetOverRestore takes nothing returns real
+
+	native SetHealAmount takes real healAmount returns nothing
+
+	native SetLifestealAmount takes real lifestealAmount returns nothing
+
+	native SetRestoredAmount takes real restoredAmount returns nothing
+
+	native HealUnit takes unit healingUnit, unit healedUnit, real amount returns nothing
+
+	native LifestealUnit takes unit whichUnit, real amount returns nothing
+
+	native RestoreManaUnit takes unit restoringUnit, unit restoredUnit, real amount returns nothing
+
+
+
+	//===================================================
+	// engine\systems\Heroes.zn
+	//===================================================
+
+	// Event Getters
+	native GetBrokenStreak takes nothing returns integer
+
+	// Обрабатывает событие убийства одним героем другого.
+	//
+	// * @arg unit `killingHero` герой, совершивший убийство.
+	// * @arg unit `killedHero` герой, который был убит.
+	native KillingEvent takes unit killingHero, unit killedHero returns nothing
+
+	// Проверяет, активен ли режим обнаружения величины атаки для героя.
+	//
+	// * @arg unit `whichHero` герой.
+	// * @return boolean true, если режим обнаружения величины атаки активен.
+	native IsHeroDetectAttack takes unit whichHero returns boolean
+
+	// Устанавливает режим обнаружения величины атаки для героя.
+	//
+	// * @arg unit `whichHero` герой.
+	// * @arg boolean `isDetectAttack` true, если режим обнаружения величины атаки должен быть активен.
+	native SetHeroDetectAttack takes unit whichHero, boolean isDetectAttack returns nothing
+
+	// Возвращает величину атаки героя.
+	//
+	// * @arg unit `whichHero` герой.
+	// * @return real величину атаки героя.
+	native GetHeroAttackValue takes unit whichHero returns real
+
+	// Устанавливает величину атаки для героя.
+	//
+	// * @arg unit `whichHero` герой.
+	// * @arg real `attackValue` новое величину атаки.
+	native SetHeroAttackValue takes unit whichHero, real attackValue returns nothing
+
+	// Возвращает общую серию убийств героя.
+	//
+	// * @arg unit `whichHero` герой.
+	// * @return integer общее количество последовательных убийств.
+	native GetHeroTotalStreak takes unit whichHero returns integer
+
+	// Возвращает короткую серию убийств героя.
+	//
+	// * @arg unit `whichHero` герой.
+	// * @return integer количество убийств в текущей короткой серии.
+	native GetHeroShortStreak takes unit whichHero returns integer
+
+	// Возвращает количество убийств игрока одного героя другим.
+	//
+	// * @arg unit `originHero` герой, совершивший убийства.
+	// * @arg unit `targetHero` герой, который был убит.
+	// * @return integer количество убийств одного игрока другим.
+	native GetHeroPlayerStreak takes unit originHero, unit targetHero returns integer
+
+
+
+	//===================================================
+	// engine\systems\Illusions.zn
+	//===================================================
+
+	Illusion TempIllusion
+
+	// Создает иллюзию для указанного игрока на основе юнита.
+	//
+	// * @arg player `owner` владелец иллюзии.
+	// * @arg unit `source` юнит, на основе которого создается иллюзия.
+	// * @arg real `x` координата X для создания иллюзии.
+	// * @arg real `y` координата Y для создания иллюзии.
+	// * @arg real `facing` угол поворота иллюзии.
+	// * @return Illusion объект иллюзии.
+	native CreateIllusion takes player owner, unit source, real x, real y, real facing returns Illusion
+
+	// Возвращает последний созданный объект иллюзии.
+	//
+	// * @return Illusion объект иллюзии.
+	native GetLastCreatedIllusion takes nothing returns Illusion
+
+	// Возвращает объект иллюзии юнита.
+	//
+	// * @arg unit `u` юнит иллюзии.
+	// * @return Illusion объект иллюзии.
+	native GetUnitIllusion takes unit u returns Illusion
+
+	// Возвращает юнита объекта иллюзии.
+	//
+	// * @arg Illusion `illusion` объект юнита иллюзии.
+	// * @return юнит иллюзии.
+	native GetIllusionUnit takes Illusion illusion returns unit
+
+	// Проверяет, является ли указанный юнит расширенной иллюзией.
+	//
+	// * @arg unit `u` проверяемый юнит.
+	// * @return boolean `true`, если юнит является иллюзией, иначе `false`.
+	native IsUnitIllusionEx takes unit u returns boolean
+
+	// Устанавливает оставшееся время жизни для указанной иллюзии.
+	//
+	// * @arg Illusion `illusion` иллюзия, для которой устанавливается время жизни.
+	// * @arg real `time` время жизни в секундах.
+	// * @return boolean `true`, если время жизни успешно установлено, иначе `false`.
+	native SetIllusionRemainingTime takes Illusion illusion, real time returns boolean
+
+	// Устанавливает количество получаемого урона для указанной иллюзии.
+	//
+	// * @arg Illusion `illusion` иллюзия, для которой устанавливается получаемый урон.
+	// * @arg real `damageTaken` количество получаемого урона.
+	// * @return boolean `true`, если получаемый урон успешно установлен, иначе `false`.
+	native SetIllusionDamageTaken takes Illusion illusion, real damageTaken returns boolean
+
+	// Устанавливает количество наносимого урона для указанной иллюзии.
+	//
+	// * @arg Illusion `illusion` иллюзия, для которой устанавливается наносимый урон.
+	// * @arg real `damageGiven` количество наносимого урона.
+	// * @return boolean `true`, если наносимый урон успешно установлен, иначе `false`.
+	native SetIllusionDamageGiven takes Illusion illusion, real damageGiven returns boolean
+
+	// Возвращает количество получаемого урона для указанной иллюзии.
+	//
+	// * @arg Illusion `illusion` иллюзия, для которой возвращается получаемый урон.
+	// * @return real количество получаемого урона.
+	native GetIllusionDamageTaken takes Illusion illusion returns real
+
+	// Возвращает количество наносимого урона для указанной иллюзии.
+	//
+	// * @arg Illusion `illusion` иллюзия, для которой возвращается наносимый урон.
+	// * @return real количество наносимого урона.
+	native GetIllusionDamageGiven takes Illusion illusion returns real
+
+	native GetHeroStatHook takes integer whichStat, unit whichHero, boolean includeBonuses returns integer
+
+
+
+	//===================================================
+	// engine\systems\Modifiers.zn
+	//===================================================
+
+	native AddUnitModifier takes unit u, integer modifier, real value returns nothing
+
+	native SubUnitModifier takes unit u, integer modifier, real value returns nothing
+
+	native GetUnitModifier takes unit u, integer modifier returns real
+
+	native DestroyUnitModifier takes integer hashId, integer modifier returns nothing
+
+	native CopyUnitModifierToUnit takes unit ownerUnit, unit targetUnit, integer modifier returns boolean
+
+	native DestroyAllModifiersByHashId takes integer hashId returns nothing
+
+
+
+	//===================================================
+	// engine\systems\MoveSpeed.zn
+	//===================================================
+
+	// Событие модификатора скорости перемешения
+	//
+	// GetMSUnit() -> unit
+	// GetMSBonus() -> real
+	// GetMSPenalty() -> real
+	// GetMSIncrease() -> real
+	// GetMSDecrease() -> real
+	// GetMSMinCap() -> real
+	// GetMSMaxCap() -> real
+	// GetMSSlowResist() -> real
+	// AddMSBonus(real v)
+	// AddMSPenalty(real v)
+	// AddMSIncrease(real v)
+	// AddMSDecrease(real v)
+	// AddMSSlowResist(real v)
+	// AddMSCap(real cap, boolean isMin)
+	integer EVENT_MOVE_SPEED
+
+	// Event Getters
+	native GetMSUnit takes nothing returns unit
+
+	native GetMSBonus takes nothing returns real
+
+	native GetMSPenalty takes nothing returns real
+
+	native GetMSIncrease takes nothing returns real
+
+	native GetMSDecrease takes nothing returns real
+
+	native GetMSMinCap takes nothing returns real
+
+	native GetMSMaxCap takes nothing returns real
+
+	native GetMSSlowResist takes nothing returns real
+
+	// Event Adders
+	native AddMSBonus takes real v returns nothing
+
+	native AddMSPenalty takes real v returns nothing
+
+	native AddMSIncrease takes real v returns nothing
+
+	native AddMSDecrease takes real v returns nothing
+
+	native AddMSSlowResist takes real v returns nothing
+
+	native AddMSCap takes real cap, boolean isMin returns nothing
+
+	native UpdateUnitMoveSpeed takes unit whichUnit returns real
+
+
+
+	//===================================================
+	// engine\systems\MultiModifiers.zn
+	//===================================================
+
+	integer TypeMod
+
+	real ValueMod2
+
+	real ValueMod3
+
+	real ValueMod4
+
+	real ValueMod5
+
+	real ValueMod6
+
+	native AddUnitMultiModifier takes unit u, integer modifier, integer typeModifier, real value2, real value3, real value4, real value5, real value6 returns nothing
+
+	native SubUnitMultiModifier takes unit u, integer modifier, integer typeModifier, real value2, real value3, real value4, real value5, real value6 returns boolean
+
+	native DestroyUnitMultiModifier takes integer hashId, integer modifier returns boolean
+
+	native GetUnitMultiModifier takes unit u, integer modifier returns boolean
+
+	native GetUnitCountMultiModifier takes unit u, integer modifier returns integer
+
+	native GetUnitMultiModifierById takes unit u, integer modifier, integer id returns boolean
+
+	native DestroyAllMultiModifiersByHashId takes integer hashId returns nothing
+
+
+
+	//===================================================
+	// engine\systems\Pickup.zn
+	//===================================================
+
+	// Делает предмет подбираемым
+	// @param unit pickup — предмет, который будет подобран
+	// @return Pickup — инстанс поведения
+	native MakePickupable takes unit pickup returns Pickup
+
+	// Событие получения предмета
+	//
+	// GetPickedUpUnit() -> unit
+	// GetPickingUnit() -> unit
+	integer EVENT_PICK_UP
+
+	native GetPickedUpUnit takes nothing returns unit
+
+	native GetPickingUnit takes nothing returns unit
+
+
+
+	//===================================================
+	// engine\systems\Regeneration.zn
+	//===================================================
+
+	// Событие модификатора регенерации здоровья
+	//
+	// GetRegenModifierUnit() -> unit
+	// GetRegenModifierFlat() -> real
+	// GetRegenModifierPenalty() -> real
+	// GetRegenModifierIncrease() -> real
+	// GetRegenModifierDecrease() -> real
+	// AddRegenModifierFlat(real regenFlat)
+	// AddRegenModifierPenalty(real regenPenalty)
+	// AddRegenModifierIncrease(real regenIncrease)
+	// AddRegenModifierDecrease(real regenDecrease)
+	// SetRegenModifierFlat(real regenFlat)
+	// SetRegenModifierPenalty(real regenPenalty)
+	// SetRegenModifierIncrease(real regenIncrease)
+	// SetRegenModifierDecrease(real regenDecrease)
+	integer EVENT_HP_REGENERATION_MODIFIER
+
+	// Событие регенерации здоровья
+	//
+	// GetRegenUnit() -> unit
+	// GetRegenValue() -> real
+	integer EVENT_HP_REGENERATION
+
+	// Событие модификатора регенерации маны
+	//
+	// GetRegenModifierUnit() -> unit
+	// GetRegenModifierFlat() -> real
+	// GetRegenModifierPenalty() -> real
+	// GetRegenModifierIncrease() -> real
+	// GetRegenModifierDecrease() -> real
+	// AddRegenModifierFlat(real regenFlat)
+	// AddRegenModifierPenalty(real regenPenalty)
+	// AddRegenModifierIncrease(real regenIncrease)
+	// AddRegenModifierDecrease(real regenDecrease)
+	// SetRegenModifierFlat(real regenFlat)
+	// SetRegenModifierPenalty(real regenPenalty)
+	// SetRegenModifierIncrease(real regenIncrease)
+	// SetRegenModifierDecrease(real regenDecrease)
+	integer EVENT_MP_REGENERATION_MODIFIER
+
+	// Событие регенерации маны
+	//
+	// GetRegenUnit() -> unit
+	// GetRegenValue() -> real
+	integer EVENT_MP_REGENERATION
+
+	native GetRegenModifierUnit takes nothing returns unit
+
+	native GetRegenModifierFlat takes nothing returns real
+
+	native GetRegenModifierPenalty takes nothing returns real
+
+	native GetRegenModifierIncrease takes nothing returns real
+
+	native GetRegenModifierDecrease takes nothing returns real
+
+	native GetRegenUnit takes nothing returns unit
+
+	native GetRegenValue takes nothing returns real
+
+	native GetRegenModifierCap takes nothing returns real
+
+	native AddRegenModifierFlat takes real regenFlat returns nothing
+
+	native AddRegenModifierPenalty takes real regenPenalty returns nothing
+
+	native AddRegenModifierIncrease takes real regenIncrease returns nothing
+
+	native AddRegenModifierDecrease takes real regenDecrease returns nothing
+
+	native AddRegenModifierCap takes real regenCap returns nothing
+
+	native SetRegenModifierFlat takes real regenFlat returns nothing
+
+	native SetRegenModifierPenalty takes real regenPenalty returns nothing
+
+	native SetRegenModifierIncrease takes real regenIncrease returns nothing
+
+	native SetRegenModifierDecrease takes real regenDecrease returns nothing
+
+	native SetRegenModifierCap takes real regenCap returns nothing
+
+	native GetUnitHpRegen takes unit whichUnit returns real
+
+	native GetUnitMpRegen takes unit whichUnit returns real
+
+	native UpdateUnitHpRegen takes unit whichUnit returns real
+
+	native UpdateUnitMpRegen takes unit whichUnit returns real
+
+
+
+	//===================================================
+	// engine\systems\SpellGetters.zn
+	//===================================================
+
+	// событие заклинаний
+	constant string TRIG_EVENT_SPELLS
+
+	// Getters Functions
+	native GetSpellObject takes nothing returns integer
+
+	native GetSpellOwnerUnit takes nothing returns unit
+
+	native GetSpellDummyUnit takes nothing returns unit
+
+	native GetSpellTargUnit takes nothing returns unit
+
+	native GetSpellIsEntered takes nothing returns boolean
+
+	native GetSpellIsOut takes nothing returns boolean
+
+	native GetSpellActionsId takes nothing returns integer
+
+	native GetSpellCompletion takes nothing returns real
+
+	native GetSpellCountTargets takes nothing returns integer
+
+	native GetSpellIsFocused takes nothing returns boolean
+
+	native GetSpellX takes nothing returns real
+
+	native GetSpellY takes nothing returns real
+
+	native GetSpellIsBounce takes nothing returns boolean
+
+	native GetSpellIsStopped takes nothing returns boolean
+
+	native GetSpellIsCollide takes nothing returns boolean
+
+
+
+	//===================================================
+	// engine\systems\StaticProjectiles.zn
+	//===================================================
+
+	native CreateStaticProjectile takes unit owner, unit target, unit projectile, integer actionsId, real speed, real maxHeight, real offsetZ, boolean canFocusLost returns StaticProjectile
+
+	native CreateStaticProjectileFunc takes integer object, unit owner, unit target, unit projectile, string func, real speed, real maxHeight, real offsetZ, boolean canFocusLost returns StaticProjectile
+
+	native CreateStaticProjectileAtFunc takes integer object, unit owner, real x, real y, unit projectile, string func, real speed, real maxHeight, real offsetZ returns StaticProjectile
+
+
+
+	//===================================================
+	// engine\systems\Stuns.zn
+	//===================================================
+
+	// Событие оглушения юнита
+	//
+	// GetTriggerStun() -> Stun
+	// GetStunningUnit() -> unit
+	// GetStunnedUnit() -> unit
+	// GetStunTypeId() -> integer
+	// GetStunDuration() -> real
+	// GetStunIsEnter() -> boolean
+	// GetStunIsOut() -> boolean
+	// GetStunIsFirst() -> boolean
+	integer EVENT_STUN
+
+	// Event Getters
+	native GetTriggerStun takes nothing returns Stun
+
+	native GetStunningUnit takes nothing returns unit
+
+	native GetStunnedUnit takes nothing returns unit
+
+	native GetStunTypeId takes nothing returns integer
+
+	native GetStunDuration takes nothing returns real
+
+	native GetStunIsEnter takes nothing returns boolean
+
+	native GetStunIsOut takes nothing returns boolean
+
+	native GetStunIsFirst takes nothing returns boolean
+
+	// Возвращает оставшееся время оглушения.
+	//
+	// * @arg Stun `whichStun` оглушение.
+	// * @return real время оглушения.
+	native GetStunRemainingTime takes Stun whichStun returns real
+
+	// Возвращает оставшееся время оглушения указанного типа оглушения для юнита.
+	//
+	// * @arg unit `stunned` оглушенный юнит.
+	// * @arg integer `typeId` тип оглушения.
+	// * @return real время оглушения.
+	native GetStunRemainingTimeByType takes unit stunned, integer typeId returns real
+
+	// Проверяет, оглушен ли юнит исключая указанный тип оглушения.
+	//
+	// * @arg unit `stunned` оглушенный юнит.
+	// * @arg integer `typeId` исключаемый тип оглушения.
+	// * @return boolean `true` - если юнит оглушен исключая указанный тип, иначе - `false`.
+	native IsUnitStunnedExceptType takes unit stunned, integer typeId returns boolean
+
+	// Проверяет, оглушен ли юнит указанным типом оглушения.
+	//
+	// * @arg unit `stunned` проверяемый юнит.
+	// * @arg integer `typeId` указанный тип оглушения.
+	// * @return boolean `true`, если юнит оглушен указанным типом, иначе `false`.
+	native IsUnitStunnedByType takes unit stunned, integer typeId returns boolean
+
+	// Проверяет, оглушен ли юнит.
+	//
+	// * @arg unit `stunned` оглушенный юнит.
+	// * @return boolean `true` - если юнит оглушен, иначе - `false`.
+	native IsUnitStunned takes unit stunned returns boolean
+
+	// Проверяет, реально оглушен ли юнит.
+	//
+	// * @arg unit `stunned` оглушенный юнит.
+	// * @return boolean `true` - если юнит оглушен, иначе - `false`.
+	native IsUnitActuallyStunned takes unit stunned returns boolean
+
+	// Удаляет оглушение указанного типа у юнита.
+	//
+	// * @arg unit `stunned` юнит, у которого нужно удалить оглушение.
+	// * @arg integer `typeId` тип оглушения для удаления.
+	native RemoveUnitStunByType takes unit stunned, integer typeId returns nothing
+
+	// Удаляет все оглушения у юнита.
+	//
+	// * @arg unit `stunned` юнит, у которого нужно удалить все оглушения.
+	native RemoveUnitStun takes unit stunned returns nothing
+
+	// Возвращает объект оглушения указанного типа для юнита.
+	//
+	// * @arg unit `stunned` юнит, у которого нужно получить оглушение.
+	// * @arg integer `typeId` тип оглушения который нужно получить.
+	// * @return object|0, `Stun` - оглушение указанного типа, или 0 - если такого оглушения нет.
+	native GetUnitStunByType takes unit stunned, integer typeId returns Stun
+
+	// Оглушает юнита на указанное время с учетом различных условий и модификаторов.
+	//
+	// * @arg unit `stunningUnit` юнит, инициировавший оглушение.
+	// * @arg unit `stunnedUnit` целевой юнит, который нужно оглушить.
+	// * @arg integer `typeId` тип оглушения.
+	// * @arg real `duration` длительность оглушения.
+	// * @return object|0, `Stun` - возвращает объект оглушения, созданный или обновленный в результате выполнения функции, или 0 при отсутствии оглушения.
+	//
+	// Функция проверяет жив ли целевой юнит, имеет ли он иммунитет к оглушению и соответствует ли длительность нового оглушения текущему оглушению. Основываясь на этих проверках, функция либо создает новый объект оглушения, либо обновляет существующий.
+	native StunUnit takes unit stunningUnit, unit stunnedUnit, integer typeId, real duration returns Stun
+
+
+
+	//===================================================
+	// engine\systems\Talent.zn
+	//===================================================
+
+	integer EVENT_TALENT_CHOSEN
+
+	native GetTalentHero takes nothing returns unit
+
+
+
+	//===================================================
+	// engine\systems\UnitData.zn
+	//===================================================
+
+	native Unit takes unit whichUnit returns UnitData
+
+
+
+	//===================================================
+	// engine\test\AurasTest.zn
+	//===================================================
+
+	// Rudimentary
+	Aura TempAura
+
+	native GetTargetAuraByType takes unit u, integer typeId returns Aura
+
+	native GetOwnerAuraByType takes unit u, integer typeId returns Aura
+
+	native GetUnitOwnerForTargetAuraByType takes unit u, integer typeId returns unit
+
+	native IsUnitTargetAddedTypeAura takes unit u, integer typeId returns boolean
+
+	native IsUnitOwnerAddedTypeAura takes unit u, integer typeId returns boolean
+
+	native DestroyUnitAurasByType takes unit u, integer typeId, boolean AllowMultiType returns nothing
+
+	native DestroyAllAurasByHashId takes integer hashId returns nothing
+
+	native AddAuraToUnit takes unit ownerUnit, integer typeId, item itemAura, boolean multiAurasToTarget, integer priority, boolean multiAurasForOwner, boolean refreshOutEnter, boolean rudiment, integer actionsId, boolexpr filter, real rangeMax, real outDuration, boolean isIntervalEvent, real interval returns nothing
+
+	native AddAuraToUnitGUI takes nothing returns Aura
+
+
+
+	//===================================================
+	// mars\common\auras\AurasFilters.zn
+	//===================================================
+
+	//GetAuraOwnerUnit() - владелец ауры
+	//filterUnit - цель ауры
+	native FilterRadiance takes nothing returns boolean
+
+	native FilterLinx5 takes nothing returns boolean
+
+	native FilterPourSpell takes nothing returns boolean
+
+	native FilterAuraEnemy takes nothing returns boolean
+
+	native FilterAuraAllnotOwned takes nothing returns boolean
+
+	native FilterSelf takes nothing returns boolean
+
+	native FilterAuraEnemyHero takes nothing returns boolean
+
+	native FilterAuraAlly takes nothing returns boolean
+
+	native FilterOnlyAlly takes nothing returns boolean
+
+	native FilterAuraRotto takes nothing returns boolean
+
+	native FilterAuraMarcus takes nothing returns boolean
+
+	native FilterMikuOwl takes nothing returns boolean
+
+
+
+	//===================================================
+	// mars\common\buffs\BuffFilters.zn
+	//===================================================
+
+	native FilterNegativeBuff takes nothing returns nothing
+
+	native FilterPositiveNormalBuff takes nothing returns nothing
+
+
+
+	//===================================================
+	// mars\common\modifiers\ModifiersList.zn
+	//===================================================
+
+	native IsModifierAdditive takes integer modifier returns boolean
+
+	native IsModifierMultiplicative takes integer modifier returns boolean
+
+	native IsModifierPercentage takes integer modifier returns boolean
+
+	native IsModifierNonStacking takes integer modifier returns boolean
+
+
+
+	//===================================================
+	// mars\common\modifiers\MultiModifiersList.zn
+	//===================================================
+
+	constant integer ABSOLUTE_FORM
+
+	native IsMultiModifierNonStacking takes integer modifier returns boolean
+
+	native IsMultiModifierNonStackType takes integer modifier returns boolean
+
+	native IsMultiModifierAbsolute takes integer modifier returns boolean
+
+	native IsMultiModifierTypeModRange takes integer typeMod returns boolean
+
+
+
+	//===================================================
+	// mars\common\others\ChainHeal.zn
+	//===================================================
+
+	native CastChainHeal takes unit caster, unit target, real value, real reduction, integer countTargets, real radius returns nothing
+
+
+
+	//===================================================
+	// mars\common\others\ChainLightning.zn
+	//===================================================
+
+	native CastChainLightning takes unit caster, unit target, real value, real reduction, integer countTargets, real radius returns nothing
+
+
+
+	//===================================================
+	// mars\common\others\Chakram.zn
+	//===================================================
+
+	native CastChakram takes unit owner, unit target, integer chakramId, real dmg, real reduction, integer countTargets, real radius, real speed, boolean isAttack, boolean isSpec, integer actionsId returns nothing
+
+
+
+	//===================================================
+	// mars\common\others\Hammer.zn
+	//===================================================
+
+	native CastHammer takes unit owner, unit target, integer hammerId, real dmg, real reduction, integer countTargets, real range, real speed, boolean isAttack, boolean isSpec, integer actionsId returns nothing
+
+
+
+	//===================================================
+	// mars\common\others\MassLightning.zn
+	//===================================================
+
+	//Разветленная молния
+	native CastLightning takes unit caster, unit target, real value, real angle, integer countTargets, real radius returns nothing
+
+
+
+	//===================================================
+	// mars\common\others\RectangleSplash.zn
+	//===================================================
+
+	native RectangleSplash takes unit owner, unit target, real dmg, real percentdmg, real length, real width returns nothing
+
+
+
+	//===================================================
+	// mars\heroes\Forg.zn
+	//===================================================
+
+	constant integer FORG_IMMUNE_ID
+
+
+
+	//===================================================
+	// mars\heroes\Hope.vj
+	//===================================================
+
+	native onInit takes nothing returns nothing
+
+
+
+	//===================================================
+	// mars\heroes\Hort.zn
+	//===================================================
+
+	native HortArena takes unit owner returns nothing
+
+
+
+	//===================================================
+	// mars\heroes\Nomi.vj
+	//===================================================
+
+	native RandomSwap takes unit caster returns nothing
+
+
+
+	//===================================================
+	// mars\heroes\Stanley\StanleyMissiles.zn
+	//===================================================
+
+	native StanleyMissiles takes unit owner returns nothing
+
+
+
+	//===================================================
+	// mars\heroes\Witcher.zn
+	//===================================================
+
+	native StartTrackedForWitcher takes unit witcher returns nothing
+
+

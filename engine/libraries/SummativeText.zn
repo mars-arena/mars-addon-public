@@ -1,7 +1,7 @@
 library SummativeText requires TechUtils {
 
 	// @const максимальное количество типов плавающего текста
-	constant integer MAX_COUNT_TYPE_TEXTS = 6;
+	constant integer MAX_COUNT_TYPE_TEXTS = 7;
 
 	// @const плавающий текст урона будет работать для юнитов
 	public constant boolean FLOATING_DMG_ON_UNITS = true;
@@ -39,6 +39,7 @@ library SummativeText requires TechUtils {
 	public constant integer BLOCK_TEXT = 3;
 	public constant integer DMG_TEXT = 4;
 	public constant integer REGULAR_TEXT = 5;
+	public constant integer GOLD_TEXT = 5;
 
 	string Prefix[MAX_COUNT_TYPE_TEXTS];
 	string Postfix[MAX_COUNT_TYPE_TEXTS];
@@ -257,8 +258,8 @@ library SummativeText requires TechUtils {
 	}
 
 	function onInit() {
-		Prefix[HEAL_TEXT] = "|cff00ff00+";    // префикс
-		Postfix[HEAL_TEXT] = " ♥|r";				// постфикс
+		Prefix[HEAL_TEXT] = "|cff00ff00+";	   // префикс
+		Postfix[HEAL_TEXT] = " ♥|r";			// постфикс
 		VelocityY[HEAL_TEXT] = 100 * S2V;		// скорость (0..100)
 		MaxLifeTime[HEAL_TEXT] = 1.;			// время жизни
 		MinSize[HEAL_TEXT] = 9.;				// минимальный размер (изменяется в зависимости от значения value)
@@ -321,6 +322,19 @@ library SummativeText requires TechUtils {
 		OffsetHeight[REGULAR_TEXT] = 60;
 		OffsetX[REGULAR_TEXT] = 0;
 		OffsetY[REGULAR_TEXT] = 0;
+
+		Prefix[GOLD_TEXT] = "|CffFFD700+";
+		Postfix[GOLD_TEXT] = " ○|r";
+		VelocityY[GOLD_TEXT] = 200 * S2V;
+		MaxLifeTime[GOLD_TEXT] = 1.;
+		MinSize[GOLD_TEXT] = 10.;
+		MaxSize[GOLD_TEXT] = 18.;
+		MaxBonusSize[GOLD_TEXT] = 8.;
+		MaxBonusValue[GOLD_TEXT] = 2000.;
+		PositionOnOverhead[GOLD_TEXT] = false;
+		OffsetHeight[GOLD_TEXT] = 120;
+		OffsetX[GOLD_TEXT] = -90;
+		OffsetY[GOLD_TEXT] = 0;
 
 		for (1 <= Index <= MAX_COUNT_TYPE_TEXTS)
 			HTInternal[Index] = InitHashtable();

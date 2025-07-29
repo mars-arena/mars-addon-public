@@ -336,7 +336,7 @@ library TechUtils initializer init uses HashId, CoordUtils
 		endif
 		
 		if not added then
-			debug call Error("PU0", "Не удалось добавить предмет " + GetItemName(it) + " к " + GetUnitName(u))
+			call Error("PU0", "Не удалось добавить предмет " + GetItemName(it) + " к " + GetUnitName(u))
 		endif
 
 		call RemoveItem(it)
@@ -459,10 +459,10 @@ library TechUtils initializer init uses HashId, CoordUtils
 			return whichPlayer
 		endif
 	
-		if GetPlayerId(whichPlayer) < 4 then
+		if GetPlayerId(whichPlayer) < 5 then
 			return Player(0)
-		elseif GetPlayerId(whichPlayer) < 8 then
-			return Player(4)
+		elseif GetPlayerId(whichPlayer) < 10 then
+			return Player(5)
 		endif
 
 		return whichPlayer

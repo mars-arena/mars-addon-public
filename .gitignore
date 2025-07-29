@@ -1,1 +1,3 @@
 *-ignore.w3x
+node_modules/
+package-lock.json

@@ -1,4 +1,4 @@
-library UnitData requires Modifiers {
+library UnitData requires Modifiers, Regeneration {
 
 // Variables
 
@@ -13,17 +13,12 @@ library UnitData requires Modifiers {
 		return UnitData.get(whichUnit);
 	}
 
-	public function Arrow(unit whichUnit) -> ArrowData {
-		return UnitData.get(whichUnit).arrow;
-	}
-
 // Structures
 
 	public struct UnitData {
 		unit u;
-
-		//real movespeed = 0.;
 		ArrowData arrow_atr = 0;
+		RegenerationData regeneration_atr = 0;
 
 		static method create(unit whichUnit) -> UnitData {
 			UnitData this = UnitData.allocate();
@@ -36,6 +31,8 @@ library UnitData requires Modifiers {
 			RemoveSavedInteger(HT, GetHandleId(u), UNIT_DATA_HID);
 			if (IsSet(arrow_atr))
 				arrow_atr.destroy();
+			if (IsSet(regeneration_atr))
+				regeneration_atr.destroy();
 			u = null;
 			this.deallocate();
 		}
@@ -55,6 +52,12 @@ library UnitData requires Modifiers {
 			if (!IsSet(arrow_atr))
 				arrow_atr = ArrowData.create();
 			return arrow_atr;
+		}
+
+		method operator regeneration() -> RegenerationData {
+			if (!IsSet(regeneration_atr))
+				regeneration_atr = RegenerationData.create();
+			return regeneration_atr;
 		}
 	}
 
@@ -92,6 +95,50 @@ library UnitData requires Modifiers {
 			DestroyGroup(unitGroup_atr); unitGroup_atr = null;
 			this.deallocate();
 		}
+	}
+
+	public struct RegenerationData {
+		// HP modifiers
+		real hpFlat = 0.;
+		real hpPenalty = 0.;
+		real hpIncrease = 0.;
+		real hpDecrease = 0.;
+		real hpCap = 0.;
+
+		// MP modifiers
+		real mpFlat = 0.;
+		real mpPenalty = 0.;
+		real mpIncrease = 0.;
+		real mpDecrease = 0.;
+		real mpCap = 0.;
+
+		static method create() -> RegenerationData {
+			RegenerationData this = RegenerationData.allocate();
+			return this;
+		}
+
+		method destroy() {
+			this.deallocate();
+		}
+	}
+
+	function onInit() {
+		RegisterAction(EVENT_HP_REGENERATION_MODIFIER, function() {
+			RegenerationData property = Unit(GetRegenModifierUnit()).regeneration;
+			AddRegenModifierFlat(property.hpFlat);
+			AddRegenModifierPenalty(property.hpPenalty);
+			AddRegenModifierIncrease(property.hpIncrease);
+			AddRegenModifierDecrease(property.hpDecrease);
+			AddRegenModifierCap(property.hpCap);
+		});
+		RegisterAction(EVENT_MP_REGENERATION_MODIFIER, function() {
+			RegenerationData property = Unit(GetRegenModifierUnit()).regeneration;
+			AddRegenModifierFlat(property.mpFlat);
+			AddRegenModifierPenalty(property.mpPenalty);
+			AddRegenModifierIncrease(property.mpIncrease);
+			AddRegenModifierDecrease(property.mpDecrease);
+			AddRegenModifierCap(property.mpCap);
+		});
 	}
 
 }

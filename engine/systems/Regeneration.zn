@@ -1,19 +1,19 @@
-library Regeneration requires Events, BuffActions {
+library Regeneration requires Events, Buffs, Auras {
 
 // Variables
 
 	// Событие модификатора регенерации здоровья
 	//
 	// GetRegenModifierUnit() -> unit
-	// GetRegenModifierBonus() -> real
+	// GetRegenModifierFlat() -> real
 	// GetRegenModifierPenalty() -> real
 	// GetRegenModifierIncrease() -> real
 	// GetRegenModifierDecrease() -> real
-	// AddRegenModifierBonus(real regenBonus)
+	// AddRegenModifierFlat(real regenFlat)
 	// AddRegenModifierPenalty(real regenPenalty)
 	// AddRegenModifierIncrease(real regenIncrease)
 	// AddRegenModifierDecrease(real regenDecrease)
-	// SetRegenModifierBonus(real regenBonus)
+	// SetRegenModifierFlat(real regenFlat)
 	// SetRegenModifierPenalty(real regenPenalty)
 	// SetRegenModifierIncrease(real regenIncrease)
 	// SetRegenModifierDecrease(real regenDecrease)
@@ -28,15 +28,15 @@ library Regeneration requires Events, BuffActions {
 	// Событие модификатора регенерации маны
 	//
 	// GetRegenModifierUnit() -> unit
-	// GetRegenModifierBonus() -> real
+	// GetRegenModifierFlat() -> real
 	// GetRegenModifierPenalty() -> real
 	// GetRegenModifierIncrease() -> real
 	// GetRegenModifierDecrease() -> real
-	// AddRegenModifierBonus(real regenBonus)
+	// AddRegenModifierFlat(real regenFlat)
 	// AddRegenModifierPenalty(real regenPenalty)
 	// AddRegenModifierIncrease(real regenIncrease)
 	// AddRegenModifierDecrease(real regenDecrease)
-	// SetRegenModifierBonus(real regenBonus)
+	// SetRegenModifierFlat(real regenFlat)
 	// SetRegenModifierPenalty(real regenPenalty)
 	// SetRegenModifierIncrease(real regenIncrease)
 	// SetRegenModifierDecrease(real regenDecrease)
@@ -57,219 +57,88 @@ library Regeneration requires Events, BuffActions {
 	real RegenModifierPenalty = 0.;		// flat
 	real RegenModifierIncrease = 0.;	// percentage
 	real RegenModifierDecrease = 0.;	// percentage
-
-	unit RegenPassUnit = null;
-	real RegenPassFlat = 0.;		// flat 
-	real RegenPassPenalty = 0.;		// flat
-	real RegenPassIncrease = 0.;	// percentage
-	real RegenPassDecrease = 0.;	// percentage
+	real RegenModifierCap = 0.;			// flat
 
 	unit REGEN_UNIT_GET = null;
 	real REGEN_VALUE_GET = 0.;
 
 // Debug
 
-	public boolean DebugHPMP = true;
-	public boolean IsRunHP = false;
-	public boolean IsRunMP = false;
+	boolean Debug = true;
+	boolean IsRun = false;
 
 	function dbg(string msg, real x, real y) {
-		if (DebugHPMP) DebugXY(msg, x, y);
+		if (Debug) DebugXY(msg, x, y);
 	}
 
 // Event API
 
 	// Event Getters
 
-	public function GetRegenModifierUnit() -> unit {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION_MODIFIER) &&
-			!IsEventRun(EVENT_HP_REGENERATION_MODIFIER)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		return RegenModifierUnit;
-	}
-	public function GetRegenModifierFlat() -> real {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION_MODIFIER) &&
-			!IsEventRun(EVENT_HP_REGENERATION_MODIFIER)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		return RegenModifierFlat;
-	}
-	public function GetRegenModifierPenalty() -> real {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION_MODIFIER) &&
-			!IsEventRun(EVENT_HP_REGENERATION_MODIFIER)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		return RegenModifierPenalty;
-	}
-	public function GetRegenModifierIncrease() -> real {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION_MODIFIER) &&
-			!IsEventRun(EVENT_HP_REGENERATION_MODIFIER)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		return RegenModifierIncrease;
-	}
-	public function GetRegenModifierDecrease() -> real {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION_MODIFIER) &&
-			!IsEventRun(EVENT_HP_REGENERATION_MODIFIER)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		return RegenModifierDecrease;
-	}
+	public function GetRegenModifierUnit() -> unit { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); return RegenModifierUnit; }
+	public function GetRegenModifierFlat() -> real { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); return RegenModifierFlat; }
+	public function GetRegenModifierPenalty() -> real { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); return RegenModifierPenalty; }
+	public function GetRegenModifierIncrease() -> real { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); return RegenModifierIncrease; }
+	public function GetRegenModifierDecrease() -> real { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); return RegenModifierDecrease; }
 
-	public function GetRegenUnit() -> unit {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION) &&
-			!IsEventRun(EVENT_HP_REGENERATION)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		return REGEN_UNIT_GET;
-	}
-	public function GetRegenValue() -> real {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION) &&
-			!IsEventRun(EVENT_HP_REGENERATION)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		return REGEN_VALUE_GET;
-	}
+	public function GetRegenUnit() -> unit { debug DebugEvent.a(EVENT_HP_REGENERATION).a(EVENT_MP_REGENERATION).run(); return REGEN_UNIT_GET; }
+	public function GetRegenValue() -> real { debug DebugEvent.a(EVENT_HP_REGENERATION).a(EVENT_MP_REGENERATION).run(); return REGEN_VALUE_GET; }
+
+	public function GetRegenModifierCap() -> real { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); return RegenModifierCap; }
 
 	// Event Adders
 
-	public function AddRegenModifierFlat(real regenFlat) {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION_MODIFIER) &&
-			!IsEventRun(EVENT_HP_REGENERATION_MODIFIER)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		RegenModifierFlat += regenFlat;
-	}
-	public function AddRegenModifierPenalty(real regenPenalty) {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION_MODIFIER) &&
-			!IsEventRun(EVENT_HP_REGENERATION_MODIFIER)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		RegenModifierPenalty += regenPenalty;
-	}
-	public function AddRegenModifierIncrease(real regenIncrease) {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION_MODIFIER) &&
-			!IsEventRun(EVENT_HP_REGENERATION_MODIFIER)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		RegenModifierIncrease += regenIncrease;
-	}
-	public function AddRegenModifierDecrease(real regenDecrease) {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION_MODIFIER) &&
-			!IsEventRun(EVENT_HP_REGENERATION_MODIFIER)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		RegenModifierDecrease += regenDecrease;
-	}
+	public function AddRegenModifierFlat(real regenFlat) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierFlat += regenFlat; }
+	public function AddRegenModifierPenalty(real regenPenalty) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierPenalty += regenPenalty; }
+	public function AddRegenModifierIncrease(real regenIncrease) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierIncrease += regenIncrease; }
+	public function AddRegenModifierDecrease(real regenDecrease) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierDecrease += regenDecrease; }
+	public function AddRegenModifierCap(real regenCap) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierCap = MaxReal(regenCap, RegenModifierCap); }
 
 	// Event Setters
 
-	public function SetRegenModifierFlat(real regenFlat) {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION_MODIFIER) &&
-			!IsEventRun(EVENT_HP_REGENERATION_MODIFIER)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		RegenModifierFlat = regenFlat;
-	}
-	public function SetRegenModifierPenalty(real regenPenalty) {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION_MODIFIER) &&
-			!IsEventRun(EVENT_HP_REGENERATION_MODIFIER)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		RegenModifierPenalty = regenPenalty;
-	}
-	public function SetRegenModifierIncrease(real regenIncrease) {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION_MODIFIER) &&
-			!IsEventRun(EVENT_HP_REGENERATION_MODIFIER)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		RegenModifierIncrease = regenIncrease;
-	}
-	public function SetRegenModifierDecrease(real regenDecrease) {
-		debug if (
-			!IsEventRun(EVENT_MP_REGENERATION_MODIFIER) &&
-			!IsEventRun(EVENT_HP_REGENERATION_MODIFIER)
-		) {
-			Error("E3", "Использованиe API ивента вне его области: " + GetEventName(GetEventId()));
-		}
-		RegenModifierDecrease = regenDecrease;
-	}
+	public function SetRegenModifierFlat(real regenFlat) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierFlat = regenFlat; }
+	public function SetRegenModifierPenalty(real regenPenalty) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierPenalty = regenPenalty; }
+	public function SetRegenModifierIncrease(real regenIncrease) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierIncrease = regenIncrease; }
+	public function SetRegenModifierDecrease(real regenDecrease) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierDecrease = regenDecrease; }
+	public function SetRegenModifierCap(real regenCap) { debug DebugEvent.a(EVENT_MP_REGENERATION_MODIFIER).a(EVENT_HP_REGENERATION_MODIFIER).run(); RegenModifierCap = regenCap; }
 
 // System
 
-	function PassFrom() {
-		RegenPassUnit = RegenModifierUnit;
-		RegenPassFlat = RegenModifierFlat;
-		RegenPassPenalty = RegenModifierPenalty;
-		RegenPassIncrease = RegenModifierIncrease;
-		RegenPassDecrease = RegenModifierDecrease;
-	}
-
-	function PassTo() {
-		RegenModifierUnit = RegenPassUnit;
-		RegenModifierFlat = RegenPassFlat;
-		RegenModifierPenalty = RegenPassPenalty;
-		RegenModifierIncrease = RegenPassIncrease;
-		RegenModifierDecrease = RegenPassDecrease;
-	}
-
-	function Reset() {
-		RegenModifierUnit = null;
-		RegenModifierFlat = 0.0;
-		RegenModifierPenalty = 0.0;
-		RegenModifierIncrease = 0.0;
-		RegenModifierDecrease = 0.0;
-	}
-
 	public function GetUnitHpRegen(unit whichUnit) -> real {
+		return Regeneration.get(whichUnit).hpRegen;
+	}
+
+	public function GetUnitMpRegen(unit whichUnit) -> real {
+		return Regeneration.get(whichUnit).mpRegen;
+	}
+
+	public function UpdateUnitHpRegen(unit whichUnit) -> real {
 		real value = 0.0;
 
 		if (whichUnit == null) {
 			debug Warning("HP01", "unit is null");
 			return 0.0;
 		}
-		if (IsRunHP) {
-			debug Error("HP02", "Внутренее иницирование системы!");
-			return 0.0;
+		if (IsRun) {
+			Error("REG01", "Внутренее иницирование системы!");
+			return GetUnitHpRegen(whichUnit);
 		}
 
-		IsRunHP = true;
-		PassFrom();
-		Reset();
+		IsRun = true;
+		RegenModifierFlat = 0.0;
+		RegenModifierPenalty = 0.0;
+		RegenModifierIncrease = 0.0;
+		RegenModifierDecrease = 0.0;
+		RegenModifierCap = 0.0;
 		RegenModifierUnit = whichUnit;
 
 		ExecuteEvent(EVENT_HP_REGENERATION_MODIFIER);
 
-		value = RegenModifierFlat * (1.00 + RegenModifierIncrease) * (1 - RegenModifierDecrease) - RegenModifierPenalty; 
+		value = (RegenModifierFlat - RegenModifierPenalty) * (1.00 + RegenModifierIncrease) * (1 - RegenModifierDecrease); 
+
+		if (RegenModifierCap > 0 && value > RegenModifierCap) {
+			value = RegenModifierCap;
+		}
 
 		if (value < 0) {
 			value = 0.0;
@@ -278,34 +147,38 @@ library Regeneration requires Events, BuffActions {
 		debug dbg("hp: " + R2S(value), GetUnitX(whichUnit), GetUnitY(whichUnit));
 
 		Regeneration.get(whichUnit).hpRegen = value;
-		PassTo();
-		Reset();
-		IsRunHP = false;
+		IsRun = false;
 		
 		return value;
 	}
 
-	public function GetUnitMpRegen(unit whichUnit) -> real {
+	public function UpdateUnitMpRegen(unit whichUnit) -> real {
 		real value = 0.0;
 
 		if (whichUnit == null) {
 			debug Warning("MP01", "unit is null");
 			return 0.0;
 		}
-		if (IsRunMP) {
-			debug Error("MP02", "Внутренее иницирование системы!");
-			return 0.0;
+		if (IsRun) {
+			Error("REG01", "Внутренее иницирование системы!");
+			return GetUnitMpRegen(whichUnit);
 		}
 
-		IsRunMP = true;
-
-		PassFrom();
-		Reset();
+		IsRun = true;
+		RegenModifierFlat = 0.0;
+		RegenModifierPenalty = 0.0;
+		RegenModifierIncrease = 0.0;
+		RegenModifierDecrease = 0.0;
+		RegenModifierCap = 0.0;
 		RegenModifierUnit = whichUnit;
 
 		ExecuteEvent(EVENT_MP_REGENERATION_MODIFIER);
 
-		value = RegenModifierFlat * (1.00 + RegenModifierIncrease) * (1 - RegenModifierDecrease) - RegenModifierPenalty; 
+		value = (RegenModifierFlat - RegenModifierPenalty) * (1.00 + RegenModifierIncrease) * (1 - RegenModifierDecrease); 
+
+		if (RegenModifierCap > 0 && value > RegenModifierCap) {
+			value = RegenModifierCap;
+		}
 
 		if (value < 0) {
 			value = 0.0;
@@ -314,20 +187,19 @@ library Regeneration requires Events, BuffActions {
 		debug dbg("mp: " + R2S(value), GetUnitX(whichUnit), GetUnitY(whichUnit));
 
 		Regeneration.get(whichUnit).mpRegen = value;
-		PassTo();
-		Reset();
-		IsRunMP = false;
+		IsRun = false;
 		
 		return value;
 	}
 
 	// Object Structure
-	struct Regeneration {
+	public struct Regeneration {
 		unit whichUnit;
 		real hpRegen;
 		real mpRegen;
 		integer hpPercent;
 		integer mpPercent;
+		boolean needUpdate;
 
 		timer tm;
 
@@ -342,6 +214,7 @@ library Regeneration requires Events, BuffActions {
 			mpRegen = 0.0;
 			hpPercent = 0;
 			mpPercent = 0;
+			needUpdate = false;
 
 			this.tm = CreateTimer();
 			SaveHandleDataInt(tm, this);
@@ -367,6 +240,10 @@ library Regeneration requires Events, BuffActions {
 			this.deallocate();
 		}
 
+		method update() {
+			needUpdate = true;
+		}
+
 		static method callback() {
 			Regeneration this = LoadHandleDataInt(GetExpiredTimer());
 			integer hpPercentNew = 0;
@@ -378,8 +255,13 @@ library Regeneration requires Events, BuffActions {
 			hpPercentNew = R2I(100.0 * (GetUnitState(whichUnit, UNIT_STATE_LIFE) / GetUnitMaxLife(whichUnit)));
 			if (hpPercent != hpPercentNew) {
 				hpPercent = hpPercentNew;
-				GetUnitHpRegen(whichUnit);
+				needUpdate = true;
 			}
+
+			if (needUpdate) {
+				UpdateUnitHpRegen(whichUnit);
+			}
+
 			if (hpRegen * INTERVAL > 0.0) {
 				SetUnitState(whichUnit, UNIT_STATE_LIFE, GetUnitState(whichUnit, UNIT_STATE_LIFE) + hpRegen * INTERVAL);
 
@@ -395,7 +277,11 @@ library Regeneration requires Events, BuffActions {
 				mpPercentNew = R2I(100.0 * (GetUnitState(whichUnit, UNIT_STATE_MANA) / maxMana));
 				if (mpPercent != mpPercentNew) {
 					mpPercent = mpPercentNew;
-					GetUnitMpRegen(whichUnit);
+					needUpdate = true;
+				}
+
+				if (needUpdate) {
+					UpdateUnitMpRegen(whichUnit);
 				}
 
 				if (mpRegen * INTERVAL > 0.0) {
@@ -408,8 +294,19 @@ library Regeneration requires Events, BuffActions {
 					REGEN_UNIT_GET = null;
 				}
 			}
+
+			needUpdate = false;
 		}
 
+	}
+
+	function Update(unit whichUnit) {
+		if (IsUnitDummy(whichUnit) ||
+			whichUnit == null
+		) {
+			return;
+		}
+		Regeneration.get(whichUnit).update();
 	}
 
 	function onInit() {
@@ -418,15 +315,16 @@ library Regeneration requires Events, BuffActions {
 		EVENT_MP_REGENERATION_MODIFIER = CreateEvent("EVENT_MP_REGENERATION_MODIFIER");
 		EVENT_MP_REGENERATION = CreateEvent("EVENT_MP_REGENERATION");
 
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_ATTACKED), function() {GetUnitHpRegen(GetAttacker()); GetUnitMpRegen(GetAttacker());});
-		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_LEVEL), function() {GetUnitHpRegen(GetLevelingUnit()); GetUnitMpRegen(GetLevelingUnit());});
-		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_SKILL), function() {GetUnitHpRegen(GetLearningUnit()); GetUnitMpRegen(GetLearningUnit());});
-		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_REVIVABLE), function() {GetUnitHpRegen(GetRevivableUnit()); GetUnitMpRegen(GetRevivableUnit());});
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DROP_ITEM), function() {GetUnitHpRegen(GetTriggerUnit()); GetUnitMpRegen(GetTriggerUnit());});
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_PICKUP_ITEM), function() {GetUnitHpRegen(GetTriggerUnit()); GetUnitMpRegen(GetTriggerUnit());});
-		RegisterAction(EVENT_ENTER, function() {GetUnitHpRegen(GetTriggerUnit()); GetUnitMpRegen(GetTriggerUnit());});
-		RegisterAction(EVENT_BUFF, function() {GetUnitHpRegen(GetTriggerBuffTarget()); GetUnitMpRegen(GetTriggerBuffTarget());});
-		ForGroup(INIT_UNITS, function() {GetUnitHpRegen(GetEnumUnit()); GetUnitMpRegen(GetEnumUnit());});
+		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_LEVEL), function() { Update(GetLevelingUnit()); });
+		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_SKILL), function() { Update(GetLearningUnit()); });
+		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_REVIVABLE), function() { Update(GetRevivableUnit()); });
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DROP_ITEM), function() { Update(GetTriggerUnit()); });
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_PICKUP_ITEM), function() { Update(GetTriggerUnit()); });
+		RegisterAction(EVENT_ENTER, function() { Update(GetTriggerUnit()); });
+		RegisterAction(EVENT_BUFF, function() { Update(GetTriggerBuffTarget()); });
+		RegisterAction(EVENT_AURA, function() { Update(GetAuraOwnerUnit()); });
+		RegisterAction(EVENT_TALENT_CHOSEN, function() { Update(GetTalentHero()); });
+		ForGroup(INIT_UNITS, function() { Update(GetEnumUnit()); });
 
 		// Для аур нужно настроить отдельные обработчики,
 	}

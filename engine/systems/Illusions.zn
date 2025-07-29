@@ -174,16 +174,16 @@ library Illusions requires Events, AttackSpeed {
 							SetUnitFacing(EnteredIllusion, facing);
 						}
 					} else {
-						debug Error("I1", "Не удалось создать иллюзию для объекта(" + GetUnitName(sourceUnit) + ").");
+						Error("I1", "Не удалось создать иллюзию для объекта(" + GetUnitName(sourceUnit) + ").");
 						SetUnitOwner(Dummy, DUMMY_OWNER, false);
 						return 0;
 					}
 				} else {
-					debug Error("I2", "Не удалось создать иллюзию для объекта(" + GetUnitName(sourceUnit) + "). Приказ невозможно выполнить.");
+					Error("I2", "Не удалось создать иллюзию для объекта(" + GetUnitName(sourceUnit) + "). Приказ невозможно выполнить.");
 					return 0;
 				}
 			} else {
-				debug Error("I3", "Не удалось создать иллюзию для объекта(" + GetUnitName(sourceUnit) + "). Нет источника или он мертв.");
+				Error("I3", "Не удалось создать иллюзию для объекта(" + GetUnitName(sourceUnit) + "). Нет источника или он мертв.");
 				return 0;
 			}
 

@@ -26,10 +26,10 @@ library Stuns requires Events {
 		constant integer FROST_STUN = 3;
 		constant integer CHAINS_STUN = 4;
 		constant integer AQUA_STUN = 5;
-        constant integer STANLEY_STUN = 6;
-        constant integer GOLD_STUN = 7;
-        constant integer ILLIDAN_STUN = 8;
-        constant integer BOLA_STUN = 9;
+		constant integer STANLEY_STUN = 6;
+		constant integer GOLD_STUN = 7;
+		constant integer ILLIDAN_STUN = 8;
+		constant integer BOLA_STUN = 9;
 		constant integer ARTHAS_STUN = 10;
 	}
 
@@ -89,42 +89,42 @@ library Stuns requires Events {
 
 	// Event Getters
 	public function GetTriggerStun() -> Stun {
-		debug DebugEvent(EVENT_STUN);
+		debug DebugEvent.a(EVENT_STUN).run();
 		return OBJECT_GET;
 	}
 
 	public function GetStunningUnit() -> unit {
-		debug DebugEvent(EVENT_STUN);
+		debug DebugEvent.a(EVENT_STUN).run();
 		return STUNNING_UNIT_GET;
 	}
 
 	public function GetStunnedUnit() -> unit {
-		debug DebugEvent(EVENT_STUN);
+		debug DebugEvent.a(EVENT_STUN).run();
 		return STUNNED_UNIT_GET;
 	}
 
 	public function GetStunTypeId() -> integer {
-		debug DebugEvent(EVENT_STUN);
+		debug DebugEvent.a(EVENT_STUN).run();
 		return TYPE_ID_GET;
 	}
 
 	public function GetStunDuration() -> real {
-		debug DebugEvent(EVENT_STUN);
+		debug DebugEvent.a(EVENT_STUN).run();
 		return DURATION_GET;
 	}
 
 	public function GetStunIsEnter() -> boolean {
-		debug DebugEvent(EVENT_STUN);
+		debug DebugEvent.a(EVENT_STUN).run();
 		return IS_ENTER_GET;
 	}
 
 	public function GetStunIsOut() -> boolean {
-		debug DebugEvent(EVENT_STUN);
+		debug DebugEvent.a(EVENT_STUN).run();
 		return IS_OUT_GET;
 	}
 
 	public function GetStunIsFirst() -> boolean {
-		debug DebugEvent(EVENT_STUN);
+		debug DebugEvent.a(EVENT_STUN).run();
 		return IS_FIRST_GET;
 	}
 

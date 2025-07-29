@@ -42,11 +42,11 @@ globals
 	unit OwnerUnit
 	unit TargetUnit
 	real Value
-	unit AuraOwnerUnit
-	unit AuraTargetUnit
-	boolean IsEntered
-	boolean IsOut
-	boolean IsActions
+	//unit AuraOwnerUnit
+	//unit AuraTargetUnit
+	//boolean IsEntered
+	//boolean IsOut
+	//boolean IsActions
 	boolean IsTransfer
 	integer ActionsId
 	integer BuffId
@@ -56,9 +56,10 @@ globals
 	// фейк переменная
 	force udg_Observers
 	unit array udg_Talent_Tree
-	integer udg_Hero_XP_PercInt
+	unit array udg_Hero
+	integer udg_Stat_INT_XP
 	integer array udg_Hero_XP_Percent
-	real array udg_Hero_HP_Reg_Scale_Main
+	real array udg_Stat_STR_HPReg
 	real array udg_Hero_MS_Simple
 	boolean udg_Mode_Team = false
 	boolean udg_Rev_Duel = false

@@ -15,10 +15,6 @@ library Armor initializer init requires TechUtils
 		private boolean IS_EVAL_DAMAGE_GET = false
 	endglobals
 
-	function DebugMsg takes string s returns nothing
-		debug call DisplayTimedTextToPlayer(GetLocalPlayer(), 0., 0., 5., s)
-	endfunction
-
 	function IsEvalDamage takes nothing returns boolean
 		return IS_EVAL_DAMAGE_GET
 	endfunction
@@ -55,7 +51,7 @@ library Armor initializer init requires TechUtils
 		call EvalDamage(u, u, Damage, AttackType, DamageType)
 		if not HaveSavedReal(Hash, ParentKey, id) then
 			// unit is ethereal
-			//call DebugMsg("Unit is ethereal")
+			//call Debug("Unit is ethereal")
 			call SaveBoolean(Hash, ParentKey, id, true)
 			call EvalDamage(u, u, Damage, ATTACK_TYPE_MAGIC, DamageType)
 		endif
@@ -80,7 +76,7 @@ library Armor initializer init requires TechUtils
 		local real armorReduction
 		if HaveSavedInteger(Hash, ParentKey, id) then
 			call RemoveSavedInteger(Hash, ParentKey, id)
-			// call DebugMsg("Damage taken " + R2SW(GetEventDamage(), 0, -1))
+			// call Debug("Damage taken " + R2SW(GetEventDamage(), 0, -1))
 			
 			if GetEventDamage() > 0. then
 				call NegateDamage(GetTriggerUnit(), GetEventDamage())
@@ -94,7 +90,7 @@ library Armor initializer init requires TechUtils
 					set reduction = 1. - GetEventDamage() / Damage / AttackType_Mutliplier
 				endif
 				set armorReduction = reduction
-				// call DebugMsg("Reduction " + R2SW(reduction, 0, -1))
+				// call Debug("Reduction " + R2SW(reduction, 0, -1))
 				
 				// For armor formulas, please, refer to these articles
 				// http://classic.battle.net/war3/basics/armorandweapontypes.shtml

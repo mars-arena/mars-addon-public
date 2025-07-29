@@ -1,14 +1,44 @@
-library Auras requires TechUtils {
+library Auras requires TechUtils, Events {
 	constant integer MaxCountAurasTarget = 100; //Максимальное количество аур, которые могут действовать на одну цель
 	constant integer MaxCountAurasOwner = 100; //Максимальное количество аур, которые может излучать один юнит
-	
+
 	key AuraTarget_hid;
 	key AuraOwner_hid;
-	
+
 	public Aura TempAura;
-	
-	struct Aura
-	{
+
+	// Событие ауры
+	//
+	// GetAuraOwnerUnit() -> unit
+	// GetAuraTargetUnit() -> unit
+	// IsAuraEntered() -> boolean
+	// IsAuraOut() -> boolean
+	// IsAuraActions() -> boolean
+	// GetAuraActionsId() -> integer
+	public integer EVENT_AURA;
+
+	function onInit() {
+		EVENT_AURA = CreateEvent("EVENT_AURA");
+	}
+
+	unit AURA_OWNER_UNIT_GET;
+	unit AURA_TARGET_UNIT_GET;
+	boolean AURA_IS_ENTERED_GET;
+	boolean AURA_IS_OUT_GET;
+	boolean AURA_IS_ACTIONS_GET;
+	integer AURA_ACTIONS_ID_GET;
+
+	public function GetAuraOwnerUnit() -> unit {
+		//debug DebugEvent.a(EVENT_AURA).run();
+		return AURA_OWNER_UNIT_GET;
+	}
+	public function GetAuraTargetUnit() -> unit { debug DebugEvent.a(EVENT_AURA).run(); return AURA_TARGET_UNIT_GET; }
+	public function IsAuraEntered() -> boolean { debug DebugEvent.a(EVENT_AURA).run(); return AURA_IS_ENTERED_GET; }
+	public function IsAuraOut() -> boolean { debug DebugEvent.a(EVENT_AURA).run(); return AURA_IS_OUT_GET; }
+	public function IsAuraActions() -> boolean { debug DebugEvent.a(EVENT_AURA).run(); return AURA_IS_ACTIONS_GET; }
+	public function GetAuraActionsId() -> integer { debug DebugEvent.a(EVENT_AURA).run(); return AURA_ACTIONS_ID_GET; }
+
+	struct Aura {
 		unit auraUnit;
 		integer typeId;
 		item itemAura;
@@ -128,41 +158,29 @@ library Auras requires TechUtils {
 			this.deallocate();
 		}
 		
+		static method executeEvent(Aura this, unit u, boolean isEntered, boolean isOut, boolean isActions) {
+			AURA_OWNER_UNIT_GET = auraUnit;
+			AURA_TARGET_UNIT_GET = u;
+			AURA_IS_ENTERED_GET = isEntered;
+			AURA_IS_OUT_GET = isOut;
+			AURA_IS_ACTIONS_GET = isActions;
+			AURA_ACTIONS_ID_GET = actionsId;
+			ExecuteEvent(EVENT_BUFF);
+		}
+
 		static method out(Aura this, unit u) {
-			AuraOwnerUnit = auraUnit;
-			AuraTargetUnit = u;
-			IsEntered = false;
-			IsOut = true;
-			IsActions = false;
-			ActionsId = actionsId;
-			ExecuteFunc("Trig_AurasActions_Actions");
-			AuraActions.evaluate();
+			this.executeEvent(this, u, false, true, false);
 		}
 		
 		static method enter(Aura this, unit u) {
-			AuraOwnerUnit = auraUnit;
-			AuraTargetUnit = u;
-			IsEntered = true;
-			IsOut = false;
-			IsActions = false;
-			ActionsId = actionsId;
-			ExecuteFunc("Trig_AurasActions_Actions");
-			AuraActions.evaluate();
+			this.executeEvent(this, u, true, false, false);
 		}
 		
 		static method perAction(Aura this, unit u) {
-			AuraOwnerUnit = auraUnit;
-			AuraTargetUnit = u;
-			IsEntered = false;
-			IsOut = false;
-			IsActions = true;
-			ActionsId = actionsId;
 			if (!IsUnitPaused(u)) {
-				ExecuteFunc("Trig_AurasActions_Actions");
-				AuraActions.evaluate();
+				this.executeEvent(this, u, false, false, true);
 			}
 		}
-		
 		
 		static method perActions() {
 			Aura this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
@@ -194,7 +212,7 @@ library Auras requires TechUtils {
 			}
 			
 			GroupClear(grBufer);
-			AuraOwnerUnit = auraUnit;
+			AURA_OWNER_UNIT_GET = auraUnit;
 			if (UnitAlive(auraUnit)) {
 				GroupEnumUnitsInRangeFiz(grBufer, xA, yA, radius, filter);
 			} else if (IsUnitIllusion(auraUnit)) {
@@ -332,7 +350,7 @@ library Auras requires TechUtils {
 			}
 			for (1 <= i <= aTarget.countAuras) {
 				if (aTarget.auras[i] == aura) {
-					debug Error("AT1", "Регистрация уже зарегестрированной ауры для объекта(" + GetUnitName(u) + ").");
+					Error("AT1", "Регистрация уже зарегестрированной ауры для объекта(" + GetUnitName(u) + ").");
 					return;
 				}
 			}
@@ -444,7 +462,7 @@ library Auras requires TechUtils {
 			}
 			for (1 <= i <= aOwner.countAuras) {
 				if (aOwner.auras[i] == aura) {
-					debug Error("AO1", "Регистрация уже зарегестрированной ауры для объекта(" + GetUnitName(u) + ").");
+					Error("AO1", "Регистрация уже зарегестрированной ауры для объекта(" + GetUnitName(u) + ").");
 					return;
 				}
 			}

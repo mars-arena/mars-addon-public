@@ -1,0 +1,92 @@
+library FatigueSystem requires Combat, Events {
+
+// Settings
+
+	public constant real FATIGUE_MAX = 100.0;
+	constant real FATIGUE_GAIN_RATE = 0.5;
+	constant real FATIGUE_LOSS_RATE = 1.0;
+	constant real FATIGUE_INTERVAL = 1.0;
+
+// API
+
+	public function GetUnitFatigue(unit whichUnit) -> real {
+		Fatigue this = Fatigue.load(GetHandleId(whichUnit)); 
+		if (!IsSet(this)) 
+			return 0.0;
+		return this.fatigue;
+	}
+
+	public function SetUnitFatigue(unit whichUnit, real fatigue) {
+		Fatigue.get(whichUnit).setFatigue(fatigue);
+	}
+
+	public function IsUnitFatigued(unit whichUnit) -> boolean {
+		return GetUnitFatigue(whichUnit) >= FATIGUE_MAX;
+	}
+
+// System
+
+	function onInit() {
+		RegisterAction(EVENT_COMBAT, function() {
+			if (IsCombatEntering()) {
+				Fatigue.get(GetCombatUnit());
+			}
+		});
+	}
+
+	public struct Fatigue {
+		unit whichUnit;
+		real fatigue;
+
+		timer tm;
+
+		static key HASH_ID;
+		static real INTERVAL = FATIGUE_INTERVAL;
+
+		static method create(unit whichUnit) -> Fatigue {
+			Fatigue this = Fatigue.allocate();
+			this.fatigue = 0.0;
+
+			this.whichUnit = whichUnit;
+			SaveInteger(HT, GetHandleId(whichUnit), HASH_ID, this);
+
+			this.tm = CreateTimer();
+			SaveHandleDataInt(tm, this);
+			TimerStart(tm, INTERVAL, true, function Fatigue.callback);
+
+			return this;
+		}
+
+		static method load(integer hashId) -> Fatigue {
+			return LoadInteger(HT, hashId, HASH_ID);
+		}
+
+		static method get(unit whichUnit) -> Fatigue {
+			Fatigue this = Fatigue.load(GetHandleId(whichUnit));
+			if (!IsSet(this))
+				this = Fatigue.create(whichUnit);
+			return this;
+		}
+
+		method destroy() {
+			FlushTimer(tm); tm = null;
+			whichUnit = null;
+			this.deallocate();
+		}
+
+		method setFatigue(real fatigue) {
+			fatigue = MaxReal(0.0, MinReal(FATIGUE_MAX, fatigue));
+		}
+
+		static method callback() {
+			Fatigue this = LoadHandleDataInt(GetExpiredTimer());
+			if (IsUnitInCombat(whichUnit)) {
+				fatigue += FATIGUE_GAIN_RATE;
+			} else {
+				fatigue -= FATIGUE_LOSS_RATE;
+			}
+			setFatigue(fatigue);
+		}
+
+	}
+}

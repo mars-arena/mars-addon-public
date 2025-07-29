@@ -77,7 +77,7 @@ library Vector requires Debug {
 		}
 
 		method normalize() -> Vec2 {
-			debug if (this.length == 0.0) { Debug("attempt to normalize vector with zero length"); return this; }
+			if (this.length == 0.0) { Error("VEC1", "attempt to normalize vector with zero length"); return this; }
 			return this.scale(1.0/this.length());
 		}
 
@@ -168,7 +168,7 @@ library Vector requires Debug {
 		}
 
 		method normalize() -> Vec3 {
-			debug if (this.length == 0.0) { Debug("attempt to normalize vector with zero length"); return this; }
+			if (this.length == 0.0) { Error("VEC2", "attempt to normalize vector with zero length"); return this; }
 			return this.scale(1.0/this.length());
 		}
 

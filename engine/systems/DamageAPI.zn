@@ -18,7 +18,7 @@ library DamageAPI requires Damage {
 		boolean isSpecAttack,
 		boolean ignoreBlock,
 		boolean ignoreMiss,
-		boolean ignorePierce, // deprecated 
+		boolean ignorePierce,
 		boolean isNoRepeat
 	) {
 		DamageEvent this = DamageEvent.create(whichUnit, target, value);

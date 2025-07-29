@@ -67,12 +67,12 @@ globals
 	unit OwnerUnit
 	unit TargetUnit
 	real Value
-	unit AuraOwnerUnit
-	unit AuraTargetUnit
-	boolean IsEntered
-	boolean IsOut
-	boolean IsActions
-	boolean IsTransfer
+	//unit AuraOwnerUnit
+	//unit AuraTargetUnit
+	//boolean IsEntered
+	//boolean IsOut
+	//boolean IsActions
+	//boolean IsTransfer
 	integer ActionsId
 	integer BuffId
 	timer BuffStack

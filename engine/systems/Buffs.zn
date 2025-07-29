@@ -1,4 +1,4 @@
-library Buffs requires TechUtils {
+library Buffs requires Events {
 	constant integer MaxCountBuffTarget = 100; //Максимальное количество типов бафов, которые могут действовать на одну цель
 	
 	key BuffTarget_hid;
@@ -7,6 +7,43 @@ library Buffs requires TechUtils {
 
 	constant integer CK_HID = 0;
 	constant real tic = 0.03125;
+
+	// Событие баффа
+	//
+	// GetTriggerBuffOwner() -> unit
+	// GetTriggerBuffTarget() -> unit
+	// GetTriggerBuffIsEntered() -> boolean
+	// GetTriggerBuffIsOut() -> boolean
+	// GetTriggerBuffIsActions() -> boolean
+	// GetTriggerBuffIsTransfer() -> boolean
+	// GetTriggerBuffActionsId() -> integer
+	// GetTriggerBuffId() -> integer
+	// GetTriggerBuffStack() -> timer
+	public integer EVENT_BUFF;
+
+	function onInit() {
+		EVENT_BUFF = CreateEvent("EVENT_BUFF");
+	}
+
+	unit BUFF_OWNER_UNIT_GET;
+	unit BUFF_TARGET_UNIT_GET;
+	boolean BUFF_IS_ENTERED_GET;
+	boolean BUFF_IS_OUT_GET;
+	boolean BUFF_IS_ACTIONS_GET;
+	boolean BUFF_IS_TRANSFER_GET;
+	integer BUFF_ACTIONS_ID_GET;
+	integer BUFF_ID_GET;
+	timer BUFF_STACK_GET;
+
+	public function GetTriggerBuffOwner() -> unit { debug DebugEvent.a(EVENT_BUFF).run(); return BUFF_OWNER_UNIT_GET; }
+	public function GetTriggerBuffTarget() -> unit { debug DebugEvent.a(EVENT_BUFF).run(); return BUFF_TARGET_UNIT_GET; }
+	public function GetTriggerBuffIsEntered() -> boolean { debug DebugEvent.a(EVENT_BUFF).run(); return BUFF_IS_ENTERED_GET; }
+	public function GetTriggerBuffIsOut() -> boolean { debug DebugEvent.a(EVENT_BUFF).run(); return BUFF_IS_OUT_GET; }
+	public function GetTriggerBuffIsActions() -> boolean { debug DebugEvent.a(EVENT_BUFF).run(); return BUFF_IS_ACTIONS_GET; }
+	public function GetTriggerBuffIsTransfer() -> boolean { debug DebugEvent.a(EVENT_BUFF).run(); return BUFF_IS_TRANSFER_GET; }
+	public function GetTriggerBuffActionsId() -> integer { debug DebugEvent.a(EVENT_BUFF).run(); return BUFF_ACTIONS_ID_GET; }
+	public function GetTriggerBuffId() -> integer { debug DebugEvent.a(EVENT_BUFF).run(); return BUFF_ID_GET; }
+	public function GetTriggerBuffStack() -> timer { debug DebugEvent.a(EVENT_BUFF).run(); return BUFF_STACK_GET; }
 
 /*----------------Getters------------------------------------------------------------------------------------------------------------------------------------ */
 
@@ -239,6 +276,7 @@ library Buffs requires TechUtils {
 	) {
 		timer tm;
 		integer tmId;
+		debug BJDebugMsg("StartBuffActions: buf=" + I2S(buf) + ", ownerUnit=" + GetUnitName(ownerUnit) + ", targetUnit=" + GetUnitName(targetUnit) + ", isEntered=" + GetBooleanValue(isEntered) + ", isOut=" + GetBooleanValue(isOut) + ", isActions=" + GetBooleanValue(isActions) + ", actionsId=" + I2S(actionsId) + ", delay=" + GetBooleanValue(delay) + ", isTransfer=" + GetBooleanValue(isTransfer));
 		if (delay || WantDelay) {
 			WantDelay = false;
 			tm = CreateTimer();
@@ -255,34 +293,55 @@ library Buffs requires TechUtils {
 			TimerStart(tm, 0, false, function() {
 				timer tm = GetExpiredTimer();
 				integer tmId = GetHandleId(tm);
-				BuffId = LoadInteger(HT, tmId, 0);
-				BuffStack = LoadTimerHandle(HT, tmId, 1);
-				OwnerUnit = LoadUnitHandle(HT, tmId, 2);
-				TargetUnit = LoadUnitHandle(HT, tmId, 3);
-				IsEntered = LoadBoolean(HT, tmId, 4);
-				IsOut = LoadBoolean(HT, tmId, 5);
-				IsActions= LoadBoolean(HT, tmId, 6);
-				ActionsId = LoadInteger(HT, tmId, 7);
-				IsTransfer = LoadBoolean(HT, tmId, 8);
-				BuffActions.evaluate();
-				ExecuteFunc("Trig_BuffActionsGUI_Actions");
+				BUFF_ID_GET = LoadInteger(HT, tmId, 0);
+				BUFF_STACK_GET = LoadTimerHandle(HT, tmId, 1);
+				BUFF_OWNER_UNIT_GET = LoadUnitHandle(HT, tmId, 2);
+				BUFF_TARGET_UNIT_GET = LoadUnitHandle(HT, tmId, 3);
+				BUFF_IS_ENTERED_GET = LoadBoolean(HT, tmId, 4);
+				BUFF_IS_OUT_GET = LoadBoolean(HT, tmId, 5);
+				BUFF_IS_ACTIONS_GET = LoadBoolean(HT, tmId, 6);
+				BUFF_ACTIONS_ID_GET = LoadInteger(HT, tmId, 7);
+				BUFF_IS_TRANSFER_GET = LoadBoolean(HT, tmId, 8);
+
+				ExecuteEvent(EVENT_BUFF);
+
+				BUFF_ID_GET = 0;
+				BUFF_STACK_GET = null;
+				BUFF_OWNER_UNIT_GET = null;
+				BUFF_TARGET_UNIT_GET = null;
+				BUFF_IS_ENTERED_GET = false;
+				BUFF_IS_OUT_GET = false;
+				BUFF_IS_ACTIONS_GET = false;
+				BUFF_ACTIONS_ID_GET = 0;
+				BUFF_IS_TRANSFER_GET = false;
+
 				FlushChildHashtable(HT, tmId);
 				PauseTimer(tm);
 				DestroyTimer(tm);
 				tm = null;
 			});
 		} else {
-			BuffId = buf;
-			BuffStack = buffStack;
-			OwnerUnit = ownerUnit;
-			TargetUnit = targetUnit;
-			IsEntered = isEntered;
-			IsOut = isOut;
-			IsActions= isActions;
-			ActionsId = actionsId;
-			IsTransfer = isTransfer;
-			BuffActions.evaluate();
-			ExecuteFunc("Trig_BuffActionsGUI_Actions");
+			BUFF_ID_GET = buf;
+			BUFF_STACK_GET = buffStack;
+			BUFF_OWNER_UNIT_GET = ownerUnit;
+			BUFF_TARGET_UNIT_GET = targetUnit;
+			BUFF_IS_ENTERED_GET = isEntered;
+			BUFF_IS_OUT_GET = isOut;
+			BUFF_IS_ACTIONS_GET = isActions;
+			BUFF_ACTIONS_ID_GET = actionsId;
+			BUFF_IS_TRANSFER_GET = isTransfer;
+
+			ExecuteEvent(EVENT_BUFF);
+
+			BUFF_ID_GET = 0;
+			BUFF_STACK_GET = null;
+			BUFF_OWNER_UNIT_GET = null;
+			BUFF_TARGET_UNIT_GET = null;
+			BUFF_IS_ENTERED_GET = false;
+			BUFF_IS_OUT_GET = false;
+			BUFF_IS_ACTIONS_GET = false;
+			BUFF_ACTIONS_ID_GET = 0;
+			BUFF_IS_TRANSFER_GET = false;
 		}
 		tm = null;
 	}
@@ -416,7 +475,7 @@ library Buffs requires TechUtils {
 				false,
 				actionsId,
 				false,
-				false
+				true
 			);
 		}
 		
@@ -513,7 +572,7 @@ library Buffs requires TechUtils {
 			}
 			for (1 <= i <= bTarget.countBuffs) {
 				if (bTarget.buffs[i] == buf) {
-					debug Error("BT1", "Регистрация уже зарегестрированного бафа для объекта(" + GetUnitName(u) + ").");
+					Error("BT1", "Регистрация уже зарегестрированного бафа для объекта(" + GetUnitName(u) + ").");
 					return;
 				}
 			}
@@ -756,7 +815,7 @@ library Buffs requires TechUtils {
 			timer whichTm;
 			
 			if (whichStacks == 0) {
-				debug Error("BS0", "Удаление таймера для несуществующего баффа юнита (" + I2S(buf) + ")");
+				debug Warning("BS0", "Удаление таймера для несуществующего баффа юнита (" + I2S(buf) + ")");
 				return;
 			}
 			
@@ -851,24 +910,44 @@ library Buffs requires TechUtils {
 	
 /*----------------Main Functions----------------------------------------------------------------------------------------------------------------------------- */
 
+/*public function AddBuffToUnit(
+	unit ownerUnit,             //владелец бафа
+	unit targetUnit,            //цель бафа
+	integer typeId,             //тип бафа
+	integer actionsId,          //id действий
+	real duration,              //длительность баффа
+	integer rank,               //ранг баффа (0 - negative, 1 - positive, [2-..] - others)
+	integer dispelDifficulty,   //сложность развеивания баффа (рассеиваются баффы равны или ниже этому значению)
+	boolean stackable,          //true - бафф получает стаки в случае если бафф такого же типа уже активен, false - бафф замещается новым
+	boolean singleDuration,     //true - стаки используют единую длительность баффа, false - стаки используют независимую длительность (для стакабельных) (для нестакабельных true будет обновлять параметры и длительность баффа)
+	boolean singleOutEnter,     //true - дополнительные стаки стакабельного баффа не будут триггерить действия входа/выхода, для нестакабельных действия входа/выхода не будут запущены при замещении баффа
+	boolean singlePeriod,       //true - бафф имеет единый таймер периодических действий, false - стаки имеют свои таймеры периодических действий (только для stackable)
+	integer countStacks,        //максимальное количество стаков (при переполненности уничтожает стак с самой маленькой длительностью (с действием выхода) и создает новый стак (с действием входа))
+	boolean pierceSpellImmun,   //false - бафф автоматически снимется, если юнит станет неуязвимым к магии, true - игнорирует неуязвимость к магии
+	boolean pierceInvul,        //false - бафф автоматически снимется, если юнит станет неуязвимым, true - игнорирует неуязвимость
+	boolean pierceDeath,        //false - бафф автоматически снимется, если юнит умрет, true - игнорирует смерть юнита
+	boolean periodActions,      //включить периодические действия (true - вкл, false - выкл)
+	real period)                //промежуток времени между периодическими действиями
+	-> Buff
+{*/
 	public function AddBuffToUnit(
-		unit ownerUnit,             //владелец бафа
-		unit targetUnit,            //цель бафа
-		integer typeId,             //тип бафа
-		integer actionsId,          //id действий
-		real duration,              //длительность баффа
-		integer rank,               //ранг баффа (0 - negative, 1 - positive, [2-..] - others)
-		integer dispelDifficulty,   //сложность развеивания баффа (рассеиваются баффы равны или ниже этому значению)
-		boolean stackable,          //true - бафф получает стаки в случае если бафф такого же типа уже активен, false - бафф замещается новым
-		boolean singleDuration,     //true - стаки используют единую длительность баффа, false - стаки используют независимую длительность (для стакабельных) (для нестакабельных true будет обновлять параметры и длительность баффа)
-		boolean singleOutEnter,     //true - дополнительные стаки стакабельного баффа не будут триггерить действия входа/выхода, для нестакабельных действия входа/выхода не будут запущены при замещении баффа
-		boolean singlePeriod,       //true - бафф имеет единый таймер периодических действий, false - стаки имеют свои таймеры периодических действий (только для stackable)
-		integer countStacks,        //максимальное количество стаков (при переполненности уничтожает стак с самой маленькой длительностью (с действием выхода) и создает новый стак (с действием входа))
-		boolean pierceSpellImmun,   //false - бафф автоматически снимется, если юнит станет неуязвимым к магии, true - игнорирует неуязвимость к магии
-		boolean pierceInvul,        //false - бафф автоматически снимется, если юнит станет неуязвимым, true - игнорирует неуязвимость
-		boolean pierceDeath,        //false - бафф автоматически снимется, если юнит умрет, true - игнорирует смерть юнита
-		boolean periodActions,      //включить периодические действия (true - вкл, false - выкл)
-		real period)                //промежуток времени между периодическими действиями
+		unit ownerUnit,
+		unit targetUnit,
+		integer typeId,
+		integer actionsId,
+		real duration,
+		integer rank,
+		integer dispelDifficulty,
+		boolean stackable,          
+		boolean singleDuration,     
+		boolean singleOutEnter,     
+		boolean singlePeriod,       
+		integer countStacks,        
+		boolean pierceSpellImmun,   
+		boolean pierceInvul,        
+		boolean pierceDeath,        
+		boolean periodActions,      
+		real period)                
 		-> Buff
 	{
 		Buff buf = 0;
@@ -882,6 +961,7 @@ library Buffs requires TechUtils {
 		WantDelay = false;
 		udg_BS_StackDataInt = 0;
 		udg_BS_StackDataReal = 0.;
+		BJDebugMsg("AddBuffToUnit: ownerUnit=" + I2S(GetHandleId(ownerUnit)) + ", targetUnit=" + I2S(GetHandleId(targetUnit)) + ", typeId=" + I2S(typeId) + ", actionsId=" + I2S(actionsId) + ", duration=" + R2S(duration) + ", rank=" + I2S(rank) + ", dispelDifficulty=" + I2S(dispelDifficulty) + ", stackable=" + GetBooleanValue(stackable) + ", singleDuration=" + GetBooleanValue(singleDuration) + ", singleOutEnter=" + GetBooleanValue(singleOutEnter) + ", singlePeriod=" + GetBooleanValue(singlePeriod) + ", countStacks=" + I2S(countStacks) + ", pierceSpellImmun=" + GetBooleanValue(pierceSpellImmun) + ", pierceInvul=" + GetBooleanValue(pierceInvul) + ", pierceDeath=" + GetBooleanValue(pierceDeath) + ", periodActions=" + GetBooleanValue(periodActions) + ", period=" + R2S(period));
 		
 
 		if ((!pierceSpellImmun && IsUnitType(targetUnit, UNIT_TYPE_MAGIC_IMMUNE)) || (!pierceInvul && IsUnitInvulnerable(targetUnit))) {

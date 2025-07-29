@@ -341,7 +341,7 @@ library Auras requires TechUtils {
 			}
 			for (1 <= i <= aTarget.countAuras) {
 				if (aTarget.auras[i] == aura) {
-					debug Debug("Error AT1: Регистрация уже зарегестрированной ауры для объекта(" + GetUnitName(u) + ").");
+					Debug("Error AT1: Регистрация уже зарегестрированной ауры для объекта(" + GetUnitName(u) + ").");
 					return;
 				}
 			}
@@ -354,7 +354,7 @@ library Auras requires TechUtils {
 			AuraTarget aTarget = LoadInteger(HT, GetHandleId(u), AURA_TARGET_HID);
 			integer i = 0;
 			if (aTarget == 0) {
-				debug Debug("Error AT2: Удаление ауры для не существующего объекта(" + GetUnitName(u) + ").");
+				Debug("Error AT2: Удаление ауры для не существующего объекта(" + GetUnitName(u) + ").");
 				return;
 			}
 			

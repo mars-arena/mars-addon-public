@@ -1,0 +1,24 @@
+library Talent requires Events {
+
+	constant integer TALENT_ID = 'h00A';
+
+	public integer EVENT_TALENT_CHOSEN;
+	unit TALENT_HERO_GET = null;
+
+	public function GetTalentHero() -> unit {
+		debug DebugEvent.a(EVENT_TALENT_CHOSEN).run();
+		return TALENT_HERO_GET;
+	}
+
+	function onInit() {
+		EVENT_TALENT_CHOSEN = CreateEvent("EVENT_TALENT_CHOSEN");
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_SPELL_EFFECT), function() {
+			if (GetUnitTypeId(GetTriggerUnit()) == TALENT_ID) {
+				TALENT_HERO_GET = udg_Hero[GetPlayerId(GetOwningPlayer(GetTriggerUnit())) + 1];
+				ExecuteEvent(EVENT_TALENT_CHOSEN);
+				TALENT_HERO_GET = null;
+			}
+		});
+	}
+
+}

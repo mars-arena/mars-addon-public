@@ -9,6 +9,32 @@ library Math
 		constant real SQRT3      = 1.7320508  // sqrt(3)
 	endglobals
 
+	/**
+	* Проверяет, что строка состоит только из цифр 0–9 и не пуста
+	* @param string s строка для проверки
+	* @return boolean true, если всё цифры
+	*/
+	function StringIsNumeric takes string s returns boolean
+		local integer len = StringLength(s)
+		local integer i = 0
+		local string c
+		if len == 0 then
+			return false
+		endif
+
+		
+		loop
+			exitwhen i >= len
+			set c = SubString(s, i, i + 1)
+			if c != "0" and c != "1" and c != "2" and c != "3" and c != "4" and c != "5" and c != "6" and c != "7" and c != "8" and c != "9" then
+				return false
+			endif
+			set i = i + 1
+		endloop
+
+		return true
+	endfunction
+
 	function SignInt takes integer z returns integer
 		if z < 0 then
 			return -1

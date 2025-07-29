@@ -1,88 +1,89 @@
 library Debug requires Math {
 
-	function dbg(string msg) {
+	// Глобальный уровень отладки (0 = выкл, больше = более подробный).
+	integer DEBUG_LEVEL = 3;
+
+	/**
+	 * Вывести необработанное сообщение отладки всем игрокам, если уровень позволяет.
+	 * @param integer level уровень подробности этого сообщения
+	 * @param string msg сообщение для отображения
+	 */
+	function dbg(integer level, string msg) {
 		integer i;
-		if (!DEBUG_ENABLED) return;
+		if (level > DEBUG_LEVEL) return;
 		for (0 <= i <= bj_MAX_PLAYERS) {
 			DisplayTimedTextToPlayer(Player(i), 0, 0, 20, msg);
 		}
 	}
 
+	/**
+	 * Отладка на уровне "info": общая информация.
+	 * @param string msg сообщение для логирования
+	 */
+	public function Debug(string msg) {
+		dbg(3, "|cff2163ff[i]|r - " + msg);
+	}
+
+	/**
+	 * Показать текстовую метку в координатах, полезно для отладки
+	 * @param string s текст для отображения
+	 * @param real x позиция по X
+	 * @param real y позиция по Y
+	 */
 	public function DebugXY(string s, real x, real y) {
 		texttag tt;
-		if (!DEBUG_ENABLED) {
-			return;
-		}
-		tt = CreateTextTagLocBJ(s, null, 0, 10, GetRandomInt(50, 100), GetRandomInt(50, 100), GetRandomInt(50, 100), GetRandomInt(0, 10));
-		SetTextTagPos(tt, x + GetRandomReal(-25, 25), y + GetRandomReal(-25, 25), 20.);
+		tt = CreateTextTagLocBJ(s, null, 0, 10, GetRandomInt(50,100), GetRandomInt(50,100), GetRandomInt(50,100), GetRandomInt(0,10));
+		SetTextTagPos(tt, x + GetRandomReal(-25,25), y + GetRandomReal(-25,25), 20.);
 		SetTextTagPermanent(tt, false);
 		SetTextTagLifespan(tt, 1.60);
 		SetTextTagFadepoint(tt, 0.80);
-		SetTextTagVelocityBJ(tt, GetRandomInt(70, 90), GetRandomInt(80,110));
-		tt = null;
+		SetTextTagVelocityBJ(tt, GetRandomInt(70,90), GetRandomInt(80,110));
 	}
 
-	public function Debug(string msg) {
-		if (!DEBUG_ENABLED) return;
-		dbg("|cff2163ff:|r " + msg);
-	}
-
+	/**
+	 * Отладка на уровне "warning": потенциальные проблемы.
+	 * @param string id идентификатор предупреждения
+	 * @param string msg сообщение предупреждения
+	 */
 	public function Warning(string id, string msg) {
-		if (!DEBUG_ENABLED) return;
-		dbg("|cffffa500Warning " + id + ":|r " + msg);
+		dbg(2, "|cffffa500[w" + id + "]|r - " + msg);
 	}
 
+	/**
+	 * Отладка на уровне "error": серьёзные ошибки.
+	 * @param string id идентификатор ошибки
+	 * @param string msg подробное сообщение об ошибке
+	 */
 	public function Error(string id, string msg) {
-		if (!DEBUG_ENABLED) return;
-		dbg("|cffff0000Error " + id + ":|r " + msg);
+		dbg(1, "|cffff0000[e" + id + "]|r - " + msg);
 	}
 
 	function onInit() {
-		trigger t;
-
-		if (DEBUG_ENABLED) {
-			t = CreateTrigger();
-			TriggerRegisterPlayerChatEvent(t, Player(0), "-debug", true);
-			TriggerAddAction(t, function() {
-				DEBUG_ENABLED = !DEBUG_ENABLED;
-				Warning("DEBUG", GetBooleanValue(DEBUG_ENABLED));
-			});
-
-			t = CreateTrigger();
-			TriggerRegisterPlayerChatEvent(t, Player(0), "-debugdmg", true);
-			TriggerAddCondition(t, Condition(function() -> boolean {
-				return DEBUG_ENABLED;
-			}));
-			TriggerAddAction(t, function() {
-				DebugDmg = !DebugDmg;
-				Warning("DEBUG_DMG",GetBooleanValue(DebugDmg));
-			});
-
-			t = CreateTrigger();
-			TriggerRegisterPlayerChatEvent(t, Player(0), "-debugstun", true);
-			TriggerAddCondition(t, Condition(function() -> boolean {
-				return DEBUG_ENABLED;
-			}));
-			TriggerAddAction(t, function() {
-				DebugStun = !DebugStun;
-				Warning("DEBUG_STUN", GetBooleanValue(DebugStun));
-			});
-
-			t = CreateTrigger();
-			TriggerRegisterPlayerChatEvent(t, Player(0), "-debughero", true);
-			TriggerAddCondition(t, Condition(function() -> boolean {
-				return DEBUG_ENABLED;
-			}));
-			TriggerAddAction(t, function() {
-				DebugHero = !DebugHero;
-				Warning("DEBUG_HERO", GetBooleanValue(DebugHero));
-			});
-
-			Warning("DEBUG", GetBooleanValue(DEBUG_ENABLED));
-			Warning("DEBUG_DMG",GetBooleanValue(DebugDmg));
-			Warning("DEBUG_STUN", GetBooleanValue(DebugStun));
-			Warning("DEBUG_HERO", GetBooleanValue(DebugHero));
-		}
+		trigger t = CreateTrigger();
+		TriggerRegisterPlayerChatEvent(t, Player(0), "-debug", false);
+		TriggerAddAction(t, function() {
+			string chat = GetEventPlayerChatString();
+			string arg = StringCase(SubString(chat, 7, StringLength(chat)), false);
+			if (StringLength(arg) == 0) {
+				Debug("DEBUG_LEVEL: " + I2S(DEBUG_LEVEL));
+			} else if (StringIsNumeric(arg)) {
+				DEBUG_LEVEL = S2I(arg);
+				Debug("DEBUG_LEVEL: " + I2S(DEBUG_LEVEL));
+			} else {
+				if (arg == "dmg") {
+					DebugDmg = !DebugDmg;
+					Debug("DEBUG_DMG: " + GetBooleanValue(DebugDmg));
+				} else if (arg == "stun") {
+					DebugStun = !DebugStun;
+					Debug("DEBUG_STUN: " + GetBooleanValue(DebugStun));
+				} else if (arg == "hero") {
+					DebugHero = !DebugHero;
+					Debug("DEBUG_HERO: " + GetBooleanValue(DebugHero));
+				} else {
+					Warning("DEB1", "Unknown parameter: " + arg);
+				}
+			}
+		});
 
 		t = null;
 	}

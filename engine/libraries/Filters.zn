@@ -58,6 +58,13 @@ library Filters requires Stuns, Buffs {
 		;
 	}
 
+	public function IsUnitHasAttack(unit whichUnit) -> boolean {
+		return
+			IsUnitType(whichUnit, UNIT_TYPE_MELEE_ATTACKER) ||
+			IsUnitType(whichUnit, UNIT_TYPE_RANGED_ATTACKER)
+		;
+	}
+
 	public function IsUnitStructure(unit whichUnit) -> boolean {
 		return IsUnitType(whichUnit, UNIT_TYPE_STRUCTURE) || IsUnitType(whichUnit, ConvertUnitType(20));
 	}

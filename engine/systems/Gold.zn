@@ -2,119 +2,80 @@ library Gold requires Events {
 
 // Variables
 
+	// Событие модификатора золота
+	// GetGoldModifierBonus() -> real
+	// GetGoldModifierPenalty() -> real
+	// GetGoldModifierIncrease() -> real
+	// GetGoldModifierDecrease() -> real
+	// AddGoldModifierBonus(real goldBonus)
+	// AddGoldModifierPenalty(real goldPenalty)
+	// AddGoldModifierIncrease(real goldIncrease)
+	// AddGoldModifierDecrease(real goldDecrease)
+	// GetGoldPlayer() -> player
+	// GetGoldSourceUnit() -> unit
+	public integer EVENT_GOLD_MODIFIER;
+
+	// GetGoldPlayer() -> player
+	// GetGoldSourceUnit() -> unit
+	// GetGoldAmount() -> real
+	public integer EVENT_GOLD;
+
 	// Event Variables
-	unit GoldModifierUnit = null;		// event unit
-	real GoldModifierFlat = 0.0;		// flat 
-	real GoldModifierPenalty = 0.0;		// flat
-	real GoldModifierIncrease = 0.0;	// percentage
-	real GoldModifierDecrease = 0.0;	// percentage
-	Point2D GoldModifierPosition = 0;	// point
+	real GoldModifierBonus;			// flat bonus
+	real GoldModifierPenalty;		// flat penalty
+	real GoldModifierIncrease;		// percentage
+	real GoldModifierDecrease;		// percentage
 
-	unit GoldUnit = null;				// event unit
-	real GoldValue = 0.0;				// flat 
-	Point2D GoldPosition = 0;			// point
+	player GoldPlayer;				// event player
+	real GoldAmount;				// flat 
+	unit GoldSourceUnit;			// source unit
 
-// API
+	SummativeText TempText;
 
-	// Event Getters
+// Event API
 
-	public function GetHealAmount() -> real {return HealAmount;}
-	public function GetHealedUnit() -> unit {return HealedUnit;}
-	public function GetHealingUnit() -> unit {return HealingUnit;}
-	public function GetOverHeal() -> real {return OverHeal;}
+	// Event Modifier Getters
+	public function GetGoldModifierBonus() -> real { debug DebugEvent.a(EVENT_GOLD_MODIFIER).run(); return GoldModifierBonus; }
+	public function GetGoldModifierPenalty() -> real { debug DebugEvent.a(EVENT_GOLD_MODIFIER).run(); return GoldModifierPenalty; }
+	public function GetGoldModifierIncrease() -> real { debug DebugEvent.a(EVENT_GOLD_MODIFIER).run(); return GoldModifierIncrease; }
+	public function GetGoldModifierDecrease() -> real { debug DebugEvent.a(EVENT_GOLD_MODIFIER).run(); return GoldModifierDecrease; }
 
-	public function GetLifestealAmount() -> real {return LifestealAmount;}
-	public function GetLifestealedUnit() -> unit {return LifestealedUnit;}
-	public function GetOverLifesteal() -> real {return OverLifesteal;}
+	// Event Modifier Adders
+	public function AddGoldModifierBonus(real goldBonus) { debug DebugEvent.a(EVENT_GOLD_MODIFIER).run(); GoldModifierBonus += goldBonus; }
+	public function AddGoldModifierPenalty(real goldPenalty) { debug DebugEvent.a(EVENT_GOLD_MODIFIER).run(); GoldModifierPenalty += goldPenalty; }
+	public function AddGoldModifierIncrease(real goldIncrease) { debug DebugEvent.a(EVENT_GOLD_MODIFIER).run(); GoldModifierIncrease += goldIncrease; }
+	public function AddGoldModifierDecrease(real goldDecrease) { debug DebugEvent.a(EVENT_GOLD_MODIFIER).run(); GoldModifierDecrease = RMinBJ((1 - (1 - GoldModifierDecrease) * (1 - goldDecrease)), 1.00); }
 
-	public function GetRestoredAmount() -> real {return RestoredAmount;}
-	public function GetRestoredUnit() -> unit {return RestoredUnit;}
-	public function GetRestoringUnit() -> unit {return RestoringUnit;}
-	public function GetOverRestore() -> real {return OverRestore;}
+	// Event Gold and Modifier Getters
+	public function GetGoldPlayer() -> player { debug DebugEvent.a(EVENT_GOLD_MODIFIER).a(EVENT_GOLD).run(); return GoldPlayer; }
+	public function GetGoldSourceUnit() -> unit { debug DebugEvent.a(EVENT_GOLD_MODIFIER).a(EVENT_GOLD).run(); return GoldSourceUnit; }
+	public function GetGoldAmount() -> real { debug DebugEvent.a(EVENT_GOLD).run(); return GoldAmount; }
 
-	// Event Setters
+// System
 
-	public function SetHealAmount(real healAmount) {HealAmount = healAmount;}
-	public function SetLifestealAmount(real lifestealAmount) {LifestealAmount = lifestealAmount;}
-	public function SetRestoredAmount(real restoredAmount) {RestoredAmount = restoredAmount;}
+	public function AddGold(player whichPlayer, unit sourceUnit, real amount) {
+		GoldPlayer = whichPlayer;
+		GoldAmount = amount;
+		GoldSourceUnit = sourceUnit;
+		GoldModifierBonus = 0.0;
+		GoldModifierPenalty = 0.0;
+		GoldModifierIncrease = 0.0;
+		GoldModifierDecrease = 0.0;
 
-	// Functions
+		ExecuteEvent(EVENT_GOLD_MODIFIER);
 
-	public function HealUnit(unit healingUnit, unit healedUnit, real amount) {
-		HealAmount = amount;
-		HealedUnit = healedUnit;
-		HealingUnit = healingUnit;
-		OverHeal = 0.0;
-
-		ExecuteEvent(EVENT_HEAL_MODIFIER);
-
-		if (HealAmount > 0.0) {
-			OverHeal = MaxReal(0, HealAmount - (GetUnitMaxLife(HealedUnit) - GetUnitState(HealedUnit, UNIT_STATE_LIFE)));
-			SetUnitState(HealedUnit, UNIT_STATE_LIFE, GetUnitState(HealedUnit, UNIT_STATE_LIFE) + HealAmount);
-			ExecuteEvent(EVENT_HEAL);
+		if (GoldAmount > 0.0) {
+			SetPlayerState(GoldPlayer, PLAYER_STATE_RESOURCE_GOLD, GetPlayerState(GoldPlayer, PLAYER_STATE_RESOURCE_GOLD) + R2I(GoldAmount));
+			ExecuteEvent(EVENT_GOLD);
 		}
-
-		HealAmount = 0.0;
-		HealedUnit = null;
-		HealingUnit = null;
-		OverHeal = 0.0;
-	}
-
-	public function LifestealUnit(unit whichUnit, real amount) {
-		LifestealAmount = amount;
-		LifestealedUnit = whichUnit;
-		OverLifesteal = 0.0;
-
-		ExecuteEvent(EVENT_LIFESTEAL_MODIFIER);
-
-		if (LifestealAmount > 0.0) {
-			OverLifesteal = MaxReal(0, LifestealAmount - (GetUnitMaxLife(LifestealedUnit) - GetUnitState(LifestealedUnit, UNIT_STATE_LIFE)));
-			SetUnitState(LifestealedUnit, UNIT_STATE_LIFE, GetUnitState(LifestealedUnit, UNIT_STATE_LIFE) + LifestealAmount);
-			ExecuteEvent(EVENT_LIFESTEAL);
-		}
-
-		LifestealAmount = 0.0;
-		LifestealedUnit = null;
-		OverLifesteal = 0.0;
-	}
-
-	public function RestoreManaUnit(unit restoringUnit, unit restoredUnit, real amount) {
-		RestoredAmount = amount;
-		RestoredUnit = restoredUnit;
-		RestoringUnit = restoringUnit;
-		OverRestore = 0.0;
-
-		ExecuteEvent(EVENT_RESTORE_MODIFIER);
-
-		if (RestoredAmount > 0.0) {
-			OverRestore = MaxReal(0, RestoredAmount - (GetUnitState(RestoredUnit, UNIT_STATE_MAX_MANA) - GetUnitState(RestoredUnit, UNIT_STATE_MANA)));
-			SetUnitState(RestoredUnit, UNIT_STATE_MANA, GetUnitState(RestoredUnit, UNIT_STATE_MANA) + RestoredAmount);
-			ExecuteEvent(EVENT_RESTORE);
-		}
-
-		RestoredAmount = 0.0;
-		RestoredUnit = null;
-		RestoringUnit = null;
-		OverRestore = 0.0;
 	}
 
 	function onInit() {
-		RegisterAction(EVENT_HEAL, function() {
-			TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(GetHealingUnit()), GetHealedUnit(), HEAL_TEXT, GetHealAmount(), "");
-			TempText.showToPlayer(GetOwningPlayer(GetHealedUnit()));
-			if (IsMapDuel())
-				TempText.showToObservers();
-		});
-
-		RegisterAction(EVENT_LIFESTEAL, function() {
-			TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(GetLifestealedUnit()), GetLifestealedUnit(), HEAL_TEXT, GetLifestealAmount(), "");
-			if (IsMapDuel())
-				TempText.showToObservers();
-			DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\Undead\\VampiricAura\\VampiricAuraTarget.mdx", GetLifestealedUnit(), "origin"));
-		});
-
-		RegisterAction(EVENT_RESTORE, function() {
-			TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(GetRestoredUnit()), GetRestoredUnit(), MANA_TEXT, GetRestoredAmount(), "");
+		EVENT_GOLD_MODIFIER = CreateEvent("EVENT_GOLD_MODIFIER");
+		EVENT_GOLD = CreateEvent("EVENT_GOLD");
+		RegisterAction(EVENT_GOLD, function() {
+			TempText = AddSummativeTextToUnitForPlayer(GetGoldPlayer(), GetGoldSourceUnit(), GOLD_TEXT, GetGoldAmount(), "");
+			TempText.showToPlayer(GetGoldPlayer());
 			if (IsMapDuel())
 				TempText.showToObservers();
 		});

@@ -1,4 +1,10 @@
-library HashCleaner requires Stuns, Auras, Buffs {
+library HashCleaner requires Stuns, Auras, Buffs, Combat {
+
+	public integer EVENT_CLEAR_HASH;
+
+	integer TriggerHash;
+	public function GetTriggerHash() -> integer { debug DebugEvent.a(EVENT_CLEAR_HASH).run(); return TriggerHash; }
+	
 
 	// TO DO
 	struct ClearUnit {
@@ -14,11 +20,16 @@ library HashCleaner requires Stuns, Auras, Buffs {
 			this.hashId = GetHandleId(u);
 			this.tm = CreateTimer();
 			this.count = 0;
+			if (IsUnitDummy(u)) {
+				this.clear();
+				return 0;
+			}
+
 			SaveInteger(HT, GetHandleId(this.tm), CK_HID, this);
 			TimerStart(this.tm, 1, true, function ClearUnit.check);
-			
+
 			RemoveUnitStun(u);
-			
+
 			return this;
 		}
 
@@ -30,19 +41,30 @@ library HashCleaner requires Stuns, Auras, Buffs {
 			this.deallocate();
 		}
 
+		method clear() {
+			TriggerHash = hashId;
+			ExecuteEvent(EVENT_CLEAR_HASH);
+
+			DestroyAllAurasByHashId(hashId);
+			DestroyAllBuffsByHashId(hashId);
+			DestroyAllModifiersByHashId(hashId);
+			DestroyAllMultiModifiersByHashId(hashId);
+			if (IsSet(UnitData.load(hashId))) UnitData.load(hashId).destroy();
+			if (IsSet(Regeneration.load(hashId))) Regeneration.load(hashId).destroy();
+			if (IsSet(MoveSpeed.load(hashId))) MoveSpeed.load(hashId).destroy();
+			if (IsSet(Combat.load(hashId))) Combat.load(hashId).destroy();
+			if (IsSet(Fatigue.load(hashId))) Fatigue.load(hashId).destroy();
+			
+			FlushChildHashtable(HT, hashId);
+			FlushChildHashtable(udg_HT_GUI, hashId);
+			this.destroy();
+		}
+
 		static method check() {
 			ClearUnit this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
 			count = count + 1;
 			if (GetUnitTypeId(u) == 0 && !UnitAlive(u)) {
-				DestroyAllAurasByHashId(hashId);
-				DestroyAllBuffsByHashId(hashId);
-				DestroyAllModifiersByHashId(hashId);
-				DestroyAllMultiModifiersByHashId(hashId);
-				if (IsSet(UnitData.load(hashId))) UnitData.load(hashId).destroy();
-				
-				FlushChildHashtable(HT, hashId);
-				FlushChildHashtable(udg_HT_GUI, hashId);
-				this.destroy();
+				this.clear();
 			} else if (count >= 100 || UnitAlive(u)) {
 				this.destroy();
 			}
@@ -51,7 +73,8 @@ library HashCleaner requires Stuns, Auras, Buffs {
 	}
 
 	function onInit() {
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DEATH),  function() {
+		EVENT_CLEAR_HASH = CreateEvent("EVENT_CLEAR_HASH");
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DEATH), function() {
 			ClearUnit.create(GetTriggerUnit());
 		});
 	}

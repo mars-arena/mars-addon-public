@@ -1,8 +1,5 @@
 library Constants {
 
-	// вкл/выкл возможность дебага
-	public boolean DEBUG_ENABLED = DEBUG_MODE;
-
 	// максимальное количество игроков
 	public constant integer MAX_PLAYERS = 16;
 

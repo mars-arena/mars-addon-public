@@ -1,7 +1,5 @@
 library Events requires Heroes {
 
-	public boolean DEBUG_EVENT = false;
-
 	trigger EventTriggers[500];
 	boolean EventIsRun[500];
 	string EventName[500];
@@ -30,12 +28,8 @@ library Events requires Heroes {
 		return RunningId[RunningCount];
 	}
 
-	public function DebugEvent(integer eventId) {
-		if (!IsEventRun(eventId)) Error("E3", "Использованиe API ивента вне его области: " + GetEventName(eventId));
-	}
-
 	public function ExecuteEvent(integer eventId) {
-		debug if (IsEventRun(eventId)) Error("E3", "Повторная инициализиация ивента: " + GetEventName(eventId));
+		if (IsEventRun(eventId)) Error("E5", "Повторная инициализиация ивента: " + GetEventName(eventId));
 		RunningCount = RunningCount + 1;
 		RunningId[RunningCount] = eventId;
 		EventIsRun[eventId] = true;
@@ -48,6 +42,7 @@ library Events requires Heroes {
 	public integer EVENT_ENTER;
 
 	public function RegisterAction(integer eventId, code action) -> triggeraction {
+		if (eventId == 0) Error("E4", "Регистрация действия для не инициализированного события");
 		if (EventTriggers[eventId] == null) {
 			// GAME EVENTS
 			if (eventId >= GetHandleId(EVENT_GAME_VICTORY) && eventId <= GetHandleId(EVENT_GAME_BUILD_SUBMENU) ||
@@ -78,7 +73,7 @@ library Events requires Heroes {
 			} else
 			
 			{
-				debug Error("E1", "Попытка зарегистрировать действие для неизвестного события ID:" + I2S(eventId));
+				Error("E1", "Попытка зарегистрировать действие для неизвестного события ID:" + I2S(eventId));
 				return null;
 			}
 		}
@@ -87,10 +82,43 @@ library Events requires Heroes {
 
 	public function UnregisterAction(integer eventId, triggeraction action) {
 		if (EventTriggers[eventId] == null) {
-			debug Error("E2", "Попытка очистить действие для неизвестного события ID:" + I2S(eventId));
+			Error("E2", "Попытка очистить действие для неизвестного события ID:" + I2S(eventId));
 			return;
 		}
 		TriggerRemoveAction(EventTriggers[eventId], action);
+	}
+
+	public DebugEventBuilder DebugEvent;
+
+	public struct DebugEventBuilder {
+		static integer events[500];
+		static integer count = 0;
+
+		method a(integer eventId) -> DebugEventBuilder {
+			count += 1;
+			events[count] = eventId;
+			return this;
+		}
+
+		method run() -> boolean {
+			boolean isRun = false;
+			integer i = 1;
+			string s;
+
+			for(1 <= i <= count) {
+				if (IsEventRun(events[i])) {
+					count = 0;
+					return true;
+				}
+			}
+
+			s = "";
+			for(1 <= i <= count) s += GetEventName(events[i]) + ", ";
+			Warning("E1", "Использованиe EVENT API вне контекста: " + s + " Текущий ивент: " + GetEventName(GetEventId()));
+
+			count = 0;
+			return false;
+		}
 	}
 
 	function onInit() {
@@ -100,6 +128,7 @@ library Events requires Heroes {
 		TriggerRegisterEnterRegion(EventTriggers[EVENT_ENTER], mapArea, Condition(function() -> boolean {
 			return !IsUnitDummy(GetTriggerUnit());
 		}));
+		DebugEvent = DebugEventBuilder.create();
 	}
 
 }

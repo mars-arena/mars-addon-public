@@ -1,0 +1,77 @@
+library Pickup requires Events {
+
+// Settings
+
+	// Дистанция, на которой юнит может подобрать предмет
+	constant real RANGE = 100.;
+
+// API
+
+	// Делает предмет подбираемым
+	// @param unit pickup — предмет, который будет подобран
+	// @return Pickup — инстанс поведения
+	public function MakePickupable(unit pickup) -> Pickup {
+		return Pickup.create(pickup);
+	}
+
+// Event API
+
+	// Событие получения предмета
+	//
+	// GetPickedUpUnit() -> unit
+	// GetPickingUnit() -> unit
+	public integer EVENT_PICK_UP;
+
+	function onInit() {
+		EVENT_PICK_UP = CreateEvent("EVENT_PICK_UP");
+	}
+
+	unit PickedUpUnit;
+	unit PickingUnit;
+
+	public function GetPickedUpUnit() -> unit { debug DebugEvent.a(EVENT_PICK_UP).run(); return PickedUpUnit; }
+	public function GetPickingUnit() -> unit { debug DebugEvent.a(EVENT_PICK_UP).run(); return PickingUnit; }
+
+// System
+
+	struct Pickup {
+		unit pickup;
+		trigger trgEnter;
+
+		static method create(unit pickup) -> Pickup {
+			Pickup this = Pickup.allocate();
+
+			this.pickup = pickup;
+
+			this.trgEnter = CreateTrigger();
+			SaveHandleDataInt(trgEnter, this);
+			TriggerRegisterUnitInRange(trgEnter, pickup, RANGE, Condition(function() -> boolean {
+				Pickup this = LoadHandleDataInt(GetTriggeringTrigger());
+				unit enteringUnit = GetTriggerUnit();
+
+				if (UnitAlive(enteringUnit) &&
+					!IsUnitType(enteringUnit, UNIT_TYPE_STRUCTURE) &&
+					!IsUnitDummy(enteringUnit)
+				) {
+					PickedUpUnit = this.pickup;
+					PickingUnit = enteringUnit;
+					ExecuteEvent(EVENT_PICK_UP);
+					KillUnit(this.pickup);
+					this.destroy();
+				}
+				enteringUnit = null;
+
+				return false;
+			}));
+
+			return this;
+		}
+
+		method destroy() {
+			FlushTrigger(trgEnter);
+			pickup = null;
+			this.deallocate();
+		}
+	}
+
+}

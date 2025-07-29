@@ -1,36 +1,35 @@
 library AreaSpells requires SpellGetters {
 
-// Constants
+// TODO:
+// Переделать на ивенты
+
+// Settings
 
 	// @const максимальный размер колизии
 	constant real MAX_COLLISION_SIZE = 100;
 
 // API
 
-	// Functions
-
 	// Прикрепляет эффект к заклинанию.
 	// Следующий вызов заменит эффект.
 	//
-	// * @arg effect `stunned` эффект.
-	// * @arg AreaSpell `whichSpell` заклинание.
+	// * @param effect `stunned` эффект.
+	// * @param AreaSpell `whichSpell` заклинание.
 	public function AttachEffectToAreaSpell(effect whichEffect, AreaSpell whichSpell) {
 		whichSpell.eff = whichEffect;
 	}
 
-// Main Function
-
 	// Добавляет заклинание области к юниту.
 	//
-	// * @arg unit `ownerUnit` юнит, владеющий заклинанием.
-	// * @arg unit `dummyUnit` юнит, применяющий заклинание (может быть таким же как и  `unit ownerUnit`).
-	// * @arg integer `actionsId` идентификатор действий заклинания.
-	// * @arg real `duration` длительность действия заклинания.
-	// * @arg boolean `pierceDeath` работает ли заклинание сквозь смерть `unit dummyUnit`.
-	// * @arg boolexpr `filter` функция-фильтр.
-	// * @arg real `rangeStart` начальный радиус области действия заклинания.
-	// * @arg real `rangeEnd` конечный радиус области действия заклинания.
-	// * @arg real `interval` интервал регистрации юнитов в области.
+	// * @param unit `ownerUnit` юнит, владеющий заклинанием.
+	// * @param unit `dummyUnit` юнит, применяющий заклинание (может быть таким же как и  `unit ownerUnit`).
+	// * @param integer `actionsId` идентификатор действий заклинания.
+	// * @param real `duration` длительность действия заклинания.
+	// * @param boolean `pierceDeath` работает ли заклинание сквозь смерть `unit dummyUnit`.
+	// * @param boolexpr `filter` функция-фильтр.
+	// * @param real `rangeStart` начальный радиус области действия заклинания.
+	// * @param real `rangeEnd` конечный радиус области действия заклинания.
+	// * @param real `interval` интервал регистрации юнитов в области.
 	// * @return object `AreaSpell` - возвращает объект заклинания области.
 	//
 	// Функция возвращает уникальный идентификатор созданного объекта, что позволяет сохранить его для того, чтобы получать доступ к объекту вручную, когда это нужно.
@@ -59,9 +58,8 @@ library AreaSpells requires SpellGetters {
 		);
 	}
 
-// Structures
+// System
 
-	// Object Structure
 	struct AreaSpell {
 		unit ownerUnit;
 		unit dummyUnit;

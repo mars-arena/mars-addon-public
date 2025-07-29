@@ -1,13 +1,11 @@
-library AttackSpeed requires Events, BuffActions {
+library AttackSpeed requires Events, Buffs, Auras, Filters {
 
-// Constants
+// Settings
 
+	// @const базовая скорость атаки
 	constant real BASE_ATTACK_SPEED = 100.0;
 
-// Variables
-
-	public integer EVENT_ATTACK_SPEED;
-
+	// @const идентификаторы способностей c скоростью атаки
 	integer AS_ABILITY_BONUS_ONES = 'A003';
 	integer AS_ABILITY_BONUS_TENS = 'A005';
 	integer AS_ABILITY_BONUS_HUNDREDS = 'A00F';
@@ -15,93 +13,198 @@ library AttackSpeed requires Events, BuffActions {
 	integer AS_ABILITY_PENALTY_TENS = 'A00M';
 	integer AS_ABILITY_PENALTY_HUNDREDS = 'A00X';
 
-	// Event Variables
-	unit ASUnit = null;
-	real ASBonus = 0.;		// flat 
-	real ASPenalty = 0.;	// flat
-	real ASIncrease = 0.;	// percentage
-	real ASDecrease = 0.;	// percentage
+// Event API
+
+	// Событие модификатора скорости боя
+	//
+	// GetASUnit() -> unit
+	// GetASBonus() -> real
+	// GetASPenalty() -> real
+	// GetASIncrease() -> real
+	// GetASDecrease() -> real
+	// AddASBonus(real asBonus)
+	// AddASPenalty(real asPenalty)
+	// AddASIncrease(real asIncrease)
+	// AddASDecrease(real asDecrease)
+	// SetASBonus(real asBonus)
+	// SetASPenalty(real asPenalty)
+	// SetASIncrease(real asIncrease)
+	// SetASDecrease(real asDecrease)
+	public integer EVENT_ATTACK_SPEED;
+
+	unit ASUnit;
+	real ASBonus;		// flat bonus
+	real ASPenalty;		// flat penalty
+	real ASIncrease;	// percentage bonus
+	real ASDecrease;	// percentage penalty
+
+	public function GetASUnit() -> unit { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); return ASUnit; }
+	public function GetASBonus() -> real { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); return ASBonus; }
+	public function GetASPenalty() -> real { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); return ASPenalty; }
+	public function GetASIncrease() -> real { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); return ASIncrease; }
+	public function GetASDecrease() -> real { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); return ASDecrease; }
+
+	public function AddASBonus(real asBonus) { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); ASBonus += asBonus; }
+	public function AddASPenalty(real asPenalty) { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); ASPenalty += asPenalty; }
+	public function AddASIncrease(real asIncrease) { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); ASIncrease += asIncrease; }
+	public function AddASDecrease(real asDecrease) { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); ASDecrease = RMinBJ((1 - (1 - ASDecrease) * (1 - asDecrease)), 1.00); }
+
+	public function SetASBonus(real asBonus) { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); ASBonus = asBonus; }
+	public function SetASPenalty(real asPenalty) { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); ASPenalty = asPenalty; }
+	public function SetASIncrease(real asIncrease) { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); ASIncrease = asIncrease; }
+	public function SetASDecrease(real asDecrease) { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); ASDecrease = asDecrease; }
+
+// API
+
+	// Возвращает кэшированную скорость атаки юнита
+	// @param unit whichUnit — целевой юнит
+	// @return real — скорость атаки юнита
+	public function GetUnitAttackSpeed(unit whichUnit) -> real {
+		return AttackSpeed.get(whichUnit).attackSpeed;
+	}
+
+	// Обновляет скорость атаки юнита
+	// @param unit whichUnit — целевой юнит
+	// @return real — скорость атаки юнита
+	public function UpdateUnitAttackSpeed(unit whichUnit) -> real {
+		return AttackSpeed.get(whichUnit).update();
+	}
 
 // Debug
 
-	public boolean DebugAS = true;
-	public boolean IsRunAS = false;
+	boolean Debug = true;
+	boolean IsRun = false;
 
 	function dbg(string msg, real x, real y) {
-		if (DebugAS) DebugXY(msg, x, y);
-	}
-
-// Event API
-
-	// Event Getters
-
-	public function GetASUnit() -> unit {
-		debug DebugEvent(EVENT_ATTACK_SPEED);
-		return ASUnit;
-	}
-	public function GetASBonus() -> real {
-		debug DebugEvent(EVENT_ATTACK_SPEED);
-		return ASBonus;
-	}
-	public function GetASPenalty() -> real {
-		debug DebugEvent(EVENT_ATTACK_SPEED);
-		return ASPenalty;
-	}
-	public function GetASIncrease() -> real {
-		debug DebugEvent(EVENT_ATTACK_SPEED);
-		return ASIncrease;
-	}
-	public function GetASDecrease() -> real {
-		debug DebugEvent(EVENT_ATTACK_SPEED);
-		return ASDecrease;
-	}
-
-	// Event Adders
-
-	public function AddASBonus(real asBonus) {
-		debug DebugEvent(EVENT_ATTACK_SPEED);
-		ASBonus += asBonus;
-	}
-	public function AddASPenalty(real asPenalty) {
-		debug DebugEvent(EVENT_ATTACK_SPEED);
-		ASPenalty += asPenalty;
-	}
-	public function AddASIncrease(real asIncrease) {
-		debug DebugEvent(EVENT_ATTACK_SPEED);
-		ASIncrease += asIncrease;
-	}
-	public function AddASDecrease(real asDecrease) {
-		debug DebugEvent(EVENT_ATTACK_SPEED);
-		ASDecrease = RMinBJ((1 - (1 - ASDecrease) * (1 - asDecrease)), 1.00);
-	}
-
-	// Event Setters
-
-	public function SetASBonus(real asBonus) {
-		debug DebugEvent(EVENT_ATTACK_SPEED);
-		ASBonus = asBonus;
-	}
-	public function SetASPenalty(real asPenalty) {
-		debug DebugEvent(EVENT_ATTACK_SPEED);
-		ASPenalty = asPenalty;
-	}
-	public function SetASIncrease(real asIncrease) {
-		debug DebugEvent(EVENT_ATTACK_SPEED);
-		ASIncrease = asIncrease;
-	}
-	public function SetASDecrease(real asDecrease) {
-		debug DebugEvent(EVENT_ATTACK_SPEED);
-		ASDecrease = asDecrease;
+		if (Debug) DebugXY(msg, x, y);
 	}
 
 // System
 
-	function Reset() {
-		ASUnit = null;
-		ASBonus = 0.0;
-		ASPenalty = 0.0;
-		ASIncrease = 0.0;
-		ASDecrease = 0.0;
+	struct AttackSpeed {
+		unit whichUnit;
+		real attackSpeed = 0.0;
+		boolean updateNeeded = false;
+
+		timer tm;
+
+		static real INTERVAL = 0.25;
+		static key HASH_ID;
+
+		static method create(unit whichUnit) -> AttackSpeed {
+			AttackSpeed this = AttackSpeed.allocate();
+
+			this.whichUnit = whichUnit;
+			SaveInteger(HT, GetHandleId(whichUnit), HASH_ID, this);
+
+			this.tm = CreateTimer();
+			SaveHandleDataInt(tm, this);
+			TimerStart(tm, INTERVAL, true, function AttackSpeed.callback);
+
+			return this;
+		}
+
+		static method load(integer hashId) -> AttackSpeed {
+			return LoadInteger(HT, hashId, HASH_ID);
+		}
+
+		static method get(unit whichUnit) -> AttackSpeed {
+			AttackSpeed this = AttackSpeed.load(GetHandleId(whichUnit)); 
+			if (!IsSet(this))
+				this = AttackSpeed.create(whichUnit);
+			return this;
+		}
+
+		method destroy() {
+			FlushTimer(tm); tm = null;
+			whichUnit = null;
+			this.deallocate();
+		}
+
+		method pendingUpdate() {
+			updateNeeded = true;
+		}
+
+		static method callback() {
+			AttackSpeed this = LoadHandleDataInt(GetExpiredTimer());
+
+			if (!UnitAlive(whichUnit)) return;
+
+			if (updateNeeded) {
+				UpdateUnitAttackSpeed(whichUnit);
+			}
+
+			updateNeeded = false;
+		}
+
+		method update() -> real {
+			integer hundreds, tens, ones = 0;
+
+			if (whichUnit == null) {
+				debug Warning("AS1", "unit is null");
+				return 0.0;
+			}
+			if (IsRun) {
+				Error("AS2", "Внутренее иницирование системы!");
+				return 0.0;
+			}
+
+			IsRun = true;
+
+			ASUnit = whichUnit;
+			ASBonus = 0.0;
+			ASPenalty = 0.0;
+			ASIncrease = 0.0;
+			ASDecrease = 0.0;
+
+			ExecuteEvent(EVENT_ATTACK_SPEED);
+
+			attackSpeed = (ASBonus + BASE_ATTACK_SPEED) * (1.00 + ASIncrease) * (1 - ASDecrease) - ASPenalty - BASE_ATTACK_SPEED; 
+
+			if (attackSpeed > 999.0) {
+				attackSpeed = 999.0;
+			} else if (attackSpeed < -999.0) {
+				attackSpeed = -999.0;
+			}
+
+			debug dbg("as: " + R2S(attackSpeed), GetUnitX(whichUnit), GetUnitY(whichUnit));
+
+			hundreds = R2I(attackSpeed) / 100 + 1;
+			tens = ModuloNPos(R2I(attackSpeed) / 10, 10) + 1;
+			ones = ModuloNPos(R2I(attackSpeed), 10) + 1;
+
+			if (attackSpeed > 0.0) {
+				SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_ONES, ones);
+				SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_TENS, tens);
+				SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_HUNDREDS, hundreds);
+				SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_ONES, 1);
+				SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_TENS, 1);
+				SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_HUNDREDS, 1);
+			} else {
+				SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_ONES, 1);
+				SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_TENS, 1);
+				SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_HUNDREDS, 1);
+				SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_ONES, ones);
+				SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_TENS, tens);
+				SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_HUNDREDS, hundreds);
+			}
+
+			attackSpeed = attackSpeed + BASE_ATTACK_SPEED;
+			IsRun = false;
+			
+			return attackSpeed;
+		}
+
+	}
+
+	function PendingUpdate(unit whichUnit) {
+		if (IsUnitDummy(whichUnit) ||
+			!IsUnitHasAttack(whichUnit) ||
+			whichUnit == null
+		) {
+			return;
+		}
+		AttackSpeed.get(whichUnit).pendingUpdate();
 	}
 
 	function AddAbilitiesToUnit(unit whichUnit) {
@@ -111,62 +214,6 @@ library AttackSpeed requires Events, BuffActions {
 		UnitAddAbilityPermanent(whichUnit, AS_ABILITY_PENALTY_ONES);
 		UnitAddAbilityPermanent(whichUnit, AS_ABILITY_PENALTY_TENS);
 		UnitAddAbilityPermanent(whichUnit, AS_ABILITY_PENALTY_HUNDREDS);
-	}
-
-	public function GetUnitAttackSpeed(unit whichUnit) -> real {
-		real attackSpeed = 0.0;
-		integer hundreds, tens, ones = 0;
-
-		if (whichUnit == null) {
-			debug Warning("AS1", "unit is null");
-			return 0.0;
-		}
-		if (IsRunAS) {
-			debug Error("AS2", "Внутренее иницирование системы!");
-			return 0.0;
-		}
-
-		IsRunAS = true;
-
-		Reset();
-		ASUnit = whichUnit;
-
-		ExecuteEvent(EVENT_ATTACK_SPEED);
-
-		attackSpeed = (ASBonus + BASE_ATTACK_SPEED) * (1.00 + ASIncrease) * (1 - ASDecrease) - ASPenalty - BASE_ATTACK_SPEED; 
-
-		if (attackSpeed > 999.0) {
-			attackSpeed = 999.0;
-		} else if (attackSpeed < -999.0) {
-			attackSpeed = -999.0;
-		}
-
-		debug dbg("as: " + R2S(attackSpeed), GetUnitX(whichUnit), GetUnitY(whichUnit));
-
-		hundreds = R2I(attackSpeed) / 100 + 1;
-		tens = ModuloNPos(R2I(attackSpeed) / 10, 10) + 1;
-		ones = ModuloNPos(R2I(attackSpeed), 10) + 1;
-
-		if (attackSpeed > 0.0) {
-			SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_ONES, ones);
-			SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_TENS, tens);
-			SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_HUNDREDS, hundreds);
-			SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_ONES, 1);
-			SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_TENS, 1);
-			SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_HUNDREDS, 1);
-		} else {
-			SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_ONES, 1);
-			SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_TENS, 1);
-			SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_HUNDREDS, 1);
-			SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_ONES, ones);
-			SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_TENS, tens);
-			SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_HUNDREDS, hundreds);
-		}
-
-		Reset();
-		IsRunAS = false;
-		
-		return attackSpeed;
 	}
 
 	function onInit() {
@@ -180,29 +227,25 @@ library AttackSpeed requires Events, BuffActions {
 			AS_ABILITY_PENALTY_TENS = 'A007';
 			AS_ABILITY_PENALTY_HUNDREDS = 'A009';
 		}
+		ForGroup(INIT_UNITS, function() { AddAbilitiesToUnit(GetEnumUnit()); });
+		RegisterAction(EVENT_ENTER, function() { AddAbilitiesToUnit(GetTriggerUnit()); });
 
-		RegisterAction(EVENT_ENTER, function() {
-			AddAbilitiesToUnit(GetTriggerUnit());
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_ATTACKED), function() { PendingUpdate(GetAttacker()); });
+		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_LEVEL), function() { PendingUpdate(GetLevelingUnit()); });
+		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_SKILL), function() { PendingUpdate(GetLearningUnit()); });
+		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_REVIVABLE), function() { PendingUpdate(GetRevivableUnit()); });
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DROP_ITEM), function() { PendingUpdate(GetTriggerUnit()); });
+		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_PICKUP_ITEM), function() { PendingUpdate(GetTriggerUnit()); });
+		RegisterAction(EVENT_ENTER, function() { PendingUpdate(GetTriggerUnit()); });
+		RegisterAction(EVENT_BUFF, function() { PendingUpdate(GetTriggerBuffTarget()); });
+		RegisterAction(EVENT_AURA, function() { PendingUpdate(GetAuraOwnerUnit()); });
+		RegisterAction(EVENT_TALENT_CHOSEN, function() { PendingUpdate(GetTalentHero()); });
+		ForGroup(INIT_UNITS, function() { PendingUpdate(GetEnumUnit()); });
+
+		RegisterAction(EVENT_CLEAR_HASH, function() {
+			AttackSpeed this = AttackSpeed.load(GetTriggerHash());
+			if (IsSet(this)) this.destroy();
 		});
-
-		ForGroup(INIT_UNITS, function() {
-			AddAbilitiesToUnit(GetEnumUnit());
-		});
-
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_ATTACKED), function() {GetUnitAttackSpeed(GetAttacker());});
-		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_LEVEL), function() {GetUnitAttackSpeed(GetLevelingUnit());});
-		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_SKILL), function() {GetUnitAttackSpeed(GetLearningUnit());});
-		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_REVIVABLE), function() {GetUnitAttackSpeed(GetRevivableUnit());});
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DROP_ITEM), function() {GetUnitAttackSpeed(GetTriggerUnit());});
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_PICKUP_ITEM), function() {GetUnitAttackSpeed(GetTriggerUnit());});
-		RegisterAction(EVENT_ENTER, function() {GetUnitAttackSpeed(GetTriggerUnit());});
-		RegisterAction(EVENT_BUFF, function() {GetUnitAttackSpeed(GetTriggerBuffTarget());});
-
-		ForGroup(INIT_UNITS, function() {
-			GetUnitAttackSpeed(GetEnumUnit());
-		});
-
-		// Для аур нужно настроить отдельные обработчики,
 	}
 
 }
