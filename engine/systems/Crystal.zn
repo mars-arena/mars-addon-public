@@ -1,5 +1,7 @@
 library Crystals requires Events {
 
+// Settings
+
 	constant real BASE_CAPTURE_DURATION = 10.;
 	constant real RANGE = 200.;
 
@@ -12,6 +14,8 @@ library Crystals requires Events {
 	constant real INTERVAL = 1./32.;
 
 	Crystal CenterCrystal = 0;
+
+// Event API
 
 	player CAPTURING_PLAYER_GET;
 	public function GetCapturingPlayer() -> player {return GetTeamMasterPlayer(CAPTURING_PLAYER_GET);}
@@ -167,10 +171,16 @@ library Crystals requires Events {
 		}
 	}
 
+	// Устанавливает основной объект "crystal" (визуальный юнит внутри кольца)
+	// Используется для отслеживания и убийства при захвате
+	// @arg unit crystal - юнит, представляющий кристалл
 	public function SetCrystal(unit crystal) {
 		CenterCrystal.crystal = crystal;
 	}
 
+	// Инициализирует центральный кристалл захвата по переданному кольцу
+	// Создаёт структуру, регистрирует триггер на вход, запускает таймер логики
+	// @arg unit ring - юнит-кольцо (вокруг кристалла), определяющее зону захвата
 	public function InitCrystal(unit ring) {
 		CenterCrystal = Crystal.create(ring);
 	}

@@ -1,5 +1,17 @@
 library TexttagUtils requires TechUtils {
 
+	// Создаёт тексттаг, прикреплённый к юниту, и показывает его только тем, кто реально видит юнита
+	// @arg unit target юнит, к которому привязывается текст
+	// @arg string s текст, который будет отображаться
+	// @arg real size размер текста
+	// @arg real transparency прозрачность текста (0–100)
+	// @arg real lifespan сколько времени живёт тексттаг
+	// @arg real fadepoint когда начинает исчезать
+	// @arg real lowSpeed минимальная скорость полёта
+	// @arg real maxSpeed максимальная скорость полёта
+	// @arg real lowAngle минимальный угол полёта
+	// @arg real maxAngle максимальный угол полёта
+	// @arg real zOffset смещение по Z от позиции юнита
 	public function CreateCustomTextToUnit(unit target, string s, real size, real transparency, real lifespan, real fadepoint, real lowSpeed, real maxSpeed, real lowAngle, real maxAngle, real zOffset) {
 		texttag t = CreateTextTagUnitBJ(s, target, zOffset, size, 100.00, 100.00, 100.00, transparency);
 		force f;
@@ -22,10 +34,32 @@ library TexttagUtils requires TechUtils {
 		b = null;
 	}
 
+	// Создает тексттаг над юнитом с анимацией по параболе
+	// @arg unit u юнит, к которому привязывается текст
+	// @arg string s текст
+	// @arg real sizeMin минимальный размер
+	// @arg real sizeBonus добавочный размер (влияет на синусоиду)
+	// @arg real timeLife время жизни
+	// @arg real timeFade время затухания
+	// @arg real zOffset высота над юнитом
+	// @arg real lowSpeed минимальная скорость
+	// @arg real maxSpeed максимальная скорость
+	// @arg real lowAngle минимальный угол
+	// @arg real maxAngle максимальный угол
 	public function CreateFlyingTextToUnit(unit u, string s, real sizeMin, real sizeBonus, real timeLife, real timeFade, real zOffset, real lowSpeed, real maxSpeed, real lowAngle, real maxAngle) {
 		FlyingText.create(u, s, sizeMin, sizeBonus, timeLife, timeFade, zOffset, lowSpeed, maxSpeed, lowAngle, maxAngle, 500);
 	}
 
+	// Создаёт тексттаг с заданной скоростью и смещением, не зависящий от углов и случайностей
+	// @arg unit target юнит, около которого появляется текст
+	// @arg string text текст
+	// @arg real lifespan продолжительность жизни
+	// @arg real size размер
+	// @arg real fadepoint точка начала исчезновения
+	// @arg real velocity вертикальная скорость (вверх)
+	// @arg real OffsetX смещение по X
+	// @arg real OffsetY смещение по Y
+	// @arg real OffsetZ смещение по Z
 	public function CreateCustomVelTextToUnit(unit target, string text, real lifespan, real size, real fadepoint, real velocity, real OffsetX, real OffsetY, real OffsetZ) {
 		CustomTextTag.create(target, text, lifespan, size, fadepoint, velocity, OffsetX, OffsetY, OffsetZ);
 	}

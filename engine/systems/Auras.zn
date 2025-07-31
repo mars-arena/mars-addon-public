@@ -521,6 +521,10 @@ library Auras requires TechUtils, Events {
 	
 /*----------------Functions---------------------------------------------------------------------------------------------------------------------------------- */
 
+	// Возвращает ауру типа `typeId`, которая действует на юнита
+	// @arg unit u цель
+	// @arg integer typeId тип ауры
+	// @return Aura объект ауры или 0
 	public function GetTargetAuraByType(unit u, integer typeId) -> Aura {
 		AuraTarget aTarget = LoadInteger(HT, GetHandleId(u), AuraTarget_hid);
 		integer i = 0;
@@ -536,6 +540,10 @@ library Auras requires TechUtils, Events {
 		return 0;
 	}
 	
+	// Возвращает ауру типа `typeId`, которую излучает юнит
+	// @arg unit u владелец
+	// @arg integer typeId тип ауры
+	// @return Aura объект ауры или 0
 	public function GetOwnerAuraByType(unit u, integer typeId) -> Aura {
 		AuraOwner aOwner = LoadInteger(HT, GetHandleId(u), AuraOwner_hid);
 		integer i = 0;
@@ -551,6 +559,10 @@ library Auras requires TechUtils, Events {
 		return 0;
 	}
 
+	// Считает количество аур данного типа, которые излучает юнит
+	// @arg unit u владелец
+	// @arg integer typeId тип ауры
+	// @return integer количество активных аур
 	public function GetCountOwnerAuraByType(unit u, integer typeId) -> integer {
 		AuraOwner aOwner = LoadInteger(HT, GetHandleId(u), AuraOwner_hid);
 		integer i = 0;
@@ -567,6 +579,10 @@ library Auras requires TechUtils, Events {
 		return count;
 	}
 
+	// Считает количество аур данного типа, которые действуют на юнита
+	// @arg unit u цель
+	// @arg integer typeId тип ауры
+	// @return integer количество активных аур
 	public function GetCountTargetAuraByType(unit u, integer typeId) -> integer {
 		AuraTarget aTarget = LoadInteger(HT, GetHandleId(u), AuraTarget_hid);
 		integer i = 0;
@@ -583,6 +599,10 @@ library Auras requires TechUtils, Events {
 		return count;
 	}
 	
+	// Возвращает юнита-владельца ауры типа `typeId`, которая действует на `u`
+	// @arg unit u — цель
+	// @arg integer typeId — тип ауры
+	// @return unit — владелец ауры или null
 	public function GetUnitOwnerForTargetAuraByType(unit u, integer typeId) -> unit {
 		AuraTarget aTarget = LoadInteger(HT, GetHandleId(u), AuraTarget_hid);
 		integer i = 0;
@@ -598,6 +618,10 @@ library Auras requires TechUtils, Events {
 		return null;
 	}
 
+	// Проверяет, действует ли на юнита цель аура с указанным типом
+	// @arg unit u цель
+	// @arg integer typeId тип ауры
+	// @return boolean true, если такая аура действует
 	public function IsUnitTargetAddedTypeAura(unit u, integer typeId) -> boolean {
 		AuraTarget aTarget = LoadInteger(HT, GetHandleId(u), AuraTarget_hid);
 		integer i = 0;
@@ -613,6 +637,10 @@ library Auras requires TechUtils, Events {
 		return false;
 	}
 	
+	// Проверяет, излучает ли юнит ауру с указанным типом
+	// @arg unit u владелец
+	// @arg integer typeId тип ауры
+	// @return boolean true, если юнит излучает ауру этого типа
 	public function IsUnitOwnerAddedTypeAura(unit u, integer typeId) -> boolean {
 		AuraOwner aOwner = LoadInteger(HT, GetHandleId(u), AuraOwner_hid);
 		integer i = 0;
@@ -628,6 +656,10 @@ library Auras requires TechUtils, Events {
 		return false;
 	}
 	
+	// Удаляет все ауры указанного типа у юнита
+	// @arg unit u владелец аур
+	// @arg integer typeId тип ауры
+	// @arg boolean AllowMultiType если true, то не удаляет multi-type ауры
 	public function DestroyUnitAurasByType(unit u, integer typeId, boolean AllowMultiType) {
 		AuraOwner aOwner = LoadInteger(HT, GetHandleId(u), AuraOwner_hid);
 		integer i = 0;
@@ -657,7 +689,10 @@ library Auras requires TechUtils, Events {
 			}
 		}
 	}
-	
+
+	// Удаляет все ауры, излучаемые объектом с данным hashId
+	// @arg integer hashId ID объекта (юнит, итем и т.д.)
+	// @return nothing
 	public function DestroyAllAurasByHashId(integer hashId) {
 		AuraOwner aOwner = LoadInteger(HT, hashId, AuraOwner_hid);
 		integer i = 0;
@@ -676,6 +711,22 @@ library Auras requires TechUtils, Events {
 		}
 	}
 	
+	// Добавляет ауру к юниту с заданными параметрами
+	// @arg unit auraUnit владелец ауры
+	// @arg integer typeId тип ауры
+	// @arg item itemAura предмет, к которому привязана аура (опционально)
+	// @arg boolean multiAurasToTarget стакается ли аура по целям
+	// @arg integer priority приоритет (для нестакуемых аур)
+	// @arg boolean multiAurasForOwner стакается ли аура в инвентаре
+	// @arg boolean refreshOutEnter обновлять ли вход/выход при удалении
+	// @arg boolean hardRefresh насильно обновлять вход/выход
+	// @arg integer actionsId ID набора действий для ауры
+	// @arg boolexpr filter фильтр целей ауры (опционально)
+	// @arg real radiusMax радиус действия ауры
+	// @arg real endDuration длительность действия после выхода из зоны
+	// @arg boolean periodActions включить периодические действия
+	// @arg real period интервал периодических действий
+	// @return Aura ссылка на созданную ауру
 	public function AddAuraToUnit(
 		unit auraUnit,
 		integer typeId,
@@ -702,6 +753,8 @@ library Auras requires TechUtils, Events {
 		return aura;
 	}
 
+	// GUI-версия AddAuraToUnit использует глобальные переменные udg_AS_*
+	// @return Aura ссылка на созданную ауру
 	public function AddAuraToUnitGUI() -> Aura {
 		unit auraUnit = udg_AS_AuraUnit;
 		integer typeId = udg_AS_TypeId;

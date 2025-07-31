@@ -3,6 +3,8 @@ library Buffs requires Events {
 	
 	key BuffTarget_hid;
 
+	hashtable HTInternal;
+
 	public Buff TempBuff;
 
 	constant integer CK_HID = 0;
@@ -22,6 +24,7 @@ library Buffs requires Events {
 	public integer EVENT_BUFF;
 
 	function onInit() {
+		HTInternal = InitHashtable();
 		EVENT_BUFF = CreateEvent("EVENT_BUFF");
 	}
 
@@ -147,6 +150,10 @@ library Buffs requires Events {
 	
 /*----------------Main------------------------------------------------------------------------------------------------------------------------------------- */
 
+	// Возвращает первый активный бафф нужного типа
+	// @arg unit u - юнит
+	// @arg integer typeId - тип баффа
+	// @return Buff - бафф или 0
 	public function GetUnitBuffByType(unit u, integer typeId) -> Buff {
 		BuffTarget bTarget = LoadInteger(HT, GetHandleId(u), BuffTarget_hid);
 		integer i = 0;
@@ -162,6 +169,9 @@ library Buffs requires Events {
 		return 0;
 	}
 
+	// Удаляет все баффы у объекта с указанным hashId
+	// @arg hashId - хэндл юнита/объекта
+	// @return nothing
 	public function DestroyAllBuffsByHashId(integer hashId) {
 		BuffTarget bTarget = LoadInteger(HT, hashId, BuffTarget_hid);
 		integer i = 0;
@@ -180,6 +190,11 @@ library Buffs requires Events {
 		}
 	}
 
+	// Удаляет все баффы заданного ранга и допустимой сложности развеивания
+	// Срабатывают выходные действия
+	// @arg unit u - юнит
+	// @arg rank - ранг баффа
+	// @arg dispelDifficulty - макс. сложность развеивания
 	public function DestroyUnitBuffs(unit u, integer rank, integer dispelDifficulty) {
 		BuffTarget bTarget = LoadInteger(HT, GetHandleId(u), BuffTarget_hid);
 		integer i = 0;
@@ -198,10 +213,18 @@ library Buffs requires Events {
 		}
 	}
 
+	// Удаляет конкретный бафф у юнита
+	// @arg unit u - юнит
+	// @arg Buff buf - бафф
+	// @arg boolean onOut - запускать ли выходные действия
 	public function DestroyUnitBuff(unit u, Buff buf, boolean onOut) {
 		if (buf != 0) BuffTarget.UnRegBuffForUnit(u, buf, onOut);
 	}
 
+	// Проверяет наличие баффа указанного типа
+	// @arg unit u - юнит
+	// @arg integer typeId - тип баффа
+	// @return boolean - true, если есть
 	public function IsUnitBuffByType(unit u, integer typeId) -> boolean {
 		BuffTarget bTarget = LoadInteger(HT, GetHandleId(u), BuffTarget_hid);
 		integer i = 0;
@@ -217,6 +240,11 @@ library Buffs requires Events {
 		return false;
 	}
 
+
+	// Проверяет наличие баффа с указанным actionsId
+	// @arg unit u - юнит
+	// @arg integer actionsId - ID действия
+	// @return boolean - true, если есть
 	public function IsUnitBuffByActionId(unit u, integer actionsId) -> boolean {
 		BuffTarget bTarget = LoadInteger(HT, GetHandleId(u), BuffTarget_hid);
 		integer i = 0;
@@ -232,16 +260,26 @@ library Buffs requires Events {
 		return false;
 	}
 
+	// Обновляет время жизни баффа (обнуляет таймер)
+	// @arg Buff buf - бафф
 	public function RefreshDurationBuff(Buff buf) { buf.time = 0; }
 
+	// Выполняет периодические действия баффа вручную
+	// @arg Buff buf - бафф
 	public function ExecuteBuffActions(Buff buf) {
 		buf.perAction(null, true);
 	}
 
+	// Выполняет периодические действия стака баффа вручную
+	// @arg Buff buf - бафф
+	// @arg timer buffStack - таймер стака
 	public function ExecuteBuffStackActions(Buff buf, timer buffStack) {
 		buf.perAction(buffStack, true);
 	}
 
+	// Активирует периодические действия баффа
+	// Если таймер уже есть - просто рестартует
+	// @arg Buff buf - бафф
 	public function EnableBuffPeriod(Buff buf) {
 		if (buf.period > 0) {
 			if (buf.periodActions) {
@@ -257,6 +295,9 @@ library Buffs requires Events {
 
 	function SetBuffStacks(Buff buf, integer stacks) { buf.stacks = stacks; }
 
+	// Возвращает количество стаков у баффа
+	// @arg Buff buf - бафф
+	// @return integer - число стаков
 	public function GetBuffStacks(Buff buf) -> integer { return buf.stacks; }
 
 /*----------------Structure Buff----------------------------------------------------------------------------------------------------------------------------- */
@@ -665,7 +706,7 @@ library Buffs requires Events {
 			this.countStacks = 0;
 			this.stacks = Location(0, 0);
 			this.periods = Location(0, 0);
-			SaveInteger(HTBuff, buf, BuffStacks_hid, this);
+			SaveInteger(HTInternal, buf, BuffStacks_hid, this);
 			return this;
 		}
 		
@@ -689,20 +730,20 @@ library Buffs requires Events {
 			}
 			FlushChildHashtable(HT, GetHandleId(stacks));
 			RemoveLocation(stacks);
-			RemoveSavedInteger(HTBuff, buf, BuffStacks_hid);
+			RemoveSavedInteger(HTInternal, buf, BuffStacks_hid);
 			tm = null;
 			stacks = null;
 			this.deallocate();
 		}
 		
 		static method Destroy(Buff buf) {
-			BuffStacks whichStacks = LoadInteger(HTBuff, buf, BuffStacks_hid);
+			BuffStacks whichStacks = LoadInteger(HTInternal, buf, BuffStacks_hid);
 			if (whichStacks > 0)
 				whichStacks.destroy();
 		}
 		
 		static method CopyToBuff(Buff oldBuf, Buff newBuf) {
-			BuffStacks whichStacks = LoadInteger(HTBuff, oldBuf, BuffStacks_hid);
+			BuffStacks whichStacks = LoadInteger(HTInternal, oldBuf, BuffStacks_hid);
 			integer i = 0;
 			timer tm;
 
@@ -732,10 +773,10 @@ library Buffs requires Events {
 			timer whichTmPer;
 			timer whichTm;
 
-			if (LoadInteger(HTBuff, buf, BuffStacks_hid) <= 0)
+			if (LoadInteger(HTInternal, buf, BuffStacks_hid) <= 0)
 				whichStacks = BuffStacks.create(buf);
 			else
-				whichStacks = LoadInteger(HTBuff, buf, BuffStacks_hid);
+				whichStacks = LoadInteger(HTInternal, buf, BuffStacks_hid);
 			
 			if (buf.countStacks <= whichStacks.countStacks && buf.countStacks > 0) {
 				tm = LoadTimerHandle(HT, GetHandleId(whichStacks.stacks), 1);
@@ -810,7 +851,7 @@ library Buffs requires Events {
 		}
 		
 		static method UnRegTimerForBuff(Buff buf, timer unTm) {
-			BuffStacks whichStacks = LoadInteger(HTBuff, buf, BuffStacks_hid);
+			BuffStacks whichStacks = LoadInteger(HTInternal, buf, BuffStacks_hid);
 			integer i = 0;
 			timer whichTm;
 			
@@ -858,8 +899,11 @@ library Buffs requires Events {
 
 	function AddBuffStackTimed(Buff buf, real duration, boolean periodActions, real period, integer dataInt, real dataReal, boolean wantDelay) { BuffStacks.RegTimerForBuff(buf, duration, periodActions, period, dataInt, dataReal, wantDelay, false); }
 
+	// Обновляет длительность у всех стаков баффа
+	// Учитывает модификаторы от ранга
+	// @arg Buff buf - бафф
 	public function RefreshDurationBuffStacks(Buff buf) {
-		BuffStacks whichStacks = LoadInteger(HTBuff, buf, BuffStacks_hid);
+		BuffStacks whichStacks = LoadInteger(HTInternal, buf, BuffStacks_hid);
 		integer i = 0;
 		timer tm;
 		real duration;
@@ -890,18 +934,40 @@ library Buffs requires Events {
 		tm = null;
 	}
 	
+	// Возвращает целочисленное значение, привязанное к конкретному стаку баффа
+	// Используется для хранения индивидуальных параметров стака
+	// @arg timer buffStack - таймер стака баффа
+	// @return integer - целочисленное значение, сохранённое в стаке
 	public function GetBuffStackDataInt(timer buffStack) -> integer { return LoadInteger(HT, GetHandleId(buffStack), BuffStackDataInt_hid); }
 	
+	// Возвращает вещественное значение, привязанное к конкретному стаку баффа
+	// Используется для хранения индивидуальных параметров стака
+	// @arg timer buffStack - таймер стака баффа
+	// @return real - вещественное значение, сохранённое в стаке
 	public function GetBuffStackDataReal(timer buffStack) -> real { return LoadReal(HT, GetHandleId(buffStack), BuffStackDataReal_hid); }
 
+	// Возвращает оставшееся время до окончания жизни стака
+	// Работает как TimerGetRemaining()
+	// @arg timer buffStack - таймер стака баффа
+	// @return real - оставшееся время
 	public function GetBuffStackRemainingDuration(timer buffStack) -> real { return TimerGetRemaining(buffStack); }
 	
+	// Устанавливает целочисленное значение стака и корректирует общее значение баффа
+	// Вычитает старое значение, прибавляет новое — позволяет точно трекать вклад стаков
+	// @arg Buff buf - бафф
+	// @arg timer buffStack - стак, которому назначается значение
+	// @arg integer dataInt - новое значение
 	public function SetBuffStackDataInt(Buff buf, timer buffStack, integer dataInt) {
 		SetBuffDataInt(buf, GetBuffDataInt(buf) - LoadInteger(HT, GetHandleId(buffStack), BuffStackDataInt_hid));
 		SaveInteger(HT, GetHandleId(buffStack), BuffStackDataInt_hid, dataInt);
 		SetBuffDataInt(buf, GetBuffDataInt(buf) + dataInt);
 	}
 	
+	// Устанавливает вещественное значение стака и корректирует общее значение баффа
+	// Вычитает старое значение, прибавляет новое — синхронизирует вклад стаков
+	// @arg Buff buf - бафф
+	// @arg timer buffStack - стак, которому назначается значение
+	// @arg real dataReal - новое значение
 	public function SetBuffStackDataReal(Buff buf, timer buffStack, real dataReal) {
 		SetBuffDataReal(buf, GetBuffDataReal(buf) - LoadReal(HT, GetHandleId(buffStack), BuffStackDataReal_hid));
 		SaveReal(HT, GetHandleId(buffStack), BuffStackDataReal_hid, dataReal);
@@ -910,26 +976,25 @@ library Buffs requires Events {
 	
 /*----------------Main Functions----------------------------------------------------------------------------------------------------------------------------- */
 
-/*public function AddBuffToUnit(
-	unit ownerUnit,             //владелец бафа
-	unit targetUnit,            //цель бафа
-	integer typeId,             //тип бафа
-	integer actionsId,          //id действий
-	real duration,              //длительность баффа
-	integer rank,               //ранг баффа (0 - negative, 1 - positive, [2-..] - others)
-	integer dispelDifficulty,   //сложность развеивания баффа (рассеиваются баффы равны или ниже этому значению)
-	boolean stackable,          //true - бафф получает стаки в случае если бафф такого же типа уже активен, false - бафф замещается новым
-	boolean singleDuration,     //true - стаки используют единую длительность баффа, false - стаки используют независимую длительность (для стакабельных) (для нестакабельных true будет обновлять параметры и длительность баффа)
-	boolean singleOutEnter,     //true - дополнительные стаки стакабельного баффа не будут триггерить действия входа/выхода, для нестакабельных действия входа/выхода не будут запущены при замещении баффа
-	boolean singlePeriod,       //true - бафф имеет единый таймер периодических действий, false - стаки имеют свои таймеры периодических действий (только для stackable)
-	integer countStacks,        //максимальное количество стаков (при переполненности уничтожает стак с самой маленькой длительностью (с действием выхода) и создает новый стак (с действием входа))
-	boolean pierceSpellImmun,   //false - бафф автоматически снимется, если юнит станет неуязвимым к магии, true - игнорирует неуязвимость к магии
-	boolean pierceInvul,        //false - бафф автоматически снимется, если юнит станет неуязвимым, true - игнорирует неуязвимость
-	boolean pierceDeath,        //false - бафф автоматически снимется, если юнит умрет, true - игнорирует смерть юнита
-	boolean periodActions,      //включить периодические действия (true - вкл, false - выкл)
-	real period)                //промежуток времени между периодическими действиями
-	-> Buff
-{*/
+	// Добавляет кастомный бафф на цель с множеством параметров контроля
+	// @arg ownerUnit - юнит, который наложил бафф
+	// @arg targetUnit - юнит, на которого вешается бафф
+	// @arg typeId - уникальный тип баффа
+	// @arg actionsId - ID набора действий
+	// @arg duration - базовая длительность
+	// @arg rank - ранг (0 - дебафф, 1 - бафф, ≥2 - спец)
+	// @arg dispelDifficulty - сложность развеивания баффа (рассеиваются баффы равны или ниже этому значению)
+	// @arg stackable - true - бафф получает стаки в случае если бафф такого же типа уже активен, false - бафф замещается новым
+	// @arg singleDuration - true - стаки используют единую длительность баффа, false - стаки используют независимую длительность (для стакабельных) (для нестакабельных true будет обновлять параметры и длительность баффа)
+	// @arg singleOutEnter - true - дополнительные стаки стакабельного баффа не будут триггерить действия входа/выхода, для нестакабельных действия входа/выхода не будут запущены при замещении баффа
+	// @arg singlePeriod - true - бафф имеет единый таймер периодических действий, false - стаки имеют свои таймеры периодических действий (только для stackable)
+	// @arg countStacks - /максимальное количество стаков (при переполненности уничтожает стак с самой маленькой длительностью (с действием выхода) и создает новый стак (с действием входа))
+	// @arg pierceSpellImmun - false - бафф автоматически снимется, если юнит станет неуязвимым к магии, true - игнорирует неуязвимость к магии
+	// @arg pierceInvul - false - бафф автоматически снимется, если юнит станет неуязвимым, true - игнорирует неуязвимость
+	// @arg pierceDeath - false - бафф автоматически снимется, если юнит умрет, true - игнорирует смерть юнита
+	// @arg periodActions - включить периодические действия (true - вкл, false - выкл)
+	// @arg period - промежуток времени между периодическими действиями
+	// @return Buff - созданный объект баффа
 	public function AddBuffToUnit(
 		unit ownerUnit,
 		unit targetUnit,
@@ -1103,9 +1168,11 @@ library Buffs requires Events {
 		}
 		return buf;
 	}
-	
-	public function AddBuffToUnitGUI() -> Buff
-	{
+
+
+	// Упрощённый вызов AddBuffToUnit, использующий глобальные GUI переменные (udg_BS_*)
+	// @return Buff - созданный объект баффа
+	public function AddBuffToUnitGUI() -> Buff {
 		return AddBuffToUnit(
 			udg_BS_OwnerUnit,
 			udg_BS_TargetUnit,
@@ -1127,6 +1194,12 @@ library Buffs requires Events {
 		);
 	}
 
+	// Переносит активные баффы от ownerUnit на targetUnit
+	// Только баффы указанного ранга и с dispelDifficulty ≤ указанного
+	// @arg ownerUnit - юнит-источник
+	// @arg targetUnit - юнит-получатель
+	// @arg rank - целевой ранг
+	// @arg dispelDifficulty - макс. сложность развеивания
 	public function TransferUnitBuffsToUnit(unit ownerUnit, unit targetUnit, integer rankC, integer dispelDifficultyC) {
 		BuffTarget bOwner = LoadInteger(HT, GetHandleId(ownerUnit), BuffTarget_hid);
 		Buff buf;
@@ -1225,18 +1298,32 @@ library Buffs requires Events {
 	Buff FILTER_BUFF_GET;
 	public boolean FILTER_BOOLEAN_GET;
 
+	// Возвращает текущий бафф цикла фильтрации
+	// Используется внутри условной функции фильтрации
+	// @return Buff - текущий обрабатываемый бафф
 	public function GetFilterBuff() -> Buff {
 		return FILTER_BUFF_GET;
 	}
 
+	// Возвращает i-й бафф, попавший под фильтрацию в InitBuffsLoop
+	// @arg integer i - индекс (от 1 до GetCountSelectedBuffs())
+	// @return Buff - выбранный бафф
 	public function GetSelectedBuff(integer i) -> Buff {
 		return SELECTED_BUFF_GET[i];
 	}
 
+	// Возвращает количество выбранных баффов, прошедших фильтрацию
+	// Используется для обхода SELECTED_BUFF_GET[]
+	// @return integer - число выбранных баффов
 	public function GetCountSelectedBuffs() -> integer {
 		return COUNT_SELECTED_BUFFS_GET;
 	}
 
+	// Инициализирует цикл фильтрации баффов юнита
+	// Перед каждым баффом устанавливает FILTER_BUFF_GET, затем вызывает функцию condition
+	// Если FILTER_BOOLEAN_GET = true — бафф записывается в SELECTED_BUFF_GET
+	// @arg unit u - юнит, чьи баффы проверяются
+	// @arg string condition - имя функции-фильтра (использует ExecuteFunc)
 	public function InitBuffsLoop(unit u, string condition) {
 		BuffTarget bTarget = LoadInteger(HT, GetHandleId(u), BuffTarget_hid);
 		integer i = 0;

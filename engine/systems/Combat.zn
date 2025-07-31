@@ -28,8 +28,8 @@ library Combat requires Events, Damage {
 // API
 
 	// Проверяет, находится ли юнит в сражении
-	// @param unit whichUnit — целевой юнит
-	// @return boolean — true, если юнит в бою
+	// @arg unit whichUnit целевой юнит
+	// @return boolean true, если юнит в бою
 	public function IsUnitInCombat(unit whichUnit) -> boolean {
 		Combat this = Combat.load(GetHandleId(whichUnit)); 
 		if (!IsSet(this)) 

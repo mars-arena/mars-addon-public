@@ -104,14 +104,24 @@ library Regeneration requires Events, Buffs, Auras {
 
 // System
 
+	// Возвращает текущее значение регенерации HP юнита (без перерасчёта).
+	// @arg unit whichUnit — целевой юнит
+	// @return real — скорость регенерации здоровья
 	public function GetUnitHpRegen(unit whichUnit) -> real {
 		return Regeneration.get(whichUnit).hpRegen;
 	}
 
+	// Возвращает текущее значение регенерации HP юнита (без перерасчёта).
+	// @arg unit whichUnit — целевой юнит
+	// @return real — скорость регенерации здоровья
 	public function GetUnitMpRegen(unit whichUnit) -> real {
 		return Regeneration.get(whichUnit).mpRegen;
 	}
 
+	// Пересчитывает регенерацию HP юнита с учётом модификаторов (EVENT_HP_REGENERATION_MODIFIER).
+	// Учитывает штрафы, кап, увеличения/уменьшения, сохраняет результат и возвращает его.
+	// @arg unit whichUnit — целевой юнит
+	// @return real — новая скорость регенерации HP
 	public function UpdateUnitHpRegen(unit whichUnit) -> real {
 		real value = 0.0;
 
@@ -152,6 +162,10 @@ library Regeneration requires Events, Buffs, Auras {
 		return value;
 	}
 
+	// Пересчитывает регенерацию MP юнита с учётом модификаторов (EVENT_MP_REGENERATION_MODIFIER).
+	// Учитывает штрафы, кап, увеличения/уменьшения, сохраняет результат и возвращает его.
+	// @arg unit whichUnit — целевой юнит
+	// @return real — новая скорость регенерации MP
 	public function UpdateUnitMpRegen(unit whichUnit) -> real {
 		real value = 0.0;
 

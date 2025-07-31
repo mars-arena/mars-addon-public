@@ -241,6 +241,13 @@ library SummativeText requires TechUtils {
 		return summativeText;
 	}
 
+	// Добавляет суммирующий текст к юниту для игрока
+	// @arg player owner игрок, которому будет показан суммирующий текст
+	// @arg unit target юнит, к которому будет добавлен суммирующий текст
+	// @arg integer textType тип суммирующего текста
+	// @arg real value значение суммирующего текста
+	// @arg string prefix префикс суммирующего текста
+	// @return SummativeText созданный суммирующий текст
 	public function AddSummativeTextToUnitForPlayer(
 		player owner,
 		unit target,
@@ -253,6 +260,10 @@ library SummativeText requires TechUtils {
 		return summativeText;
 	}
 
+	// Показывает суммирующий текст для игрока
+	// @arg SummativeText summativeText суммирующий текст, который нужно показать
+	// @arg player participant игрок, которому нужно показать суммирующий текст
+	// @return SummativeText суммирующий текст, который был показан
 	public function ShowSummativeTextToPlayer(SummativeText summativeText, player participant) {
 		summativeText.showToPlayer(participant);
 	}

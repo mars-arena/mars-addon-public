@@ -53,6 +53,11 @@ library Gold requires Events {
 
 // System
 
+	// Добавляет золото игроку с возможностью модификации суммы через EVENT_GOLD_MODIFIER
+	// Если итоговая сумма больше 0 - добавляет золото и вызывает событие EVENT_GOLD
+	// @arg player whichPlayer - игрок, которому начисляется золото
+	// @arg unit sourceUnit - юнит-источник (например, убитый враг)
+	// @arg real amount - базовая сумма золота (до модификаторов)
 	public function AddGold(player whichPlayer, unit sourceUnit, real amount) {
 		GoldPlayer = whichPlayer;
 		GoldAmount = amount;

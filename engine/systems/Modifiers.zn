@@ -1,5 +1,11 @@
 library Modifiers requires ModifiersList {
 	
+	// Добавляет модификатор юниту.
+	// Поддерживает как аддитивные, так и мультипликативные модификаторы.
+	// Для мультипликативных значений сохраняет каждый эффект отдельно (для поддержки стакинга/нестак).
+	// @arg unit u — целевой юнит
+	// @arg integer modifier — тип модификатора
+	// @arg real value — значение модификатора
 	public function AddUnitModifier(unit u, integer modifier, real value) {
 		location locMod;
 		integer countMod;
@@ -18,6 +24,12 @@ library Modifiers requires ModifiersList {
 		locMod = null;
 	}
 	
+	// Удаляет модификатор у юнита (точно по значению).
+	// Для мультипликативных — удаляет только один экземпляр совпадающего значения.
+	// Если модификатор не найден — вызывает ошибку.
+	// @arg unit u — целевой юнит
+	// @arg integer modifier — тип модификатора
+	// @arg real value — значение, которое нужно убрать
 	public function SubUnitModifier(unit u, integer modifier, real value){
 		location locMod;
 		integer countMod;
@@ -49,6 +61,11 @@ library Modifiers requires ModifiersList {
 		locMod = null;
 	}
 	
+	// Возвращает итоговое значение модификатора у юнита.
+	// Учитывает тип модификатора, проценты, нестак и бонус от статов.
+	// @arg unit u — целевой юнит
+	// @arg integer modifier — тип модификатора
+	// @return real — итоговое значение (с учётом всех источников)
 	public function GetUnitModifier(unit u, integer modifier) -> real {
 		location locMod;
 		integer countMod;
@@ -112,6 +129,9 @@ library Modifiers requires ModifiersList {
 		return value;
 	}
 
+	// Полностью удаляет модификатор у юнита (все значения).
+	// @arg integer hashId — хендл юнита (можно использовать GetHandleId)
+	// @arg integer modifier — тип модификатора
 	public function DestroyUnitModifier(integer hashId, integer modifier) {
 		location locMod;
 		integer countMod;
@@ -131,6 +151,11 @@ library Modifiers requires ModifiersList {
 		locMod = null;
 	}
 
+	// Копирует модификатор от одного юнита другому (включая все значения, если мультипликативный).
+	// @arg unit ownerUnit — юнит-источник
+	// @arg unit targetUnit — юнит-приёмник
+	// @arg integer modifier — тип модификатора
+	// @return boolean — true, если был скопирован хотя бы один модификатор
 	public function CopyUnitModifierToUnit(unit ownerUnit, unit targetUnit, integer modifier) -> boolean {
 		location locMod;
 		integer countMod;
@@ -166,6 +191,8 @@ library Modifiers requires ModifiersList {
 		return true;
 	}
 
+	// Удаляет все зарегистрированные модификаторы по хендлу.
+	// @arg integer hashId — хендл юнита
 	public function DestroyAllModifiersByHashId(integer hashId) {
 		DestroyUnitModifier(hashId, INC_OUT_HEAL);
 		DestroyUnitModifier(hashId, INC_ENTER_HEAL);

@@ -162,6 +162,14 @@ library Rectangle {
 	unit EnumUnit;
 	group WhichGroup;
 
+	// Перебирает все юниты в прямоугольнике с учётом коллизии
+	// @arg group whichGroup группа, в которую будут добавлены юниты
+	// @arg real centerX координата центра прямоугольника по X
+	// @arg real centerY координата центра прямоугольника по Y
+	// @arg real width ширина прямоугольника
+	// @arg real height высота прямоугольника
+	// @arg real radians угол поворота прямоугольника в радианах
+	// @arg boolexpr filter фильтр для юнитов, которые будут добавлены в группу
 	public function GroupEnumUnitsInRectangleCollision(group whichGroup, real centerX, real centerY, real width, real height, real radians, boolexpr filter) {
 		Rectangle this = Rectangle.new(centerX, centerY, width, height, radians);
 

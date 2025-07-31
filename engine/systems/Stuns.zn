@@ -132,8 +132,8 @@ library Stuns requires Events {
 
 	// Возвращает оставшееся время оглушения.
 	//
-	// * @arg Stun `whichStun` оглушение.
-	// * @return real время оглушения.
+	// @arg Stun `whichStun` оглушение.
+	// @return real время оглушения.
 	public function GetStunRemainingTime(Stun whichStun) -> real {
 		if (whichStun.isStarted)
 			return TimerGetRemaining(whichStun.tmDuration);
@@ -145,9 +145,9 @@ library Stuns requires Events {
 
 	// Возвращает оставшееся время оглушения указанного типа оглушения для юнита.
 	//
-	// * @arg unit `stunned` оглушенный юнит.
-	// * @arg integer `typeId` тип оглушения.
-	// * @return real время оглушения.
+	// @arg unit `stunned` оглушенный юнит.
+	// @arg integer `typeId` тип оглушения.
+	// @return real время оглушения.
 	public function GetStunRemainingTimeByType(unit stunned, integer typeId) -> real {
 		Stun stun = Load(stunned, typeId);
 
@@ -159,9 +159,9 @@ library Stuns requires Events {
 
 	// Проверяет, оглушен ли юнит исключая указанный тип оглушения.
 	//
-	// * @arg unit `stunned` оглушенный юнит.
-	// * @arg integer `typeId` исключаемый тип оглушения.
-	// * @return boolean `true` - если юнит оглушен исключая указанный тип, иначе - `false`.
+	// @arg unit `stunned` оглушенный юнит.
+	// @arg integer `typeId` исключаемый тип оглушения.
+	// @return boolean `true` - если юнит оглушен исключая указанный тип, иначе - `false`.
 	public function IsUnitStunnedExceptType(unit stunned, integer typeId) -> boolean {
 		Stun stun = 0;
 
@@ -176,17 +176,17 @@ library Stuns requires Events {
 
 	// Проверяет, оглушен ли юнит указанным типом оглушения.
 	//
-	// * @arg unit `stunned` проверяемый юнит.
-	// * @arg integer `typeId` указанный тип оглушения.
-	// * @return boolean `true`, если юнит оглушен указанным типом, иначе `false`.
+	// @arg unit `stunned` проверяемый юнит.
+	// @arg integer `typeId` указанный тип оглушения.
+	// @return boolean `true`, если юнит оглушен указанным типом, иначе `false`.
 	public function IsUnitStunnedByType(unit stunned, integer typeId) -> boolean {
 		return IsSet(Load(stunned, typeId));
 	}
 
 	// Проверяет, оглушен ли юнит.
 	//
-	// * @arg unit `stunned` оглушенный юнит.
-	// * @return boolean `true` - если юнит оглушен, иначе - `false`.
+	// @arg unit `stunned` оглушенный юнит.
+	// @return boolean `true` - если юнит оглушен, иначе - `false`.
 	public function IsUnitStunned(unit stunned) -> boolean {
 		for (1 <= index <= MAX_COUNT_STUN_TYPES)
 			if (IsSet(Load(stunned, index)))
@@ -197,16 +197,16 @@ library Stuns requires Events {
 
 	// Проверяет, реально оглушен ли юнит.
 	//
-	// * @arg unit `stunned` оглушенный юнит.
-	// * @return boolean `true` - если юнит оглушен, иначе - `false`.
+	// @arg unit `stunned` оглушенный юнит.
+	// @return boolean `true` - если юнит оглушен, иначе - `false`.
 	public function IsUnitActuallyStunned(unit stunned) -> boolean {
 		return UnitHasAbility(stunned, STUN_BUFF_ID);
 	}
 
 	// Удаляет оглушение указанного типа у юнита.
 	//
-	// * @arg unit `stunned` юнит, у которого нужно удалить оглушение.
-	// * @arg integer `typeId` тип оглушения для удаления.
+	// @arg unit `stunned` юнит, у которого нужно удалить оглушение.
+	// @arg integer `typeId` тип оглушения для удаления.
 	public function RemoveUnitStunByType(unit stunned, integer typeId) {
 		Stun stun = Load(stunned, typeId);
 
@@ -216,7 +216,7 @@ library Stuns requires Events {
 
 	// Удаляет все оглушения у юнита.
 	//
-	// * @arg unit `stunned` юнит, у которого нужно удалить все оглушения.
+	// @arg unit `stunned` юнит, у которого нужно удалить все оглушения.
 	public function RemoveUnitStun(unit stunned) {
 		Stun stun = 0;
 
@@ -229,9 +229,9 @@ library Stuns requires Events {
 
 	// Возвращает объект оглушения указанного типа для юнита.
 	//
-	// * @arg unit `stunned` юнит, у которого нужно получить оглушение.
-	// * @arg integer `typeId` тип оглушения который нужно получить.
-	// * @return object|0, `Stun` - оглушение указанного типа, или 0 - если такого оглушения нет.
+	// @arg unit `stunned` юнит, у которого нужно получить оглушение.
+	// @arg integer `typeId` тип оглушения который нужно получить.
+	// @return object|0, `Stun` - оглушение указанного типа, или 0 - если такого оглушения нет.
 	public function GetUnitStunByType(unit stunned, integer typeId) -> Stun {
 		return Load(stunned, typeId);
 	}
@@ -271,11 +271,11 @@ library Stuns requires Events {
 
 	// Оглушает юнита на указанное время с учетом различных условий и модификаторов.
 	// 
-	// * @arg unit `stunningUnit` юнит, инициировавший оглушение.
-	// * @arg unit `stunnedUnit` целевой юнит, который нужно оглушить.
-	// * @arg integer `typeId` тип оглушения.
-	// * @arg real `duration` длительность оглушения.
-	// * @return object|0, `Stun` - возвращает объект оглушения, созданный или обновленный в результате выполнения функции, или 0 при отсутствии оглушения.
+	// @arg unit `stunningUnit` юнит, инициировавший оглушение.
+	// @arg unit `stunnedUnit` целевой юнит, который нужно оглушить.
+	// @arg integer `typeId` тип оглушения.
+	// @arg real `duration` длительность оглушения.
+	// @return object|0, `Stun` - возвращает объект оглушения, созданный или обновленный в результате выполнения функции, или 0 при отсутствии оглушения.
 	// 
 	// Функция проверяет жив ли целевой юнит, имеет ли он иммунитет к оглушению и соответствует ли длительность нового оглушения текущему оглушению. Основываясь на этих проверках, функция либо создает новый объект оглушения, либо обновляет существующий.
 	public function StunUnit(

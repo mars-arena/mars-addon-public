@@ -85,10 +85,17 @@ library JumpToPoint requires Stuns, Parabolas {
 		}
 	}
 
+	// Перемещает юнита в указанную позицию с помощью прыжка
+	// @arg unit caster юнит, который будет прыгать
+	// @arg real x позиция по X, куда будет прыгать юнит
+	// @arg real y позиция по Y, куда будет прыгать юнит
 	public function JumpUnitToXY(unit caster, real x, real y) {
 		JumpToPoint.create(caster, Point2D.createAt(x, y));
 	}
 
+	// Перемещает юнита в указанную точку с помощью прыжка
+	// @arg unit caster юнит, который будет прыгать
+	// @arg Point2D end новая позиция, куда будет прыгать юнит
 	public function JumpUnitToPoint(unit caster, Point2D end) {
 		JumpToPoint.create(caster, end);
 	}

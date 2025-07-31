@@ -1,10 +1,12 @@
 library UnitUnstuck uses JumpToPoint
 
 	globals
-		constant integer DUMMY_PATHABLE_ID = 'hkni'
-		unit DummyPathable
+		private constant integer DUMMY_PATHABLE_ID = 'hkni'
+		private unit DummyPathable
 	endglobals
 
+	// Проверяет, застрял ли юнит, и пытается его "вытолкнуть" на ближайшую проходимую точку
+	// Проводит круговой обход по растущим радиусам вокруг юнита и телепортирует его в первую подходящую проходимую точку
 	function CheckAndFreeUnit takes unit u returns nothing
 		local real x = GetUnitX(u)
 		local real y = GetUnitY(u)

@@ -1,4 +1,4 @@
-library AttackSpeed requires Events, Buffs, Auras, Filters {
+library AttackSpeed requires Events, Buffs, Auras, Filters, HashCleaner {
 
 // Settings
 
@@ -57,15 +57,15 @@ library AttackSpeed requires Events, Buffs, Auras, Filters {
 // API
 
 	// Возвращает кэшированную скорость атаки юнита
-	// @param unit whichUnit — целевой юнит
-	// @return real — скорость атаки юнита
+	// @arg unit whichUnit целевой юнит
+	// @return real скорость атаки юнита
 	public function GetUnitAttackSpeed(unit whichUnit) -> real {
 		return AttackSpeed.get(whichUnit).attackSpeed;
 	}
 
 	// Обновляет скорость атаки юнита
-	// @param unit whichUnit — целевой юнит
-	// @return real — скорость атаки юнита
+	// @arg unit whichUnit целевой юнит
+	// @return real скорость атаки юнита
 	public function UpdateUnitAttackSpeed(unit whichUnit) -> real {
 		return AttackSpeed.get(whichUnit).update();
 	}
@@ -131,7 +131,7 @@ library AttackSpeed requires Events, Buffs, Auras, Filters {
 			if (!UnitAlive(whichUnit)) return;
 
 			if (updateNeeded) {
-				UpdateUnitAttackSpeed(whichUnit);
+				this.update();
 			}
 
 			updateNeeded = false;
@@ -243,7 +243,7 @@ library AttackSpeed requires Events, Buffs, Auras, Filters {
 		ForGroup(INIT_UNITS, function() { PendingUpdate(GetEnumUnit()); });
 
 		RegisterAction(EVENT_CLEAR_HASH, function() {
-			AttackSpeed this = AttackSpeed.load(GetTriggerHash());
+			AttackSpeed this = AttackSpeed.load(GetTriggerHandleId());
 			if (IsSet(this)) this.destroy();
 		});
 	}

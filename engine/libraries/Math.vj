@@ -1,19 +1,33 @@
 library Math
+
 	globals
-		constant real LN2 = 0.693147 // ln(2)
-		constant real LN10 = 2.302585 // ln(10)
-		constant real PI_NUM       = 3.14159265 // Pi number
-		constant real EULER        = 2.7182818  // Euler number
-		constant real FOURTH_EULER = 1.2840254  // (M_E)^(1/4)
-		constant real SQRT2      = 1.4142136  // sqrt(2)
-		constant real SQRT3      = 1.7320508  // sqrt(3)
+
+		// ln(2)
+		constant real LN2 = 0.693147
+
+		// ln(10)
+		constant real LN10 = 2.302585
+
+		// Pi number
+		constant real PI_NUM = 3.14159265
+
+		// Euler number
+		constant real EULER = 2.7182818
+
+		// (M_E)^(1/4)
+		constant real FOURTH_EULER = 1.2840254
+
+		// sqrt(2)
+		constant real SQRT2 = 1.4142136
+
+		// sqrt(3)
+		constant real SQRT3 = 1.7320508
+
 	endglobals
 
-	/**
-	* Проверяет, что строка состоит только из цифр 0–9 и не пуста
-	* @param string s строка для проверки
-	* @return boolean true, если всё цифры
-	*/
+	// Проверяет, что строка состоит только из цифр 0–9 и не пуста
+	// @arg string s строка для проверки
+	// @return boolean true, если всё цифры
 	function StringIsNumeric takes string s returns boolean
 		local integer len = StringLength(s)
 		local integer i = 0
@@ -35,6 +49,9 @@ library Math
 		return true
 	endfunction
 
+	// Возвращает знак числа
+	// @arg integer z число для проверки
+	// @return integer -1, 0 или 1
 	function SignInt takes integer z returns integer
 		if z < 0 then
 			return -1
@@ -44,6 +61,9 @@ library Math
 		return 0
 	endfunction
 
+	// Возвращает знак числа
+	// @arg real z число для проверки
+	// @return integer -1, 0 или 1
 	function SignReal takes real z returns integer
 		if z < 0. then
 			return -1
@@ -53,6 +73,9 @@ library Math
 		return 0
 	endfunction
 
+	// Возвращает абсолютное значение числа
+	// @arg integer z число для проверки
+	// @return integer абсолютное значение числа
 	function AbsInt takes integer z returns integer
 		if z < 0 then
 			return - z
@@ -60,6 +83,9 @@ library Math
 		return z
 	endfunction
 
+	// Возвращает абсолютное значение числа
+	// @arg real z число для проверки
+	// @return real абсолютное значение числа
 	function AbsReal takes real z returns real
 		if z < 0. then
 			return - z
@@ -67,6 +93,10 @@ library Math
 		return z
 	endfunction
 
+	// Возвращает максимальное значение из двух чисел
+	// @arg integer z1 первое число
+	// @arg integer z2 второе число
+	// @return integer максимальное значение
 	function MaxInt takes integer z1, integer z2 returns integer
 		if z1 > z2 then
 			return z1
@@ -74,6 +104,10 @@ library Math
 		return z2
 	endfunction
 
+	// Возвращает максимальное значение из двух чисел
+	// @arg real z1 первое число
+	// @arg real z2 второе число
+	// @return real максимальное значение
 	function MaxReal takes real z1, real z2 returns real
 		if z1 > z2 then
 			return z1
@@ -81,6 +115,10 @@ library Math
 		return z2
 	endfunction
 
+	// Возвращает минимальное значение из двух чисел
+	// @arg integer z1 первое число
+	// @arg integer z2 второе число
+	// @return integer минимальное значение
 	function MinInt takes integer z1, integer z2 returns integer
 		if z1 < z2 then
 			return z1
@@ -88,6 +126,10 @@ library Math
 		return z2
 	endfunction
 
+	// Возвращает минимальное значение из двух чисел
+	// @arg real z1 первое число
+	// @arg real z2 второе число
+	// @return real минимальное значение
 	function MinReal takes real z1, real z2 returns real
 		if z1 < z2 then
 			return z1
@@ -95,33 +137,59 @@ library Math
 		return z2
 	endfunction
 
+	// Проверяет, что разница между двумя числами больше заданного значения
+	// @arg real a первое число
+	// @arg real b второе число
+	// @arg real diff минимальная разница
 	function IsDifferenceMore takes real a, real b, real diff returns boolean
-		if (a - b) > diff or (b - a) > diff then
+		if AbsReal(a - b) > diff then
 			return true
 		endif
 		return false
 	endfunction
 
+	// Проверяет, что число чётное
+	// @arg integer a число для проверки
+	// @return boolean
 	function IsEven takes integer a returns boolean
 		return a / 2 * 2 == a
 	endfunction
 
+	// Проверяет, что число нечётное
+	// @arg integer a число для проверки
+	// @return boolean
 	function IsOdd takes integer a returns boolean
 		return a / 2 * 2 != a
 	endfunction
 
+	// Проверяет, что число делится на N
+	// @arg integer a число для проверки
+	// @arg integer n делитель
+	// @return boolean
 	function IsDivisibleByN takes integer a, integer n returns boolean
 		return a / n * n == a
 	endfunction
 
+	// Проверяет, что число не делится на N
+	// @arg integer a число для проверки
+	// @arg integer n делитель
+	// @return boolean
 	function IsNotDivisibleByN takes integer a, integer n returns boolean
 		return a / n * n != a
 	endfunction
 
+	// Возвращает остаток от деления числа на N
+	// @arg integer a число для проверки
+	// @arg integer n делитель
+	// @return integer остаток от деления
 	function ModuloN takes integer a, integer n returns integer
 		return a - a / n * n
 	endfunction
 
+	// Возвращает положительный остаток от деления числа на N
+	// @arg integer a число для проверки
+	// @arg integer n делитель
+	// @return integer положительный остаток от деления
 	function ModuloNPos takes integer a, integer n returns integer
 		if a < 0 then
 			return a - a / n * n + n
@@ -129,6 +197,9 @@ library Math
 		return a - a / n * n
 	endfunction
 
+	// Округляет число вниз до ближайшего целого
+	// @arg real r число для округления
+	// @return integer округлённое число
 	function Floor takes real r returns integer
 		local integer i = R2I(r)
 		if r > 0. or not (i != r) then
@@ -137,6 +208,9 @@ library Math
 		return i - 1
 	endfunction
 
+	// Округляет число вверх до ближайшего целого
+	// @arg real r число для округления
+	// @return integer округлённое число
 	function Ceil takes real r returns integer
 		local integer i = R2I(r)
 		if r < 0. or not (i != r) then
@@ -145,6 +219,9 @@ library Math
 		return i + 1
 	endfunction
 
+	// Округляет число до ближайшего целого
+	// @arg real r число для округления
+	// @return integer округлённое число
 	function R2Idown takes real r returns integer
 		local integer i = Floor(r)
 		if r - i == 1. then  // operation '==' rounds real numbers, so it helps to reduce imprecision in multiplying
@@ -153,6 +230,9 @@ library Math
 		return i
 	endfunction
 
+	// Округляет число до ближайшего целого
+	// @arg real r число для округления
+	// @return integer округлённое число
 	function R2Iup takes real r returns integer
 		local integer i = Floor(r)
 		if r == i then  // operation '==' rounds real numbers, so it helps to reduce imprecision in multiplying
@@ -161,6 +241,9 @@ library Math
 		return i + 1
 	endfunction
 
+	// Округляет число до ближайшего чётного целого
+	// @arg real r число для округления
+	// @return integer округлённое число
 	function R2Ieven takes real r returns integer
 		local integer i = Floor(r)
 		local real mid = i + 0.5
@@ -170,6 +253,9 @@ library Math
 		return i + 1
 	endfunction
 
+	// Преобразует логическое значение в целое
+	// @arg boolean b логическое значение
+	// @return integer 1, если true, иначе 0
 	function B2I takes boolean b returns integer
 		if b then
 			return 1
@@ -177,6 +263,9 @@ library Math
 		return 0
 	endfunction
 
+	// Преобразует логическое значение в целое
+	// @arg boolean b логическое значение
+	// @return integer 1, если true, иначе -1
 	function B2Ineg takes boolean b returns integer
 		if b then
 			return 1
@@ -184,14 +273,24 @@ library Math
 		return -1
 	endfunction
 
+	// Преобразует целое в логическое значение
+	// @arg integer i целое значение
+	// @return boolean true, если i не равно 0, иначе false
 	function I2B takes integer i returns boolean
 		return i != 0
 	endfunction
 
+	// Проверяет, что идентификатор не равен 0
+	// @arg integer i идентификатор для проверки
+	// @return boolean true, если идентификатор не равен 0
 	function IsSet takes integer i returns boolean
 		return i != 0
 	endfunction
 
+	// Возвращает степень числа i в степени n
+	// @arg integer i число для возведения в степень
+	// @arg integer n степень, в которую нужно возвести число
+	// @return integer результат возведения в степень
 	function PowerN takes integer i, integer n returns integer
 		local integer c = i
 		if i == 0 or n < 0 then
@@ -212,7 +311,7 @@ library Math
 		return c
 	endfunction
 
-	function Ln takes real r returns real
+	private function Ln takes real r returns real
 		// Source https://www.hiveworkshop.com/threads/snippet-natural-logarithm.108059/
 		local real sum = 0.
 		local real sign = 1.
@@ -228,26 +327,36 @@ library Math
 		return sign * (sum + (r - 1.) * (1. + 9. / (2. + r) + 9. / (1. + r * 2.) + 1. / r) / 8.)
 	endfunction
 
+	// Возвращает логарифм числа r по основанию 2
+	// @arg real r число, для которого нужно найти логарифм
+	// @return real логарифм числа r по основанию 2
 	function Log2 takes real r returns real
 		return Ln(r) / LN2
 	endfunction
 	
+	// Возвращает логарифм числа r по основанию 2
+	// @arg real r число, для которого нужно найти логарифм
+	// @return real логарифм числа r по основанию 2
 	function Log10 takes real r returns real
 		return Ln(r) / LN10
 	endfunction
 
+	// Возвращает логарифм числа r по основанию base
+	// @arg real r число, для которого нужно найти логарифм
+	// @arg real base основание логарифма
+	// @return real логарифм числа r по основанию base
 	function Log takes real r, real base returns real
 		return Ln(r) / Ln(base)
 	endfunction
 
-	//Возвращает текст логического значения
+	// Возвращает строковое представление логического значения
+	// @arg boolean bool логическое значение
+	// @return string "Да", если true, иначе "Нет"
 	function GetBooleanValue takes boolean bool returns string
 		if bool then
 			return "Да"
-		else
-			return "Нет"
 		endif
-		return ""
+		return "Нет"
 	endfunction
 
 endlibrary

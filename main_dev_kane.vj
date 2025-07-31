@@ -35,7 +35,8 @@
 		//! import vjass    "../mars-addon-code/engine/libraries/UnitUnstuck.vj"
 		//! import zinc     "../mars-addon-code/engine/libraries/Vector.zn"
 		//! import zinc     "../mars-addon-code/engine/libraries/VectorAPI.zn"
-		//! import zinc     "../mars-addon-code/engine/libraries/Filters.zn"
+		//! import zinc     "../mars-addon-code/engine/libraries/Conditions.zn"
+		//! import vjass    "../mars-addon-code/engine/libraries/SmartLoop.vj"
 
 		// systems
 
@@ -93,6 +94,7 @@
 
 			// others
 
+			//! import zinc     "../mars-addon-code/mars/common/others/Filters.zn"
 			//! import zinc     "../mars-addon-code/mars/common/others/ChainHeal.zn"
 			//! import zinc     "../mars-addon-code/mars/common/others/ChainLightning.zn"
 			//! import zinc     "../mars-addon-code/mars/common/others/Chakram.zn"

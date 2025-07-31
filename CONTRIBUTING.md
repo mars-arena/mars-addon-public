@@ -1,4 +1,4 @@
-## Contributing Guidelines
+# Contributing Guidelines
 
 Thank you for considering contributing to the Mars Arena engine! We welcome improvements, bug fixes, and new ideas. To help the process go smoothly, please keep in mind the following guidelines:
 

@@ -1,5 +1,11 @@
 library DamageAPI requires Damage {
 
+	// Нанести урон юниту
+	// Можно вызывать .run(), .magic(), .pure(), .phys() и т.д. после вызова
+	// @arg unit whichUnit - атакующий
+	// @arg unit target - цель
+	// @arg real value - количество урона
+	// @return DamageEvent - объект урона
 	public function Damage(unit whichUnit, unit target, real value) -> DamageEvent {
 		if (WantDelay) {
 			WantDelay = false;

@@ -108,6 +108,11 @@ library HealLifestealRestore requires Events {
 
 	// Functions
 
+	// Лечит юнита с возможностью модификации значения через EVENT_HEAL_MODIFIER
+	// Если итоговое значение положительное - применяет лечение и вызывает EVENT_HEAL
+	// @arg unit healingUnit - юнит, выполняющий лечение
+	// @arg unit healedUnit - юнит, получающий лечение
+	// @arg real amount - базовое значение лечения
 	public function HealUnit(unit healingUnit, unit healedUnit, real amount) {
 		HealAmount = amount;
 		HealedUnit = healedUnit;
@@ -128,6 +133,10 @@ library HealLifestealRestore requires Events {
 		OverHeal = 0.0;
 	}
 
+	// Применяет лайфстил к юниту с возможностью модификации значения через EVENT_LIFESTEAL_MODIFIER
+	// Если итоговое значение положительное - восстанавливает здоровье и вызывает EVENT_LIFESTEAL
+	// @arg unit whichUnit - юнит, получающий лайфстил
+	// @arg real amount - базовое значение лайфстила
 	public function LifestealUnit(unit whichUnit, real amount) {
 		LifestealAmount = amount;
 		LifestealedUnit = whichUnit;
@@ -146,6 +155,11 @@ library HealLifestealRestore requires Events {
 		OverLifesteal = 0.0;
 	}
 
+	// Восстанавливает ману юниту с возможностью модификации значения через EVENT_RESTORE_MODIFIER
+	// Если итоговое значение положительное - восстанавливает ману и вызывает EVENT_RESTORE
+	// @arg unit restoringUnit - юнит, выполняющий восстановление
+	// @arg unit restoredUnit - юнит, получающий восстановление маны
+	// @arg real amount - базовое значение восстановления маны
 	public function RestoreManaUnit(unit restoringUnit, unit restoredUnit, real amount) {
 		RestoredAmount = amount;
 		RestoredUnit = restoredUnit;

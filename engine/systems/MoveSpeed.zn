@@ -64,6 +64,11 @@ library MoveSpeed requires Events, Buffs, Auras {
 
 // System
 
+	// Пересчитывает и применяет финальную скорость передвижения юнита с учётом всех модификаторов.
+	// Генерирует событие EVENT_MOVE_SPEED, в котором можно изменить MSBonus, MSIncrease и другие переменные.
+	// Обрабатывает ограничения по минимальной и максимальной скорости.
+	// @arg unit whichUnit — целевой юнит
+	// @return real — итоговая скорость передвижения после модификаторов
 	public function UpdateUnitMoveSpeed(unit whichUnit) -> real {
 		real baseSpeed = GetUnitDefaultMoveSpeed(whichUnit);
 		real moveSpeed;

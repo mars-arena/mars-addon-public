@@ -142,6 +142,10 @@ library Damage requires Events {
 	// GetDamageLifeAttackedUnit() -> real
 	public integer EVENT_DAMAGE;
 
+	// Событие смерти юнита
+	//
+	// GetDeathKillingUnit() -> unit
+	// GetDeathKilledUnit() -> unit
 	public integer EVENT_DEATH;
 
 	real DMGAmplifier[MAX_COUNT_TYPE_AMPLIFIERS];
@@ -305,15 +309,17 @@ library Damage requires Events {
 		SOURCE_POSITION = 0;
 	}
 
+	// Отключает детект урона
 	public function DisableDetectDamage() {
 		DisableTrigger(DamageTrigger);
 	}
 
+	// Включает детект урона
 	public function EnableDetectDamage() {
 		EnableTrigger(DamageTrigger);
 	}
 
-	public function DebugModifierDamage() {
+	function DebugModifierDamage() {
 		debug DebugEvent
 			.a(EVENT_DODGE_MODIFIER)
 			.a(EVENT_PRECEDING_MODIFIER)
@@ -325,7 +331,7 @@ library Damage requires Events {
 		.run();
 	}
 
-	public function DebugPostDamage() {
+	function DebugPostDamage() {
 		debug DebugEvent
 			.a(EVENT_POST_MODIFIER_INDEX_DAMAGE)
 			.a(EVENT_POST_MODIFIER_INDEX_PERCENT)
@@ -334,7 +340,7 @@ library Damage requires Events {
 		.run();
 	}
 
-	public function DebugUniqueDamage(integer int) {
+	function DebugUniqueDamage() {
 		debug DebugEvent
 			.a(EVENT_PRECEDING_MODIFIER)
 			.a(EVENT_UNIQUE_MODIFIER)
@@ -387,22 +393,22 @@ library Damage requires Events {
 	}
 
 	public function IsModifierMagical() -> boolean {
-		debug DebugUniqueDamage(1);
+		debug DebugUniqueDamage();
 		return IsMagical;
 	}
 
 	public function IsModifierNoRepeat() -> boolean  {
-		debug DebugUniqueDamage(2);
+		debug DebugUniqueDamage();
 		return IsNoRepeat;
 	}
 
 	public function IsModifierPhysical() -> boolean {
-		debug DebugUniqueDamage(3);
+		debug DebugUniqueDamage();
 		return IsPhys;
 	}
 
 	public function IsModifierPure() -> boolean {
-		debug DebugUniqueDamage(4);
+		debug DebugUniqueDamage();
 		return IsPure;
 	}
 

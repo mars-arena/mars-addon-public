@@ -86,6 +86,20 @@ library Lightning requires TechUtils {
 		}
 	}
 	
+	// Создаёт графическую молнию между двумя юнитами
+	// @arg unit caster юнит-источник молнии
+	// @arg unit target юнит-цель молнии
+	// @arg string lightningType тип молнии
+	// @arg string effectCasterModel модель эффекта источника молнии
+	// @arg string effectCasterAttach точка прикрепления эффекта источника молнии
+	// @arg string effectTargetModel модель эффекта цели молнии
+	// @arg string effectTargetAttach точка прикрепления эффекта цели молнии
+	// @arg real duration время жизни молнии
+	// @arg real maxDistance максимальная дистанция молнии
+	// @arg real lightningZ высота молнии над землёй
+	// @arg real decayTime время затухания молнии
+	// @arg boolean destroyEffects уничтожать ли эффекты молнии
+	// @return integer идентификатор молнии
 	public function CreateUnitLightningTarget(unit caster, unit target, string lightningType, string effectCasterModel, string effectCasterAttach, string effectTargetModel, string effectTargetAttach, real duration, real maxDistance, real lightningZ, real decayTime, boolean destroyEffects) -> integer {
 		Lightning current;
 		current = Lightning.create(caster, target, lightningType, effectCasterModel, effectCasterAttach, effectTargetModel, effectTargetAttach, duration, maxDistance, lightningZ, decayTime, destroyEffects);

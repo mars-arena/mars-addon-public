@@ -275,6 +275,8 @@ function main() {
 		const ext = path.extname(file).toLowerCase();
 		let decls: string[] = [];
 
+		console.log(`🔍: ${file}`);
+
 		if (ext === '.zn') {
 			decls = parsePublicExportsZn(file);
 		} else if (ext === '.vj') {

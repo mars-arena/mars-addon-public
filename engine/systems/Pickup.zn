@@ -8,8 +8,8 @@ library Pickup requires Events {
 // API
 
 	// Делает предмет подбираемым
-	// @param unit pickup — предмет, который будет подобран
-	// @return Pickup — инстанс поведения
+	// @arg unit pickup предмет, который будет подобран
+	// @return Pickup инстанс поведения
 	public function MakePickupable(unit pickup) -> Pickup {
 		return Pickup.create(pickup);
 	}

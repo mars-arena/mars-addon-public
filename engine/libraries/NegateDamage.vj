@@ -3,19 +3,32 @@ library NegateDamageLib
 	globals
 		private constant group Group = CreateGroup()
 		private constant timer Timer = CreateTimer()
+		private constant integer MAX_LIFE_BONUS = 10000
 	endglobals
 
+	// Возвращает максимальное здоровье юнита
+	// @arg unit u юнит, для которого нужно получить максимальное здоровье
+	// @return real максимальное здоровье юнита
 	function GetUnitMaxLife takes unit u returns real
 		return GetUnitState(u, UNIT_STATE_MAX_LIFE) - GetUnitAbilityLevel(u, MAX_LIFE_BONUS_ABILITY) * MAX_LIFE_BONUS
 	endfunction
 
+	// Возвращает значение состояния юнита
+	// @arg unit u юнит, для которого нужно получить значение состояния
+	// @arg unitstate state значение состояния юнита
+	// @return real значение состояния юнита
 	function GetUnitStateHook takes unit u, unitstate state returns real
 		if state == UNIT_STATE_MAX_LIFE then
 			return GetUnitMaxLife(u)
 		endif
 		return GetUnitState(u, state)
 	endfunction
-		
+	
+	// Возвращает процент состояния юнита
+	// @arg unit whichUnit юнит, для которого нужно получить процент состояния
+	// @arg unitstate whichState состояние юнита
+	// @arg unitstate whichMaxState максимальное состояние юнита
+	// @return real процент состояния юнита
 	function GetUnitStatePercentHook takes unit whichUnit, unitstate whichState, unitstate whichMaxState returns real
 		local real value    = GetUnitStateHook(whichUnit, whichState)
 		local real maxValue = GetUnitStateHook(whichUnit, whichMaxState)
@@ -27,7 +40,10 @@ library NegateDamageLib
 	
 		return value / maxValue * 100.0
 	endfunction
-		
+	
+	// Возвращает процент здоровья юнита
+	// @arg unit whichUnit юнит, для которого нужно получить процент здоровья
+	// @return real процент здоровья юнита
 	function GetUnitLifePercentHook takes unit whichUnit returns real
 		return GetUnitStatePercentHook(whichUnit, UNIT_STATE_LIFE, UNIT_STATE_MAX_LIFE)
 	endfunction

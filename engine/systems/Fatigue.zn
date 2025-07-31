@@ -9,6 +9,9 @@ library FatigueSystem requires Combat, Events {
 
 // API
 
+	// Возвращает текущий уровень усталости юнита
+	// @arg unit whichUnit - целевой юнит
+	// @return real - уровень усталости (0.0 ... FATIGUE_MAX)
 	public function GetUnitFatigue(unit whichUnit) -> real {
 		Fatigue this = Fatigue.load(GetHandleId(whichUnit)); 
 		if (!IsSet(this)) 
@@ -16,10 +19,17 @@ library FatigueSystem requires Combat, Events {
 		return this.fatigue;
 	}
 
+	// Принудительно устанавливает уровень усталости юнита
+	// Значение будет ограничено от 0.0 до FATIGUE_MAX
+	// @arg unit whichUnit - целевой юнит
+	// @arg real fatigue - желаемый уровень усталости
 	public function SetUnitFatigue(unit whichUnit, real fatigue) {
 		Fatigue.get(whichUnit).setFatigue(fatigue);
 	}
 
+	// Проверяет, достиг ли юнит максимального уровня усталости
+	// @arg unit whichUnit - целевой юнит
+	// @return boolean - true, если усталость >= FATIGUE_MAX
 	public function IsUnitFatigued(unit whichUnit) -> boolean {
 		return GetUnitFatigue(whichUnit) >= FATIGUE_MAX;
 	}

@@ -8,6 +8,14 @@ library Events requires Heroes {
 	integer RunningId[100];
 	integer RunningCount = 0;
 
+	// Cобытие входа в карту (игнорирует дамми-юниты)
+	//
+	// GetTriggerUnit() -> unit
+	public integer EVENT_ENTER;
+
+	// Создаёт новое пользовательское событие и возвращает его ID
+	// @arg string name - название события (для отладки и логов)
+	// @return integer - уникальный идентификатор события
 	public function CreateEvent(string name) -> integer {
 		EventId += 1;
 		EventTriggers[EventId] = CreateTrigger();
@@ -16,18 +24,28 @@ library Events requires Heroes {
 		return EventId;
 	}
 
+	// Проверяет, активно ли сейчас выполнение данного события
+	// @arg integer eventId - ID события
+	// @return boolean - true, если событие в процессе выполнения
 	public function IsEventRun(integer eventId) -> boolean {
 		return EventIsRun[eventId];
 	}
 
+	// Возвращает имя события по его ID
+	// @arg integer eventId - ID события
+	// @return string - имя события (устанавливается в CreateEvent)
 	public function GetEventName(integer eventId) -> string {
 		return EventName[eventId];
 	}
 
+	// Возвращает ID текущего выполняемого события
+	// @return integer - ID выполняемого события (последний в стеке)
 	public function GetEventId() -> integer {
 		return RunningId[RunningCount];
 	}
 
+	// Принудительно выполняет событие (вызов всех его обработчиков)
+	// @arg integer eventId - ID события для выполнения
 	public function ExecuteEvent(integer eventId) {
 		if (IsEventRun(eventId)) Error("E5", "Повторная инициализиация ивента: " + GetEventName(eventId));
 		RunningCount = RunningCount + 1;
@@ -39,8 +57,11 @@ library Events requires Heroes {
 		RunningCount = RunningCount - 1;
 	}
 
-	public integer EVENT_ENTER;
-
+	// Регистрирует действие (функцию) на указанное событие
+	// Автоматически создаёт системные триггеры, если eventId относится к стандартным EVENT_GAME / EVENT_PLAYER и т.д.
+	// @arg integer eventId - ID события (стандартное или пользовательское)
+	// @arg code action - функция, которую нужно выполнить
+	// @return triggeraction - ссылка на зарегистрированное действие
 	public function RegisterAction(integer eventId, code action) -> triggeraction {
 		if (eventId == 0) Error("E4", "Регистрация действия для не инициализированного события");
 		if (EventTriggers[eventId] == null) {
@@ -80,6 +101,9 @@ library Events requires Heroes {
 		return TriggerAddAction(EventTriggers[eventId], action);
 	}
 
+	// Удаляет ранее зарегистрированное действие с события
+	// @arg integer eventId - ID события
+	// @arg triggeraction action - ссылка на действие, полученное из RegisterAction
 	public function UnregisterAction(integer eventId, triggeraction action) {
 		if (EventTriggers[eventId] == null) {
 			Error("E2", "Попытка очистить действие для неизвестного события ID:" + I2S(eventId));

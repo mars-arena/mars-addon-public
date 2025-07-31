@@ -30,7 +30,7 @@ library Armor initializer init requires TechUtils
 		endif
 	endfunction
 
-	function GetUnitReduction takes unit u, unit attacking, boolean isSpell returns real
+	private function GetUnitReduction takes unit u, unit attacking, boolean isSpell returns real
 		local integer id = GetHandleId(u)
 		local real armorReduction
 

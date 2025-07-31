@@ -13,7 +13,6 @@ library Constants {
 
 	// NegateDamage
 	public constant integer MAX_LIFE_BONUS_ABILITY = 'A008';
-	public constant integer MAX_LIFE_BONUS = 10000;
 
 	// AntiMH
 	// public constant rect ANTI_MH_RECT = gg_rct_rectMH;

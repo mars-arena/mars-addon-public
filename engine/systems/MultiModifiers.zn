@@ -10,6 +10,11 @@ library MultiModifiers requires MultiModifiersList {
 	integer arr[200];
 	real maxValue[200];
 	
+	// Добавляет мульти-модификатор юниту с указанными параметрами.
+	// @arg unit u — юнит, которому добавляется модификатор
+	// @arg integer modifier — тип модификатора
+	// @arg integer typeModifier — подтип модификатора (влияет на стакаемость/уникальность)
+	// @arg real value2..value6 — дополнительные параметры модификатора (напр. шанс, сила, бонусы и т.п.)
 	public function AddUnitMultiModifier(unit u, integer modifier, integer typeModifier, real value2, real value3, real value4, real value5, real value6) {
 		location locMod;
 		location locType;
@@ -59,7 +64,9 @@ library MultiModifiers requires MultiModifiersList {
 		locValue5 = null;
 		locValue6 = null;
 	}
-	
+
+	// Удаляет конкретное значение мульти-модификатора у юнита (по совпадению всех полей).
+	// @return boolean — true, если модификатор успешно удалён
 	public function SubUnitMultiModifier(unit u, integer modifier, integer typeModifier, real value2, real value3, real value4, real value5, real value6) -> boolean {
 		location locMod;
 		location locType;
@@ -120,6 +127,8 @@ library MultiModifiers requires MultiModifiersList {
 		return sub;
 	}
 	
+	// Полностью удаляет все значения конкретного мульти-модификатора у объекта (по его hashId).
+	// @return boolean — true, если модификатор был найден и уничтожен
 	public function DestroyUnitMultiModifier(integer hashId, integer modifier) -> boolean {
 		location locMod;
 		location locType;
@@ -164,7 +173,10 @@ library MultiModifiers requires MultiModifiersList {
 		locValue6 = null;
 		return true;
 	}
-	
+
+	// Рассчитывает итоговое значение мульти-модификатора на юните и записывает в глобальные переменные:
+	// TypeMod, ValueMod2..6. Поведение зависит от типа модификатора (стакаемый, нестекаемый, абсолютный и т.п.).
+	// @return boolean — true, если модификатор найден
 	public function GetUnitMultiModifier(unit u, integer modifier) -> boolean {
 		location locMod;
 		location locType;
@@ -261,11 +273,16 @@ library MultiModifiers requires MultiModifiersList {
 		locValue6 = null;
 		return true;
 	}
-	
+
+	// Возвращает количество всех записей модификатора у юнита (включая стакаемые).
+	// @return integer — количество записей
 	public function GetUnitCountMultiModifier(unit u, integer modifier) -> integer {
 		return LoadInteger(HT, GetHandleId(LoadLocationHandle(HT, GetHandleId(u), modifier)), 0);
 	}
-	
+
+	// Извлекает конкретную запись мульти-модификатора по индексу и сохраняет значения в глобальные переменные:
+	// TypeMod, ValueMod2..6.
+	// @return boolean — true, если запись найдена
 	public function GetUnitMultiModifierById(unit u, integer modifier, integer id) -> boolean {
 		location locMod;
 		location locType;
@@ -306,6 +323,7 @@ library MultiModifiers requires MultiModifiersList {
 		return true;
 	}
 
+	// Удаляет все мульти-модификаторы, зарегистрированные по заранее известным ключам.
 	public function DestroyAllMultiModifiersByHashId(integer hashId) {
 		DestroyUnitMultiModifier(hashId, CHANCE_PURE);
 		DestroyUnitMultiModifier(hashId, CHANCE_MAGIC);

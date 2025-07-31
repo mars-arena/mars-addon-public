@@ -1,15 +1,18 @@
 library HashCleaner requires Stuns, Auras, Buffs, Combat {
 
+	// Событие при очистке хэш-таблицы для юнита
+	//
+	// GetTriggerHandleId() -> integer
 	public integer EVENT_CLEAR_HASH;
 
-	integer TriggerHash;
-	public function GetTriggerHash() -> integer { debug DebugEvent.a(EVENT_CLEAR_HASH).run(); return TriggerHash; }
+	integer TriggerHandleId;
+	public function GetTriggerHandleId() -> integer { debug DebugEvent.a(EVENT_CLEAR_HASH).run(); return TriggerHandleId; }
 	
 
 	// TO DO
 	struct ClearUnit {
 		unit u;
-		integer hashId;
+		integer handleId;
 		timer tm;
 		integer count;
 		static integer CK_HID = 0;
@@ -17,7 +20,7 @@ library HashCleaner requires Stuns, Auras, Buffs, Combat {
 		static method create(unit u) -> ClearUnit {
 			ClearUnit this = ClearUnit.allocate();
 			this.u = u;
-			this.hashId = GetHandleId(u);
+			this.handleId = GetHandleId(u);
 			this.tm = CreateTimer();
 			this.count = 0;
 			if (IsUnitDummy(u)) {
@@ -42,21 +45,21 @@ library HashCleaner requires Stuns, Auras, Buffs, Combat {
 		}
 
 		method clear() {
-			TriggerHash = hashId;
+			TriggerHandleId = handleId;
 			ExecuteEvent(EVENT_CLEAR_HASH);
 
-			DestroyAllAurasByHashId(hashId);
-			DestroyAllBuffsByHashId(hashId);
-			DestroyAllModifiersByHashId(hashId);
-			DestroyAllMultiModifiersByHashId(hashId);
-			if (IsSet(UnitData.load(hashId))) UnitData.load(hashId).destroy();
-			if (IsSet(Regeneration.load(hashId))) Regeneration.load(hashId).destroy();
-			if (IsSet(MoveSpeed.load(hashId))) MoveSpeed.load(hashId).destroy();
-			if (IsSet(Combat.load(hashId))) Combat.load(hashId).destroy();
-			if (IsSet(Fatigue.load(hashId))) Fatigue.load(hashId).destroy();
+			DestroyAllAurasByHashId(handleId);
+			DestroyAllBuffsByHashId(handleId);
+			DestroyAllModifiersByHashId(handleId);
+			DestroyAllMultiModifiersByHashId(handleId);
+			if (IsSet(UnitData.load(handleId))) UnitData.load(handleId).destroy();
+			if (IsSet(Regeneration.load(handleId))) Regeneration.load(handleId).destroy();
+			if (IsSet(MoveSpeed.load(handleId))) MoveSpeed.load(handleId).destroy();
+			if (IsSet(Combat.load(handleId))) Combat.load(handleId).destroy();
+			if (IsSet(Fatigue.load(handleId))) Fatigue.load(handleId).destroy();
 			
-			FlushChildHashtable(HT, hashId);
-			FlushChildHashtable(udg_HT_GUI, hashId);
+			FlushChildHashtable(HT, handleId);
+			FlushChildHashtable(udg_HT_GUI, handleId);
 			this.destroy();
 		}
 

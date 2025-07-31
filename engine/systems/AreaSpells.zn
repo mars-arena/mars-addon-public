@@ -13,26 +13,24 @@ library AreaSpells requires SpellGetters {
 	// Прикрепляет эффект к заклинанию.
 	// Следующий вызов заменит эффект.
 	//
-	// * @param effect `stunned` эффект.
-	// * @param AreaSpell `whichSpell` заклинание.
+	// @arg effect `stunned` эффект.
+	// @arg AreaSpell `whichSpell` заклинание.
 	public function AttachEffectToAreaSpell(effect whichEffect, AreaSpell whichSpell) {
 		whichSpell.eff = whichEffect;
 	}
 
 	// Добавляет заклинание области к юниту.
 	//
-	// * @param unit `ownerUnit` юнит, владеющий заклинанием.
-	// * @param unit `dummyUnit` юнит, применяющий заклинание (может быть таким же как и  `unit ownerUnit`).
-	// * @param integer `actionsId` идентификатор действий заклинания.
-	// * @param real `duration` длительность действия заклинания.
-	// * @param boolean `pierceDeath` работает ли заклинание сквозь смерть `unit dummyUnit`.
-	// * @param boolexpr `filter` функция-фильтр.
-	// * @param real `rangeStart` начальный радиус области действия заклинания.
-	// * @param real `rangeEnd` конечный радиус области действия заклинания.
-	// * @param real `interval` интервал регистрации юнитов в области.
-	// * @return object `AreaSpell` - возвращает объект заклинания области.
-	//
-	// Функция возвращает уникальный идентификатор созданного объекта, что позволяет сохранить его для того, чтобы получать доступ к объекту вручную, когда это нужно.
+	// @arg unit `ownerUnit` юнит, владеющий заклинанием.
+	// @arg unit `dummyUnit` юнит, применяющий заклинание (может быть таким же как и  `unit ownerUnit`).
+	// @arg integer `actionsId` идентификатор действий заклинания.
+	// @arg real `duration` длительность действия заклинания.
+	// @arg boolean `pierceDeath` работает ли заклинание сквозь смерть `unit dummyUnit`.
+	// @arg boolexpr `filter` функция-фильтр.
+	// @arg real `rangeStart` начальный радиус области действия заклинания.
+	// @arg real `rangeEnd` конечный радиус области действия заклинания.
+	// @arg real `interval` интервал регистрации юнитов в области.
+	// @return object `AreaSpell` - возвращает объект заклинания области.
 	public function AddAreaSpellToUnit(
 		unit ownerUnit,
 		unit dummyUnit,
@@ -43,19 +41,8 @@ library AreaSpells requires SpellGetters {
 		real rangeStart,
 		real rangeEnd,
 		real interval
-		) -> AreaSpell
-	{
-		return AreaSpell.create(
-			ownerUnit,
-			dummyUnit,
-			actionsId,
-			duration,
-			pierceDeath,
-			filter,
-			rangeStart,
-			rangeEnd,
-			interval
-		);
+	) -> AreaSpell {
+		return AreaSpell.create( ownerUnit, dummyUnit, actionsId, duration, pierceDeath, filter, rangeStart, rangeEnd, interval);
 	}
 
 // System
@@ -141,7 +128,6 @@ library AreaSpells requires SpellGetters {
 			ownerUnit = null;
 			dummyUnit = null;
 
-			//DestroyBoolExpr(filter);
 			filter = null;
 
 			DestroyGroup(grEnter);

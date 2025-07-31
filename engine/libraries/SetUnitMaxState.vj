@@ -9,6 +9,11 @@ library SetUnitMaxState uses Filters
 		return 0
 	endfunction
 
+	// Устанавливает максимальное значение состояния юнита
+	// @arg unit whichUnit юнит, для которого нужно установить максимальное состояние
+	// @arg unitstate whichUnitState состояние юнита
+	// @arg integer newVal новое значение состояния юнита
+	// @return boolean true, если состояние было успешно установлено
 	function SetUnitMaxState takes unit whichUnit, unitstate whichUnitState, integer newVal returns boolean
 		local integer c = newVal-R2I(GetUnitStateHook(whichUnit, whichUnitState))
 		local integer i = MaxStateModifierId(whichUnitState)

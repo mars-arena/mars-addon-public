@@ -21,52 +21,52 @@ library Illusions requires Events, AttackSpeed {
 
 	// Создает иллюзию для указанного игрока на основе юнита.
 	//
-	// * @arg player `owner` владелец иллюзии.
-	// * @arg unit `source` юнит, на основе которого создается иллюзия.
-	// * @arg real `x` координата X для создания иллюзии.
-	// * @arg real `y` координата Y для создания иллюзии.
-	// * @arg real `facing` угол поворота иллюзии.
-	// * @return Illusion объект иллюзии.
+	// @arg player `owner` владелец иллюзии.
+	// @arg unit `source` юнит, на основе которого создается иллюзия.
+	// @arg real `x` координата X для создания иллюзии.
+	// @arg real `y` координата Y для создания иллюзии.
+	// @arg real `facing` угол поворота иллюзии.
+	// @return Illusion объект иллюзии.
 	public function CreateIllusion(player owner, unit source, real x, real y, real facing) -> Illusion {
 		return Illusion.create(owner, source, x, y, facing);
 	}
 
 	// Возвращает последний созданный объект иллюзии.
 	//
-	// * @return Illusion объект иллюзии.
+	// @return Illusion объект иллюзии.
 	public function GetLastCreatedIllusion() -> Illusion {
 		return LAST_CREATED_ILLUSION_GET;
 	}
 
 	// Возвращает объект иллюзии юнита.
 	//
-	// * @arg unit `u` юнит иллюзии.
-	// * @return Illusion объект иллюзии.
+	// @arg unit `u` юнит иллюзии.
+	// @return Illusion объект иллюзии.
 	public function GetUnitIllusion(unit u) -> Illusion {
 		return Illusion.load(u);
 	}
 
 	// Возвращает юнита объекта иллюзии.
 	//
-	// * @arg Illusion `illusion` объект юнита иллюзии.
-	// * @return юнит иллюзии.
+	// @arg Illusion `illusion` объект юнита иллюзии.
+	// @return юнит иллюзии.
 	public function GetIllusionUnit(Illusion illusion) -> unit {
 		return illusion.unit;
 	}
 
 	// Проверяет, является ли указанный юнит расширенной иллюзией.
 	//
-	// * @arg unit `u` проверяемый юнит.
-	// * @return boolean `true`, если юнит является иллюзией, иначе `false`.
+	// @arg unit `u` проверяемый юнит.
+	// @return boolean `true`, если юнит является иллюзией, иначе `false`.
 	public function IsUnitIllusionEx(unit u) -> boolean {
 		return IsSet(Illusion.load(u));
 	}
 
 	// Устанавливает оставшееся время жизни для указанной иллюзии.
 	//
-	// * @arg Illusion `illusion` иллюзия, для которой устанавливается время жизни.
-	// * @arg real `time` время жизни в секундах.
-	// * @return boolean `true`, если время жизни успешно установлено, иначе `false`.
+	// @arg Illusion `illusion` иллюзия, для которой устанавливается время жизни.
+	// @arg real `time` время жизни в секундах.
+	// @return boolean `true`, если время жизни успешно установлено, иначе `false`.
 	public function SetIllusionRemainingTime(Illusion illusion, real time) -> boolean {
 		if (IsSet(illusion)) {
 			illusion.duration = time;
@@ -77,9 +77,9 @@ library Illusions requires Events, AttackSpeed {
 
 	// Устанавливает количество получаемого урона для указанной иллюзии.
 	//
-	// * @arg Illusion `illusion` иллюзия, для которой устанавливается получаемый урон.
-	// * @arg real `damageTaken` количество получаемого урона.
-	// * @return boolean `true`, если получаемый урон успешно установлен, иначе `false`.
+	// @arg Illusion `illusion` иллюзия, для которой устанавливается получаемый урон.
+	// @arg real `damageTaken` количество получаемого урона.
+	// @return boolean `true`, если получаемый урон успешно установлен, иначе `false`.
 	public function SetIllusionDamageTaken(Illusion illusion, real damageTaken) -> boolean {
 		if (IsSet(illusion)) {
 			illusion.damageTaken = damageTaken;
@@ -90,9 +90,9 @@ library Illusions requires Events, AttackSpeed {
 
 	// Устанавливает количество наносимого урона для указанной иллюзии.
 	//
-	// * @arg Illusion `illusion` иллюзия, для которой устанавливается наносимый урон.
-	// * @arg real `damageGiven` количество наносимого урона.
-	// * @return boolean `true`, если наносимый урон успешно установлен, иначе `false`.
+	// @arg Illusion `illusion` иллюзия, для которой устанавливается наносимый урон.
+	// @arg real `damageGiven` количество наносимого урона.
+	// @return boolean `true`, если наносимый урон успешно установлен, иначе `false`.
 	public function SetIllusionDamageGiven(Illusion illusion, real damageGiven) -> boolean {
 		if (IsSet(illusion)) {
 			illusion.damageGiven = damageGiven;
@@ -103,16 +103,16 @@ library Illusions requires Events, AttackSpeed {
 
 	// Возвращает количество получаемого урона для указанной иллюзии.
 	//
-	// * @arg Illusion `illusion` иллюзия, для которой возвращается получаемый урон.
-	// * @return real количество получаемого урона.
+	// @arg Illusion `illusion` иллюзия, для которой возвращается получаемый урон.
+	// @return real количество получаемого урона.
 	public function GetIllusionDamageTaken(Illusion illusion) -> real {
 		return illusion.damageTaken;
 	}
 
 	// Возвращает количество наносимого урона для указанной иллюзии.
 	//
-	// * @arg Illusion `illusion` иллюзия, для которой возвращается наносимый урон.
-	// * @return real количество наносимого урона.
+	// @arg Illusion `illusion` иллюзия, для которой возвращается наносимый урон.
+	// @return real количество наносимого урона.
 	public function GetIllusionDamageGiven(Illusion illusion) -> real {
 		return illusion.damageGiven;
 	}

@@ -3,11 +3,9 @@ library Debug requires Math {
 	// Глобальный уровень отладки (0 = выкл, больше = более подробный).
 	integer DEBUG_LEVEL = 3;
 
-	/**
-	 * Вывести необработанное сообщение отладки всем игрокам, если уровень позволяет.
-	 * @param integer level уровень подробности этого сообщения
-	 * @param string msg сообщение для отображения
-	 */
+	// Вывести необработанное сообщение отладки всем игрокам, если уровень позволяет.
+	// @arg integer level уровень подробности этого сообщения
+	// @arg string msg сообщение для отображения
 	function dbg(integer level, string msg) {
 		integer i;
 		if (level > DEBUG_LEVEL) return;
@@ -16,20 +14,16 @@ library Debug requires Math {
 		}
 	}
 
-	/**
-	 * Отладка на уровне "info": общая информация.
-	 * @param string msg сообщение для логирования
-	 */
+	// Отладка на уровне "info": общая информация.
+	// @arg string msg сообщение для логирования
 	public function Debug(string msg) {
 		dbg(3, "|cff2163ff[i]|r - " + msg);
 	}
 
-	/**
-	 * Показать текстовую метку в координатах, полезно для отладки
-	 * @param string s текст для отображения
-	 * @param real x позиция по X
-	 * @param real y позиция по Y
-	 */
+	// Показать текстовую метку в координатах, полезно для отладки
+	// @arg string s текст для отображения
+	// @arg real x позиция по X
+	// @arg real y позиция по Y
 	public function DebugXY(string s, real x, real y) {
 		texttag tt;
 		tt = CreateTextTagLocBJ(s, null, 0, 10, GetRandomInt(50,100), GetRandomInt(50,100), GetRandomInt(50,100), GetRandomInt(0,10));
@@ -40,20 +34,16 @@ library Debug requires Math {
 		SetTextTagVelocityBJ(tt, GetRandomInt(70,90), GetRandomInt(80,110));
 	}
 
-	/**
-	 * Отладка на уровне "warning": потенциальные проблемы.
-	 * @param string id идентификатор предупреждения
-	 * @param string msg сообщение предупреждения
-	 */
+	// Отладка на уровне "warning": потенциальные проблемы.
+	// @arg string id идентификатор предупреждения
+	// @arg string msg сообщение предупреждения
 	public function Warning(string id, string msg) {
 		dbg(2, "|cffffa500[w" + id + "]|r - " + msg);
 	}
 
-	/**
-	 * Отладка на уровне "error": серьёзные ошибки.
-	 * @param string id идентификатор ошибки
-	 * @param string msg подробное сообщение об ошибке
-	 */
+	// Отладка на уровне "error": серьёзные ошибки.
+	// @arg string id идентификатор ошибки
+	// @arg string msg подробное сообщение об ошибке
 	public function Error(string id, string msg) {
 		dbg(1, "|cffff0000[e" + id + "]|r - " + msg);
 	}
