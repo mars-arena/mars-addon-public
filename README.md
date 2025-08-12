@@ -19,12 +19,13 @@ To use this engine in your own Warcraft III map, follow these steps:
    *(This is required for the relative `//! import` paths to work.)*
 
 3. **Place Your Map File**
-   Put your map file in the same parent directory as the `mars-addon-code` folder.
+   Put your map file in the `mars-addon-code` folder or.
 
    ```bash
    /your-project-folder/
    ├── mars-addon-code/
-   └── your-map.w3x
+   └──  another-folder/
+      └── your-map.w3x
    ```
 
 4. **Add Import Directive**
