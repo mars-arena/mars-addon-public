@@ -174,7 +174,7 @@ library TechUtils initializer init uses HashId, CoordUtils
 	endfunction
 
 	globals
-		private key UNIT_DUMMY_HID
+		key UNIT_DUMMY_HID
 	endglobals
 
 	// Атаковать юнита с помощью дамми-юнита
@@ -492,6 +492,13 @@ library TechUtils initializer init uses HashId, CoordUtils
 	// Проверяет, активна ли дуэль
 	function IsMapDuel takes nothing returns boolean
 		return udg_Rev_Duel
+	endfunction
+
+	// Проверяет, является ли юнит даммиком
+	// @arg unit whichUnit
+	// @return boolean
+	function IsUnitDummy takes unit whichUnit returns boolean
+		return IsUnitType(whichUnit, UNIT_TYPE_MECHANICAL)
 	endfunction
 
 	// Возвращает группу игроков-наблюдателей дуэли

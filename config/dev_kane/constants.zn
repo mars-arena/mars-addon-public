@@ -3,6 +3,7 @@ library Constants {
 	public constant boolean IS_DEV = true;
 
 	// максимальное количество игроков
+	//! @gui
 	public constant integer MAX_PLAYERS = 16;
 
 	// DamageEventEngine

@@ -6,7 +6,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "generate": "ts-node ./generateDeclarations.ts"
+    "generate": "ts-node ./api/generate.ts"
   },
   "repository": {
     "type": "git",

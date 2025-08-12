@@ -30,6 +30,7 @@ library AttackSpeed requires Events, Buffs, Auras, Filters, HashCleaner {
 	// SetASPenalty(real asPenalty)
 	// SetASIncrease(real asIncrease)
 	// SetASDecrease(real asDecrease)
+	//! @gui
 	public integer EVENT_ATTACK_SPEED;
 
 	unit ASUnit;
@@ -38,12 +39,15 @@ library AttackSpeed requires Events, Buffs, Auras, Filters, HashCleaner {
 	real ASIncrease;	// percentage bonus
 	real ASDecrease;	// percentage penalty
 
+	//! gui [EventResponse], TriggerCalls
 	public function GetASUnit() -> unit { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); return ASUnit; }
 	public function GetASBonus() -> real { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); return ASBonus; }
 	public function GetASPenalty() -> real { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); return ASPenalty; }
 	public function GetASIncrease() -> real { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); return ASIncrease; }
 	public function GetASDecrease() -> real { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); return ASDecrease; }
+	//! endgui
 
+	//! gui [EventRequest], TriggerActions, TriggerCalls
 	public function AddASBonus(real asBonus) { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); ASBonus += asBonus; }
 	public function AddASPenalty(real asPenalty) { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); ASPenalty += asPenalty; }
 	public function AddASIncrease(real asIncrease) { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); ASIncrease += asIncrease; }
@@ -53,6 +57,7 @@ library AttackSpeed requires Events, Buffs, Auras, Filters, HashCleaner {
 	public function SetASPenalty(real asPenalty) { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); ASPenalty = asPenalty; }
 	public function SetASIncrease(real asIncrease) { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); ASIncrease = asIncrease; }
 	public function SetASDecrease(real asDecrease) { debug DebugEvent.a(EVENT_ATTACK_SPEED).run(); ASDecrease = asDecrease; }
+	//! endgui
 
 // API
 
@@ -60,23 +65,23 @@ library AttackSpeed requires Events, Buffs, Auras, Filters, HashCleaner {
 	// @arg unit whichUnit целевой юнит
 	// @return real скорость атаки юнита
 	public function GetUnitAttackSpeed(unit whichUnit) -> real {
-		return AttackSpeed.get(whichUnit).attackSpeed;
+		return AttackSpeed.get(whichUnit).attackSpeed + BASE_ATTACK_SPEED;
 	}
 
 	// Обновляет скорость атаки юнита
 	// @arg unit whichUnit целевой юнит
 	// @return real скорость атаки юнита
 	public function UpdateUnitAttackSpeed(unit whichUnit) -> real {
-		return AttackSpeed.get(whichUnit).update();
+		return AttackSpeed.get(whichUnit).update() + BASE_ATTACK_SPEED;
 	}
 
 // Debug
 
-	boolean Debug = true;
+	boolean IsDebug = true;
 	boolean IsRun = false;
 
 	function dbg(string msg, real x, real y) {
-		if (Debug) DebugXY(msg, x, y);
+		if (IsDebug) DebugXY(msg, x, y);
 	}
 
 // System
@@ -139,6 +144,7 @@ library AttackSpeed requires Events, Buffs, Auras, Filters, HashCleaner {
 
 		method update() -> real {
 			integer hundreds, tens, ones = 0;
+			real newValue = 0.0;
 
 			if (whichUnit == null) {
 				debug Warning("AS1", "unit is null");
@@ -159,37 +165,40 @@ library AttackSpeed requires Events, Buffs, Auras, Filters, HashCleaner {
 
 			ExecuteEvent(EVENT_ATTACK_SPEED);
 
-			attackSpeed = (ASBonus + BASE_ATTACK_SPEED) * (1.00 + ASIncrease) * (1 - ASDecrease) - ASPenalty - BASE_ATTACK_SPEED; 
+			newValue = (ASBonus + BASE_ATTACK_SPEED) * (1.00 + ASIncrease) * (1 - ASDecrease) - ASPenalty - BASE_ATTACK_SPEED; 
 
-			if (attackSpeed > 999.0) {
-				attackSpeed = 999.0;
-			} else if (attackSpeed < -999.0) {
-				attackSpeed = -999.0;
+			if (newValue > 999.0) {
+				newValue = 999.0;
+			} else if (newValue < -999.0) {
+				newValue = -999.0;
 			}
 
-			debug dbg("as: " + R2S(attackSpeed), GetUnitX(whichUnit), GetUnitY(whichUnit));
+			if (newValue != attackSpeed) {
+				debug dbg("as: " + R2S(newValue), GetUnitX(whichUnit), GetUnitY(whichUnit));
 
-			hundreds = R2I(attackSpeed) / 100 + 1;
-			tens = ModuloNPos(R2I(attackSpeed) / 10, 10) + 1;
-			ones = ModuloNPos(R2I(attackSpeed), 10) + 1;
+				hundreds = R2I(newValue) / 100 + 1;
+				tens = ModuloNPos(R2I(newValue) / 10, 10) + 1;
+				ones = ModuloNPos(R2I(newValue), 10) + 1;
 
-			if (attackSpeed > 0.0) {
-				SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_ONES, ones);
-				SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_TENS, tens);
-				SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_HUNDREDS, hundreds);
-				SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_ONES, 1);
-				SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_TENS, 1);
-				SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_HUNDREDS, 1);
-			} else {
-				SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_ONES, 1);
-				SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_TENS, 1);
-				SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_HUNDREDS, 1);
-				SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_ONES, ones);
-				SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_TENS, tens);
-				SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_HUNDREDS, hundreds);
+				if (newValue > 0.0) {
+					SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_ONES, ones);
+					SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_TENS, tens);
+					SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_HUNDREDS, hundreds);
+					SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_ONES, 1);
+					SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_TENS, 1);
+					SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_HUNDREDS, 1);
+				} else {
+					SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_ONES, 1);
+					SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_TENS, 1);
+					SetUnitAbilityLevel(whichUnit, AS_ABILITY_BONUS_HUNDREDS, 1);
+					SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_ONES, ones);
+					SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_TENS, tens);
+					SetUnitAbilityLevel(whichUnit, AS_ABILITY_PENALTY_HUNDREDS, hundreds);
+				}
+
+				attackSpeed = newValue;
 			}
 
-			attackSpeed = attackSpeed + BASE_ATTACK_SPEED;
 			IsRun = false;
 			
 			return attackSpeed;
@@ -228,21 +237,21 @@ library AttackSpeed requires Events, Buffs, Auras, Filters, HashCleaner {
 			AS_ABILITY_PENALTY_HUNDREDS = 'A009';
 		}
 		ForGroup(INIT_UNITS, function() { AddAbilitiesToUnit(GetEnumUnit()); });
-		RegisterAction(EVENT_ENTER, function() { AddAbilitiesToUnit(GetTriggerUnit()); });
+		EventRegisterAction(EVENT_ENTER, function() { AddAbilitiesToUnit(GetTriggerUnit()); });
 
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_ATTACKED), function() { PendingUpdate(GetAttacker()); });
-		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_LEVEL), function() { PendingUpdate(GetLevelingUnit()); });
-		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_SKILL), function() { PendingUpdate(GetLearningUnit()); });
-		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_REVIVABLE), function() { PendingUpdate(GetRevivableUnit()); });
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DROP_ITEM), function() { PendingUpdate(GetTriggerUnit()); });
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_PICKUP_ITEM), function() { PendingUpdate(GetTriggerUnit()); });
-		RegisterAction(EVENT_ENTER, function() { PendingUpdate(GetTriggerUnit()); });
-		RegisterAction(EVENT_BUFF, function() { PendingUpdate(GetTriggerBuffTarget()); });
-		RegisterAction(EVENT_AURA, function() { PendingUpdate(GetAuraOwnerUnit()); });
-		RegisterAction(EVENT_TALENT_CHOSEN, function() { PendingUpdate(GetTalentHero()); });
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_UNIT_ATTACKED), function() { PendingUpdate(GetAttacker()); });
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_HERO_LEVEL), function() { PendingUpdate(GetLevelingUnit()); });
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_HERO_SKILL), function() { PendingUpdate(GetLearningUnit()); });
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_HERO_REVIVABLE), function() { PendingUpdate(GetRevivableUnit()); });
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DROP_ITEM), function() { PendingUpdate(GetTriggerUnit()); });
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_UNIT_PICKUP_ITEM), function() { PendingUpdate(GetTriggerUnit()); });
+		EventRegisterAction(EVENT_ENTER, function() { PendingUpdate(GetTriggerUnit()); });
+		EventRegisterAction(EVENT_BUFF, function() { PendingUpdate(GetTriggerBuffTarget()); });
+		EventRegisterAction(EVENT_AURA, function() { PendingUpdate(GetAuraOwnerUnit()); });
+		EventRegisterAction(EVENT_TALENT_CHOSEN, function() { PendingUpdate(GetTalentHero()); });
 		ForGroup(INIT_UNITS, function() { PendingUpdate(GetEnumUnit()); });
 
-		RegisterAction(EVENT_CLEAR_HASH, function() {
+		EventRegisterAction(EVENT_CLEAR_HASH, function() {
 			AttackSpeed this = AttackSpeed.load(GetTriggerHandleId());
 			if (IsSet(this)) this.destroy();
 		});

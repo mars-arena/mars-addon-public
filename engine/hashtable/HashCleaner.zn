@@ -3,9 +3,12 @@ library HashCleaner requires Stuns, Auras, Buffs, Combat {
 	// Событие при очистке хэш-таблицы для юнита
 	//
 	// GetTriggerHandleId() -> integer
+	//! @gui
 	public integer EVENT_CLEAR_HASH;
 
 	integer TriggerHandleId;
+
+	//! @gui
 	public function GetTriggerHandleId() -> integer { debug DebugEvent.a(EVENT_CLEAR_HASH).run(); return TriggerHandleId; }
 	
 
@@ -77,7 +80,7 @@ library HashCleaner requires Stuns, Auras, Buffs, Combat {
 
 	function onInit() {
 		EVENT_CLEAR_HASH = CreateEvent("EVENT_CLEAR_HASH");
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DEATH), function() {
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DEATH), function() {
 			ClearUnit.create(GetTriggerUnit());
 		});
 	}

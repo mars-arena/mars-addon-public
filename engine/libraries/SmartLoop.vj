@@ -1,4 +1,4 @@
-library SmartLoop {
+library SmartLoop
 
 	globals
 		private integer array SmartIndex[100]
@@ -51,4 +51,4 @@ library SmartLoop {
 		set SmartCount = SmartCount - 1
 	endfunction
 
-}
+endlibrary

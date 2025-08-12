@@ -311,7 +311,7 @@ library Math
 		return c
 	endfunction
 
-	private function Ln takes real r returns real
+	function Ln takes real r returns real
 		// Source https://www.hiveworkshop.com/threads/snippet-natural-logarithm.108059/
 		local real sum = 0.
 		local real sign = 1.

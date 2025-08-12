@@ -1,4 +1,4 @@
-library Conditions requires TechUtils {
+library Conditions requires Stuns, Buffs {
 
 	unit FILTER_OWNER_UNIT_GET;
 	unit FILTER_TARGET_UNIT_GET;
@@ -94,12 +94,5 @@ library Conditions requires TechUtils {
 	public function IsUnitStructure(unit whichUnit) -> boolean {
 		return IsUnitType(whichUnit, UNIT_TYPE_STRUCTURE) || IsUnitType(whichUnit, ConvertUnitType(20));
 	}
-
-	// Проверяет, является ли юнит даммиком
-	// @arg unit whichUnit
-	// @return boolean
-	function IsUnitDummy takes unit whichUnit returns boolean
-		return IsUnitType(whichUnit, UNIT_TYPE_MECHANICAL)
-	endfunction
 
 }

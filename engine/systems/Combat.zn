@@ -106,7 +106,7 @@ library Combat requires Events, Damage {
 	function onInit() {
 		EVENT_COMBAT = CreateEvent("EVENT_COMBAT");
 
-		RegisterAction(EVENT_DAMAGE, function() {
+		EventRegisterAction(EVENT_DAMAGE, function() {
 			unit attacked = GetDamageAttackedUnit();
 			unit attacker = GetDamageAttackingUnit();
 			Point2D sourcePosition = GetDamageSourcePosition();

@@ -123,7 +123,7 @@ library UnitData requires Modifiers, Regeneration {
 	}
 
 	function onInit() {
-		RegisterAction(EVENT_HP_REGENERATION_MODIFIER, function() {
+		EventRegisterAction(EVENT_HP_REGENERATION_MODIFIER, function() {
 			RegenerationData property = Unit(GetRegenModifierUnit()).regeneration;
 			AddRegenModifierFlat(property.hpFlat);
 			AddRegenModifierPenalty(property.hpPenalty);
@@ -131,7 +131,7 @@ library UnitData requires Modifiers, Regeneration {
 			AddRegenModifierDecrease(property.hpDecrease);
 			AddRegenModifierCap(property.hpCap);
 		});
-		RegisterAction(EVENT_MP_REGENERATION_MODIFIER, function() {
+		EventRegisterAction(EVENT_MP_REGENERATION_MODIFIER, function() {
 			RegenerationData property = Unit(GetRegenModifierUnit()).regeneration;
 			AddRegenModifierFlat(property.mpFlat);
 			AddRegenModifierPenalty(property.mpPenalty);

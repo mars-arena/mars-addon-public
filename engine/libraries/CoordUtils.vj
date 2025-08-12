@@ -10,6 +10,7 @@ library CoordUtils
 	// @arg unit `source` юнит, позицию которого нужно установить.
 	// @arg real `x` новая координата X.
 	// @arg real `y` новая координата Y.
+	//! @gui
 	function SetUnitPositionSmooth takes unit source, real x, real y returns nothing
 		local real last_x = GetUnitX(source)
 		local real last_y = GetUnitY(source)
@@ -42,7 +43,7 @@ library CoordUtils
 	// @arg real `distance` расстояние от начальной точки.
 	// @arg real `angle` угол в градусах.
 	// @return real - результирующая координата x после применения полярного смещения.
-	function GetPolarOffsetX takes real x,real distance,real angle returns real
+	function GetPolarOffsetX takes real x, real distance, real angle returns real
 		return x+distance*Cos(angle*bj_DEGTORAD)
 	endfunction
 
@@ -52,7 +53,7 @@ library CoordUtils
 	// @arg real `distance` расстояние от начальной точки.
 	// @arg real `angle` угол в градусах.
 	// @return real - результирующая координата y после применения полярного смещения.
-	function GetPolarOffsetY takes real y,real distance,real angle returns real
+	function GetPolarOffsetY takes real y, real distance, real angle returns real
 		return y+distance*Sin(angle*bj_DEGTORAD)
 	endfunction
 
@@ -61,7 +62,7 @@ library CoordUtils
 	// @arg location `target` локация для перемещения.
 	// @arg real `distance` расстояние для перемещения локации.
 	// @arg real `angle` угол в градусах для перемещения локации.
-	function MoveLocationPolar takes location target,real distance,real angle returns nothing
+	function MoveLocationPolar takes location target, real distance, real angle returns nothing
 		local real x=GetPolarOffsetX(GetLocationX(target),distance,angle)
 		local real y=GetPolarOffsetY(GetLocationY(target),distance,angle)
 		call MoveLocation(target,x,y)
@@ -72,7 +73,7 @@ library CoordUtils
 	// @arg unit `target` юнит для перемещения.
 	// @arg real `distance` расстояние для перемещения юнита.
 	// @arg real `angle` угол в градусах для перемещения юнита.
-	function SetUnitPositionPolar takes unit target,real distance,real angle returns nothing
+	function SetUnitPositionPolar takes unit target, real distance, real angle returns nothing
 		call SetUnitX(target,GetPolarOffsetX(GetUnitX(target),distance,angle))
 		call SetUnitY(target,GetPolarOffsetY(GetUnitY(target),distance,angle))
 	endfunction
@@ -82,7 +83,7 @@ library CoordUtils
 	// @arg real `x1`, `y1` координаты первой точки.
 	// @arg real `x2`, `y2` координаты второй точки.
 	// @return real - угол в градусах между двумя точками.
-	function AngleBetweenCoords takes real x1,real y1,real x2,real y2 returns real
+	function AngleBetweenCoords takes real x1, real y1, real x2, real y2 returns real
 		return bj_RADTODEG*Atan2(y2-y1,x2-x1)
 	endfunction
 
@@ -91,7 +92,7 @@ library CoordUtils
 	// @arg widget `target1` первый виджет.
 	// @arg widget `target2` второй виджет.
 	// @return real - угол в градусах между двумя виджетами.
-	function AngleBetweenWidgets takes widget target1,widget target2 returns real
+	function AngleBetweenWidgets takes widget target1, widget target2 returns real
 		return AngleBetweenCoords(GetWidgetX(target1),GetWidgetY(target1),GetWidgetX(target2),GetWidgetY(target2))
 	endfunction
 
@@ -100,7 +101,7 @@ library CoordUtils
 	// @arg real `x1`, `y1` координаты первой точки.
 	// @arg real `x2`, `y2` координаты второй точки.
 	// @return real - расстояние между двумя наборами координат.
-	function DistanceBetweenCoords takes real x1,real y1,real x2,real y2 returns real
+	function DistanceBetweenCoords takes real x1, real y1, real x2, real y2 returns real
 		local real dx=x2-x1
 		local real dy=y2-y1
 		return SquareRoot(dx*dx+dy*dy)
@@ -111,7 +112,7 @@ library CoordUtils
 	// @arg real `x1`, `y1`, `z1` координаты первой точки.
 	// @arg real `x2`, `y2`, `z2` координаты второй точки.
 	// @return real - 3D расстояние между двумя наборами координат.
-	function DistanceBetweenCoords3D takes real x1,real y1,real z1,real x2,real y2,real z2 returns real
+	function DistanceBetweenCoords3D takes real x1, real y1, real z1, real x2, real y2, real z2 returns real
 		local real dx=x2-x1
 		local real dy=y2-y1
 		local real dz=z2-z1
@@ -123,7 +124,7 @@ library CoordUtils
 	// @arg widget `target1` первый виджет.
 	// @arg widget `target2` второй виджет.
 	// @return real - расстояние между двумя виджетами.
-	function DistanceBetweenWidgets takes widget target1,widget target2 returns real
+	function DistanceBetweenWidgets takes widget target1, widget target2 returns real
 		return DistanceBetweenCoords(GetWidgetX(target1),GetWidgetY(target1),GetWidgetX(target2),GetWidgetY(target2))
 	endfunction
 
@@ -131,7 +132,7 @@ library CoordUtils
 	//
 	// @arg real `x`, `y` координаты, для которых нужно получить высоту местности.
 	// @return real - высота местности по заданным координатам.
-	function GetTerrainZ takes real x,real y returns real
+	function GetTerrainZ takes real x, real y returns real
 		call MoveLocation(locationZ,x,y)
 		return I2R(R2I(GetLocationZ(locationZ)))
 	endfunction
@@ -171,7 +172,7 @@ library CoordUtils
 	// @arg unit `target` юнит, которому необходимо установить высоту.
 	// @arg real `z` новая высота полета.
 	// @return unit - возвращает тот же юнит после установки новой высоты.
-	function SetUnitZ takes unit target,real z returns unit
+	function SetUnitZ takes unit target, real z returns unit
 		call SetUnitFlyHeight(target,z-GetTerrainZ(GetUnitX(target),GetUnitY(target)),0)
 		return target
 	endfunction
@@ -182,7 +183,7 @@ library CoordUtils
 	// @arg real `x` новая координата X.
 	// @arg real `y` новая координата Y.
 	// @return unit - возвращает тот же юнит после установки новых координат.
-	function SetUnitXY takes unit target,real x,real y returns unit
+	function SetUnitXY takes unit target, real x, real y returns unit
 		call SetUnitX(target,x)
 		call SetUnitY(target,y)
 		return target
@@ -195,7 +196,7 @@ library CoordUtils
 	// @arg real `y` новая координата Y.
 	// @arg real `z` новая высота полета.
 	// @return unit - возвращает тот же юнит после установки новых параметров.
-	function SetUnitXYZ takes unit target,real x,real y,real z returns unit
+	function SetUnitXYZ takes unit target, real x, real y, real z returns unit
 		call SetUnitXY(target,x,y)
 		call SetUnitZ(target,z)
 		return target
@@ -209,7 +210,7 @@ library CoordUtils
 	// @arg real `z` новая высота полета.
 	// @arg real `f` новое направление (угол поворота в градусах).
 	// @return unit - возвращает тот же юнит после установки новых параметров.
-	function SetUnitXYZF takes unit target,real x,real y,real z,real f returns unit
+	function SetUnitXYZF takes unit target, real x, real y, real z, real f returns unit
 		call SetUnitXY(target,x,y)
 		call SetUnitZ(target,z)
 		call SetUnitFacing(target,f)
@@ -226,7 +227,7 @@ library CoordUtils
 	// @arg real `Xc` координата X точки C.
 	// @arg real `Yc` координата Y точки C.
 	// @return real - возвращает длину перпендикуляра от точки C к отрезку AB.
-	function Perpendicular takes real Xa,real Ya,real Xb,real Yb,real Xc,real Yc returns real
+	function Perpendicular takes real Xa, real Ya, real Xb, real Yb, real Xc, real Yc returns real
 		return SquareRoot((Xa-Xc)*(Xa-Xc)+(Ya-Yc)*(Ya-Yc))*Sin(Atan2(Yc-Ya,Xc-Xa)-Atan2(Yb-Ya,Xb-Xa))
 	endfunction
 
@@ -236,7 +237,7 @@ library CoordUtils
 	// @arg real `a1` первый угол в градусах.
 	// @arg real `a2` второй угол в градусах.
 	// @return real - возвращает абсолютное значение разницы между двумя углами.
-	function AngleDifference takes real a1,real a2 returns real
+	function AngleDifference takes real a1, real a2 returns real
 		local real x
 		set a1=ModuloReal(a1,360)
 		set a2=ModuloReal(a2,360)
@@ -258,7 +259,7 @@ library CoordUtils
 	// @arg real `d` общее расстояние до цели.
 	// @arg real `x` расстояние от исходной цели до точки.
 	// @return real - возвращает вычисленную высоту для заданной точки на параболической кривой.
-	function ParabolaZ takes real h,real d,real x returns real
+	function ParabolaZ takes real h, real d, real x returns real
 		return (4*h/d)*(d-x)*(x/d)
 	endfunction
 
@@ -270,7 +271,7 @@ library CoordUtils
 	// @arg real `d` общее расстояние до цели.
 	// @arg real `x` расстояние от исходной цели до точки.
 	// @return real - возвращает вычисленную высоту для заданной точки на модифицированной параболической кривой.
-	function ParabolaZ2 takes real zs,real ze,real h,real d,real x returns real
+	function ParabolaZ2 takes real zs, real ze, real h, real d, real x returns real
 		return (2*(zs+ze-2*h)*(x/d-1)+(ze-zs))*(x/d)+zs
 	endfunction
 

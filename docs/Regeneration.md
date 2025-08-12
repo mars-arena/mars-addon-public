@@ -14,7 +14,7 @@
 Пример: добавить плоский бонус +5 HP/сек, если на юните есть бафф:
 
 ```zinc
-RegisterAction(EVENT_HP_REGENERATION_MODIFIER, function() {
+EventRegisterAction(EVENT_HP_REGENERATION_MODIFIER, function() {
 	if (IsUnitBuffByType(GetRegenModifierUnit(), BUFF_ID)) {
 		AddRegenModifierFlat(5.0);
 	}
@@ -24,7 +24,7 @@ RegisterAction(EVENT_HP_REGENERATION_MODIFIER, function() {
 Или уменьшить MP-реген на 30%, если висит дебафф:
 
 ```zinc
-RegisterAction(EVENT_MP_REGENERATION_MODIFIER, function() {
+EventRegisterAction(EVENT_MP_REGENERATION_MODIFIER, function() {
 	if (IsUnitBuffByType(GetRegenModifierUnit(), DEBUFF_ID)) {
 		AddRegenModifierDecrease(0.3);
 	}

@@ -1,6 +1,6 @@
-library Regeneration requires Events, Buffs, Auras {
+library Regeneration requires Events, Buffs, Auras, Fatigue {
 
-// Variables
+// Event API
 
 	// Событие модификатора регенерации здоровья
 	//
@@ -48,45 +48,22 @@ library Regeneration requires Events, Buffs, Auras {
 	// GetRegenValue() -> real
 	public integer EVENT_MP_REGENERATION;
 
-	// Hash Variables
-	key REGENERATION_HID;
+	unit RegenModifierUnit;
+	real RegenModifierFlat;			// flat 
+	real RegenModifierPenalty;		// flat
+	real RegenModifierIncrease;		// percentage
+	real RegenModifierDecrease;		// percentage
+	real RegenModifierCap;			// flat
 
-	// Event Variables
-	unit RegenModifierUnit = null;
-	real RegenModifierFlat = 0.;		// flat 
-	real RegenModifierPenalty = 0.;		// flat
-	real RegenModifierIncrease = 0.;	// percentage
-	real RegenModifierDecrease = 0.;	// percentage
-	real RegenModifierCap = 0.;			// flat
-
-	unit REGEN_UNIT_GET = null;
-	real REGEN_VALUE_GET = 0.;
-
-// Debug
-
-	boolean Debug = true;
-	boolean IsRun = false;
-
-	function dbg(string msg, real x, real y) {
-		if (Debug) DebugXY(msg, x, y);
-	}
-
-// Event API
-
-	// Event Getters
+	unit RegenUnit;
+	real RegenValue;
 
 	public function GetRegenModifierUnit() -> unit { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); return RegenModifierUnit; }
 	public function GetRegenModifierFlat() -> real { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); return RegenModifierFlat; }
 	public function GetRegenModifierPenalty() -> real { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); return RegenModifierPenalty; }
 	public function GetRegenModifierIncrease() -> real { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); return RegenModifierIncrease; }
 	public function GetRegenModifierDecrease() -> real { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); return RegenModifierDecrease; }
-
-	public function GetRegenUnit() -> unit { debug DebugEvent.a(EVENT_HP_REGENERATION).a(EVENT_MP_REGENERATION).run(); return REGEN_UNIT_GET; }
-	public function GetRegenValue() -> real { debug DebugEvent.a(EVENT_HP_REGENERATION).a(EVENT_MP_REGENERATION).run(); return REGEN_VALUE_GET; }
-
 	public function GetRegenModifierCap() -> real { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); return RegenModifierCap; }
-
-	// Event Adders
 
 	public function AddRegenModifierFlat(real regenFlat) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierFlat += regenFlat; }
 	public function AddRegenModifierPenalty(real regenPenalty) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierPenalty += regenPenalty; }
@@ -94,15 +71,16 @@ library Regeneration requires Events, Buffs, Auras {
 	public function AddRegenModifierDecrease(real regenDecrease) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierDecrease += regenDecrease; }
 	public function AddRegenModifierCap(real regenCap) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierCap = MaxReal(regenCap, RegenModifierCap); }
 
-	// Event Setters
-
 	public function SetRegenModifierFlat(real regenFlat) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierFlat = regenFlat; }
 	public function SetRegenModifierPenalty(real regenPenalty) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierPenalty = regenPenalty; }
 	public function SetRegenModifierIncrease(real regenIncrease) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierIncrease = regenIncrease; }
 	public function SetRegenModifierDecrease(real regenDecrease) { debug DebugEvent.a(EVENT_HP_REGENERATION_MODIFIER).a(EVENT_MP_REGENERATION_MODIFIER).run(); RegenModifierDecrease = regenDecrease; }
 	public function SetRegenModifierCap(real regenCap) { debug DebugEvent.a(EVENT_MP_REGENERATION_MODIFIER).a(EVENT_HP_REGENERATION_MODIFIER).run(); RegenModifierCap = regenCap; }
 
-// System
+	public function GetRegenUnit() -> unit { debug DebugEvent.a(EVENT_HP_REGENERATION).a(EVENT_MP_REGENERATION).run(); return RegenUnit; }
+	public function GetRegenValue() -> real { debug DebugEvent.a(EVENT_HP_REGENERATION).a(EVENT_MP_REGENERATION).run(); return RegenValue; }
+
+// API
 
 	// Возвращает текущее значение регенерации HP юнита (без перерасчёта).
 	// @arg unit whichUnit — целевой юнит
@@ -118,117 +96,50 @@ library Regeneration requires Events, Buffs, Auras {
 		return Regeneration.get(whichUnit).mpRegen;
 	}
 
-	// Пересчитывает регенерацию HP юнита с учётом модификаторов (EVENT_HP_REGENERATION_MODIFIER).
-	// Учитывает штрафы, кап, увеличения/уменьшения, сохраняет результат и возвращает его.
+	// Обновляет регенерацию HP юнита и возвращает новое значение.
 	// @arg unit whichUnit — целевой юнит
-	// @return real — новая скорость регенерации HP
+	// @return real — новая скорость регенерации здоровья
 	public function UpdateUnitHpRegen(unit whichUnit) -> real {
-		real value = 0.0;
-
-		if (whichUnit == null) {
-			debug Warning("HP01", "unit is null");
-			return 0.0;
-		}
-		if (IsRun) {
-			Error("REG01", "Внутренее иницирование системы!");
-			return GetUnitHpRegen(whichUnit);
-		}
-
-		IsRun = true;
-		RegenModifierFlat = 0.0;
-		RegenModifierPenalty = 0.0;
-		RegenModifierIncrease = 0.0;
-		RegenModifierDecrease = 0.0;
-		RegenModifierCap = 0.0;
-		RegenModifierUnit = whichUnit;
-
-		ExecuteEvent(EVENT_HP_REGENERATION_MODIFIER);
-
-		value = (RegenModifierFlat - RegenModifierPenalty) * (1.00 + RegenModifierIncrease) * (1 - RegenModifierDecrease); 
-
-		if (RegenModifierCap > 0 && value > RegenModifierCap) {
-			value = RegenModifierCap;
-		}
-
-		if (value < 0) {
-			value = 0.0;
-		}
-
-		debug dbg("hp: " + R2S(value), GetUnitX(whichUnit), GetUnitY(whichUnit));
-
-		Regeneration.get(whichUnit).hpRegen = value;
-		IsRun = false;
-		
-		return value;
+		return Regeneration.get(whichUnit).updateHP();
 	}
 
-	// Пересчитывает регенерацию MP юнита с учётом модификаторов (EVENT_MP_REGENERATION_MODIFIER).
-	// Учитывает штрафы, кап, увеличения/уменьшения, сохраняет результат и возвращает его.
+	// Обновляет регенерацию MP юнита и возвращает новое значение.
 	// @arg unit whichUnit — целевой юнит
-	// @return real — новая скорость регенерации MP
+	// @return real — новая скорость регенерации маны
 	public function UpdateUnitMpRegen(unit whichUnit) -> real {
-		real value = 0.0;
-
-		if (whichUnit == null) {
-			debug Warning("MP01", "unit is null");
-			return 0.0;
-		}
-		if (IsRun) {
-			Error("REG01", "Внутренее иницирование системы!");
-			return GetUnitMpRegen(whichUnit);
-		}
-
-		IsRun = true;
-		RegenModifierFlat = 0.0;
-		RegenModifierPenalty = 0.0;
-		RegenModifierIncrease = 0.0;
-		RegenModifierDecrease = 0.0;
-		RegenModifierCap = 0.0;
-		RegenModifierUnit = whichUnit;
-
-		ExecuteEvent(EVENT_MP_REGENERATION_MODIFIER);
-
-		value = (RegenModifierFlat - RegenModifierPenalty) * (1.00 + RegenModifierIncrease) * (1 - RegenModifierDecrease); 
-
-		if (RegenModifierCap > 0 && value > RegenModifierCap) {
-			value = RegenModifierCap;
-		}
-
-		if (value < 0) {
-			value = 0.0;
-		}
-
-		debug dbg("mp: " + R2S(value), GetUnitX(whichUnit), GetUnitY(whichUnit));
-
-		Regeneration.get(whichUnit).mpRegen = value;
-		IsRun = false;
-		
-		return value;
+		return Regeneration.get(whichUnit).updateMP();
 	}
+
+// Debug
+
+	boolean IsDebug = true;
+	boolean IsRun = false;
+
+	function dbg(string msg, real x, real y) {
+		if (IsDebug) DebugXY(msg, x, y);
+	}
+
+// System
 
 	// Object Structure
 	public struct Regeneration {
 		unit whichUnit;
-		real hpRegen;
-		real mpRegen;
-		integer hpPercent;
-		integer mpPercent;
-		boolean needUpdate;
+		real hpRegen = 0.0;
+		real mpRegen = 0.0;
+		integer hpPercent = 0;
+		integer mpPercent = 0;
+		boolean updateNeeded = false;
 
 		timer tm;
 
 		static real INTERVAL = 0.25;
+		static key HASH_ID;
 
 		static method create(unit whichUnit) -> Regeneration {
 			Regeneration this = Regeneration.allocate();
 
 			this.whichUnit = whichUnit;
-			SaveInteger(HT, GetHandleId(whichUnit), REGENERATION_HID, this);
-			hpRegen = 0.0;
-			mpRegen = 0.0;
-			hpPercent = 0;
-			mpPercent = 0;
-			needUpdate = false;
+			SaveInteger(HT, GetHandleId(whichUnit), HASH_ID, this);
 
 			this.tm = CreateTimer();
 			SaveHandleDataInt(tm, this);
@@ -238,7 +149,7 @@ library Regeneration requires Events, Buffs, Auras {
 		}
 
 		static method load(integer hashId) -> Regeneration {
-			return LoadInteger(HT, hashId, REGENERATION_HID);
+			return LoadInteger(HT, hashId, HASH_ID);
 		}
 
 		static method get(unit whichUnit) -> Regeneration {
@@ -254,8 +165,8 @@ library Regeneration requires Events, Buffs, Auras {
 			this.deallocate();
 		}
 
-		method update() {
-			needUpdate = true;
+		method pendingUpdate() {
+			updateNeeded = true;
 		}
 
 		static method callback() {
@@ -269,21 +180,19 @@ library Regeneration requires Events, Buffs, Auras {
 			hpPercentNew = R2I(100.0 * (GetUnitState(whichUnit, UNIT_STATE_LIFE) / GetUnitMaxLife(whichUnit)));
 			if (hpPercent != hpPercentNew) {
 				hpPercent = hpPercentNew;
-				needUpdate = true;
+				updateNeeded = true;
 			}
 
-			if (needUpdate) {
-				UpdateUnitHpRegen(whichUnit);
+			if (updateNeeded) {
+				this.updateHP();
 			}
 
 			if (hpRegen * INTERVAL > 0.0) {
 				SetUnitState(whichUnit, UNIT_STATE_LIFE, GetUnitState(whichUnit, UNIT_STATE_LIFE) + hpRegen * INTERVAL);
 
-				REGEN_VALUE_GET = hpRegen * INTERVAL;
-				REGEN_UNIT_GET = whichUnit;
+				RegenValue = hpRegen * INTERVAL;
+				RegenUnit = whichUnit;
 				ExecuteEvent(EVENT_HP_REGENERATION);
-				REGEN_VALUE_GET = 0;
-				REGEN_UNIT_GET = null;
 			}
 
 			maxMana = GetUnitState(whichUnit, UNIT_STATE_MAX_MANA);
@@ -291,36 +200,120 @@ library Regeneration requires Events, Buffs, Auras {
 				mpPercentNew = R2I(100.0 * (GetUnitState(whichUnit, UNIT_STATE_MANA) / maxMana));
 				if (mpPercent != mpPercentNew) {
 					mpPercent = mpPercentNew;
-					needUpdate = true;
+					updateNeeded = true;
 				}
 
-				if (needUpdate) {
-					UpdateUnitMpRegen(whichUnit);
+				if (updateNeeded) {
+					this.updateMP();
 				}
 
 				if (mpRegen * INTERVAL > 0.0) {
 					SetUnitState(whichUnit, UNIT_STATE_MANA, GetUnitState(whichUnit, UNIT_STATE_MANA) + mpRegen * INTERVAL);
 	
-					REGEN_VALUE_GET = mpRegen * INTERVAL;
-					REGEN_UNIT_GET = whichUnit;
+					RegenValue = mpRegen * INTERVAL;
+					RegenUnit = whichUnit;
 					ExecuteEvent(EVENT_MP_REGENERATION);
-					REGEN_VALUE_GET = 0;
-					REGEN_UNIT_GET = null;
 				}
 			}
 
-			needUpdate = false;
+			updateNeeded = false;
 		}
+
+	method updateHP() -> real {
+		real newValue = 0.0;
+
+		if (whichUnit == null) {
+			debug Warning("HP01", "unit is null");
+			return 0.0;
+		}
+		if (IsRun) {
+			Error("REG01", "Внутренее иницирование системы!");
+			return GetUnitHpRegen(whichUnit);
+		}
+
+		IsRun = true;
+
+		RegenModifierFlat = 0.0;
+		RegenModifierPenalty = 0.0;
+		RegenModifierIncrease = 0.0;
+		RegenModifierDecrease = 0.0;
+		RegenModifierCap = 0.0;
+		RegenModifierUnit = whichUnit;
+
+		ExecuteEvent(EVENT_HP_REGENERATION_MODIFIER);
+
+		newValue = (RegenModifierFlat - RegenModifierPenalty) * (1.00 + RegenModifierIncrease) * (1 - RegenModifierDecrease);
+
+		if (RegenModifierCap > 0 && newValue > RegenModifierCap) {
+			newValue = RegenModifierCap;
+		}
+
+		if (newValue < 0) {
+			newValue = 0.0;
+		}
+
+		debug {
+			if (hpRegen != newValue) dbg("hp: " + R2S(newValue), GetUnitX(whichUnit), GetUnitY(whichUnit));
+		} 
+
+		hpRegen = newValue;
+		IsRun = false;
+		
+		return newValue;
+	}
+
+	method updateMP() -> real {
+		real newValue = 0.0;
+
+		if (whichUnit == null) {
+			debug Warning("MP01", "unit is null");
+			return 0.0;
+		}
+		if (IsRun) {
+			Error("REG01", "Внутренее иницирование системы!");
+			return GetUnitMpRegen(whichUnit);
+		}
+
+		IsRun = true;
+
+		RegenModifierFlat = 0.0;
+		RegenModifierPenalty = 0.0;
+		RegenModifierIncrease = 0.0;
+		RegenModifierDecrease = 0.0;
+		RegenModifierCap = 0.0;
+		RegenModifierUnit = whichUnit;
+
+		ExecuteEvent(EVENT_MP_REGENERATION_MODIFIER);
+
+		newValue = (RegenModifierFlat - RegenModifierPenalty) * (1.00 + RegenModifierIncrease) * (1 - RegenModifierDecrease); 
+
+		if (RegenModifierCap > 0 && newValue > RegenModifierCap) {
+			newValue = RegenModifierCap;
+		}
+
+		if (newValue < 0) {
+			newValue = 0.0;
+		}
+
+		debug {
+			if (mpRegen != newValue) dbg("mp: " + R2S(newValue), GetUnitX(whichUnit), GetUnitY(whichUnit));
+		} 
+
+		mpRegen = newValue;
+		IsRun = false;
+		
+		return newValue;
+	}
 
 	}
 
-	function Update(unit whichUnit) {
+	function PendingUpdate(unit whichUnit) {
 		if (IsUnitDummy(whichUnit) ||
 			whichUnit == null
 		) {
 			return;
 		}
-		Regeneration.get(whichUnit).update();
+		Regeneration.get(whichUnit).pendingUpdate();
 	}
 
 	function onInit() {
@@ -329,18 +322,17 @@ library Regeneration requires Events, Buffs, Auras {
 		EVENT_MP_REGENERATION_MODIFIER = CreateEvent("EVENT_MP_REGENERATION_MODIFIER");
 		EVENT_MP_REGENERATION = CreateEvent("EVENT_MP_REGENERATION");
 
-		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_LEVEL), function() { Update(GetLevelingUnit()); });
-		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_SKILL), function() { Update(GetLearningUnit()); });
-		RegisterAction(GetHandleId(EVENT_PLAYER_HERO_REVIVABLE), function() { Update(GetRevivableUnit()); });
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DROP_ITEM), function() { Update(GetTriggerUnit()); });
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_PICKUP_ITEM), function() { Update(GetTriggerUnit()); });
-		RegisterAction(EVENT_ENTER, function() { Update(GetTriggerUnit()); });
-		RegisterAction(EVENT_BUFF, function() { Update(GetTriggerBuffTarget()); });
-		RegisterAction(EVENT_AURA, function() { Update(GetAuraOwnerUnit()); });
-		RegisterAction(EVENT_TALENT_CHOSEN, function() { Update(GetTalentHero()); });
-		ForGroup(INIT_UNITS, function() { Update(GetEnumUnit()); });
-
-		// Для аур нужно настроить отдельные обработчики,
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_HERO_LEVEL), function() { PendingUpdate(GetLevelingUnit()); });
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_HERO_SKILL), function() { PendingUpdate(GetLearningUnit()); });
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_HERO_REVIVABLE), function() { PendingUpdate(GetRevivableUnit()); });
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DROP_ITEM), function() { PendingUpdate(GetTriggerUnit()); });
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_UNIT_PICKUP_ITEM), function() { PendingUpdate(GetTriggerUnit()); });
+		EventRegisterAction(EVENT_ENTER, function() { PendingUpdate(GetTriggerUnit()); });
+		EventRegisterAction(EVENT_BUFF, function() { PendingUpdate(GetTriggerBuffTarget()); });
+		EventRegisterAction(EVENT_AURA, function() { PendingUpdate(GetAuraOwnerUnit()); });
+		EventRegisterAction(EVENT_TALENT_CHOSEN, function() { PendingUpdate(GetTalentHero()); });
+		EventRegisterAction(EVENT_FATIGUE_CHANGE, function() { PendingUpdate(GetFatigueUnit()); });
+		ForGroup(INIT_UNITS, function() { PendingUpdate(GetEnumUnit()); });
 	}
 
 }

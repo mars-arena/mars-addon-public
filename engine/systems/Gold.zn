@@ -78,7 +78,7 @@ library Gold requires Events {
 	function onInit() {
 		EVENT_GOLD_MODIFIER = CreateEvent("EVENT_GOLD_MODIFIER");
 		EVENT_GOLD = CreateEvent("EVENT_GOLD");
-		RegisterAction(EVENT_GOLD, function() {
+		EventRegisterAction(EVENT_GOLD, function() {
 			TempText = AddSummativeTextToUnitForPlayer(GetGoldPlayer(), GetGoldSourceUnit(), GOLD_TEXT, GetGoldAmount(), "");
 			TempText.showToPlayer(GetGoldPlayer());
 			if (IsMapDuel())

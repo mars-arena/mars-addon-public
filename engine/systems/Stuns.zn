@@ -20,18 +20,16 @@ library Stuns requires Events {
 	hashtable HTInternal = InitHashtable();
 
 	// @const идентификаторы типов оглушения
-	public {
-		constant integer NORMAL_STUN = 1;
-		constant integer LOST_CONTROL_STUN = 2;
-		constant integer FROST_STUN = 3;
-		constant integer CHAINS_STUN = 4;
-		constant integer AQUA_STUN = 5;
-		constant integer STANLEY_STUN = 6;
-		constant integer GOLD_STUN = 7;
-		constant integer ILLIDAN_STUN = 8;
-		constant integer BOLA_STUN = 9;
-		constant integer ARTHAS_STUN = 10;
-	}
+	public constant integer NORMAL_STUN = 1;
+	public constant integer LOST_CONTROL_STUN = 2;
+	public constant integer FROST_STUN = 3;
+	public constant integer CHAINS_STUN = 4;
+	public constant integer AQUA_STUN = 5;
+	public constant integer STANLEY_STUN = 6;
+	public constant integer GOLD_STUN = 7;
+	public constant integer ILLIDAN_STUN = 8;
+	public constant integer BOLA_STUN = 9;
+	public constant integer ARTHAS_STUN = 10;
 
 // Variables
 

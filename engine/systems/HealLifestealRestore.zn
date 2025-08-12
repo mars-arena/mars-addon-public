@@ -188,21 +188,21 @@ library HealLifestealRestore requires Events {
 		EVENT_RESTORE_MODIFIER = CreateEvent("EVENT_RESTORE_MODIFIER");
 		EVENT_RESTORE = CreateEvent("EVENT_RESTORE");
 
-		RegisterAction(EVENT_HEAL, function() {
+		EventRegisterAction(EVENT_HEAL, function() {
 			TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(GetHealingUnit()), GetHealedUnit(), HEAL_TEXT, GetHealAmount(), "");
 			TempText.showToPlayer(GetOwningPlayer(GetHealedUnit()));
 			if (IsMapDuel())
 				TempText.showToObservers();
 		});
 
-		RegisterAction(EVENT_LIFESTEAL, function() {
+		EventRegisterAction(EVENT_LIFESTEAL, function() {
 			TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(GetLifestealedUnit()), GetLifestealedUnit(), HEAL_TEXT, GetLifestealAmount(), "");
 			if (IsMapDuel())
 				TempText.showToObservers();
 			DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\Undead\\VampiricAura\\VampiricAuraTarget.mdx", GetLifestealedUnit(), "origin"));
 		});
 
-		RegisterAction(EVENT_RESTORE, function() {
+		EventRegisterAction(EVENT_RESTORE, function() {
 			TempText = AddSummativeTextToUnitForPlayer(GetOwningPlayer(GetRestoredUnit()), GetRestoredUnit(), MANA_TEXT, GetRestoredAmount(), "");
 			if (IsMapDuel())
 				TempText.showToObservers();

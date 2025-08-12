@@ -27,13 +27,13 @@ To use this engine in your own Warcraft III map, follow these steps:
    └── your-map.w3x
    ```
 
-5. **Add Import Directive**
+4. **Add Import Directive**
    In your map’s script header, add the following import line:
 
    ```bash
    //! import "../mars-addon-code/main_dev_kane.vj"
    ```
 
-6. **Compile and Test**  
+5. **Compile and Test**  
     Open the map in the World Editor, compile it, and launch it in Warcraft III.  
     The engine initializes silently. You won’t see gameplay elements unless you’ve added some but if the map runs without errors, the integration is successful.

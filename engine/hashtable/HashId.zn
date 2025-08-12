@@ -1,9 +1,8 @@
 library HashId requires Constants {
 
-	public hashtable HT;
+	public hashtable HT = InitHashtable();
 
 	function onInit() {
-		HT = InitHashtable();
 		udg_HT_GUI = InitHashtable();
 	}
 

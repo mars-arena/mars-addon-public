@@ -1,6 +1,7 @@
 library Constants {
 
 	// максимальное количество игроков
+	//! @gui
 	public constant integer MAX_PLAYERS = 16;
 
 	// DamageEventEngine

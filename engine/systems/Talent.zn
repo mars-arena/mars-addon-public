@@ -12,7 +12,7 @@ library Talent requires Events {
 
 	function onInit() {
 		EVENT_TALENT_CHOSEN = CreateEvent("EVENT_TALENT_CHOSEN");
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_SPELL_EFFECT), function() {
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_UNIT_SPELL_EFFECT), function() {
 			if (GetUnitTypeId(GetTriggerUnit()) == TALENT_ID) {
 				TALENT_HERO_GET = udg_Hero[GetPlayerId(GetOwningPlayer(GetTriggerUnit())) + 1];
 				ExecuteEvent(EVENT_TALENT_CHOSEN);

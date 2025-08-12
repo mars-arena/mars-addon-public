@@ -264,8 +264,8 @@ library Illusions requires Events, AttackSpeed {
 		Illusion.Dummy = CreateUnit(DUMMY_OWNER, DUMMY_ID, 0, 0, 0);
 		UnitAddAbility(Illusion.Dummy, ILLUSION_ABILITY_ID);
 
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_SUMMON), function Illusion.onSummmon); // reforge EVENT_UNIT_SUMMON - broken
-		RegisterAction(EVENT_PRECEDING_MODIFIER, function Illusion.onDamage);
-		RegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DEATH), function Illusion.onDeath);
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_UNIT_SUMMON), function Illusion.onSummmon); // reforge EVENT_UNIT_SUMMON - broken
+		EventRegisterAction(EVENT_PRECEDING_MODIFIER, function Illusion.onDamage);
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DEATH), function Illusion.onDeath);
 	}
 }

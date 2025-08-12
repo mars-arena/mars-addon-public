@@ -1,11 +1,22 @@
-library FatigueSystem requires Combat, Events {
+library Fatigue requires Combat, Events {
 
 // Settings
 
-	public constant real FATIGUE_MAX = 100.0;
-	constant real FATIGUE_GAIN_RATE = 0.5;
-	constant real FATIGUE_LOSS_RATE = 1.0;
-	constant real FATIGUE_INTERVAL = 1.0;
+	public constant real FATIGUE_MAX = 1.0;
+	constant real FATIGUE_GAIN_RATE = 0.05;
+	constant real FATIGUE_LOSS_RATE = 0.1;
+	constant real FATIGUE_INTERVAL = 0.5;
+
+// Event API
+
+	// Событие при изменении уровня усталости юнита
+	//
+	// GetFatigueUnit() -> unit
+	public integer EVENT_FATIGUE_CHANGE;
+
+	unit FatigueUnit;
+
+	public function GetFatigueUnit() -> unit { debug DebugEvent.a(EVENT_FATIGUE_CHANGE).run(); return FatigueUnit; }
 
 // API
 
@@ -37,7 +48,8 @@ library FatigueSystem requires Combat, Events {
 // System
 
 	function onInit() {
-		RegisterAction(EVENT_COMBAT, function() {
+		EVENT_FATIGUE_CHANGE = CreateEvent("EVENT_FATIGUE_CHANGE");
+		EventRegisterAction(EVENT_COMBAT, function() {
 			if (IsCombatEntering()) {
 				Fatigue.get(GetCombatUnit());
 			}
@@ -84,18 +96,26 @@ library FatigueSystem requires Combat, Events {
 			this.deallocate();
 		}
 
-		method setFatigue(real fatigue) {
-			fatigue = MaxReal(0.0, MinReal(FATIGUE_MAX, fatigue));
+		method setFatigue(real value) {
+			real oldFatigue = fatigue;
+			fatigue = MaxReal(0.0, MinReal(FATIGUE_MAX, value));
+
+			if (fatigue != oldFatigue) {
+				DebugXY("fat" + R2S(fatigue), GetUnitX(whichUnit), GetUnitY(whichUnit));
+				FatigueUnit = whichUnit;
+				ExecuteEvent(EVENT_FATIGUE_CHANGE);
+			}
 		}
 
 		static method callback() {
 			Fatigue this = LoadHandleDataInt(GetExpiredTimer());
+			real newFatigue = fatigue;
 			if (IsUnitInCombat(whichUnit)) {
-				fatigue += FATIGUE_GAIN_RATE;
+				newFatigue += FATIGUE_GAIN_RATE;
 			} else {
-				fatigue -= FATIGUE_LOSS_RATE;
+				newFatigue -= FATIGUE_LOSS_RATE;
 			}
-			setFatigue(fatigue);
+			setFatigue(newFatigue);
 		}
 
 	}
