@@ -1,0 +1,149 @@
+library UnitData requires Modifiers, Regeneration {
+
+// Variables
+
+	public UnitData TempData = 0; 
+
+	// Hash Variables
+	key UNIT_DATA_HID;
+
+// API Functions
+
+	//! @gui [UnitData], TriggerCalls
+	public function Unit(unit whichUnit) -> UnitData {
+		return UnitData.get(whichUnit);
+	}
+
+// Structures
+
+	public struct UnitData {
+		unit u;
+		ArrowData arrow_atr = 0;
+		RegenerationData regeneration_atr = 0;
+
+		static method create(unit whichUnit) -> UnitData {
+			UnitData this = UnitData.allocate();
+			this.u = whichUnit;
+			SaveInteger(HT, GetHandleId(whichUnit), UNIT_DATA_HID, this);
+			return this;
+		}
+
+		method destroy() {
+			RemoveSavedInteger(HT, GetHandleId(u), UNIT_DATA_HID);
+			if (IsSet(arrow_atr))
+				arrow_atr.destroy();
+			if (IsSet(regeneration_atr))
+				regeneration_atr.destroy();
+			u = null;
+			this.deallocate();
+		}
+
+		static method load(integer hashId) -> UnitData {
+			return LoadInteger(HT, hashId, UNIT_DATA_HID);
+		}
+
+		static method get(unit whichUnit) -> UnitData {
+			UnitData this = UnitData.load(GetHandleId(whichUnit)); 
+			if (!IsSet(this))
+				this = UnitData.create(whichUnit);
+			return this;
+		}
+
+		method operator arrow() -> ArrowData {
+			if (!IsSet(arrow_atr))
+				arrow_atr = ArrowData.create();
+			return arrow_atr;
+		}
+
+		method operator regeneration() -> RegenerationData {
+			if (!IsSet(regeneration_atr))
+				regeneration_atr = RegenerationData.create();
+			return regeneration_atr;
+		}
+	}
+
+	public struct ArrowData {
+		unit simulateType = null;
+		unit caster = null;
+		real damage = 0.;
+		real distance = 0.;
+		real distanceTravel = 0.;
+		real scale = 0.;
+		real finalScale = 0.;
+		real scaleSpeed = 0.;
+		real speed = 0.;
+		real angle = 0.;
+		real zScale = 0.;
+		damagetype damageType = null;
+		attacktype attackType = null;
+		boolean pierce = false;
+		group unitGroup_atr = null;
+
+		static method create() -> ArrowData {
+			ArrowData this = ArrowData.allocate();
+			return this;
+		}
+
+		method operator unitGroup() -> group {
+			if (unitGroup_atr == null)
+				unitGroup_atr = CreateGroup();
+			return unitGroup_atr;
+		}
+
+		method destroy() {
+			damageType = null;
+			attackType = null;
+			DestroyGroup(unitGroup_atr); unitGroup_atr = null;
+			this.deallocate();
+		}
+	}
+
+	public struct RegenerationData {
+		// HP modifiers
+		real hpFlat = 0.;
+		real hpPenalty = 0.;
+		real hpIncrease = 0.;
+		real hpDecrease = 0.;
+		real hpCap = 0.;
+
+		// MP modifiers
+		real mpFlat = 0.;
+		real mpPenalty = 0.;
+		real mpIncrease = 0.;
+		real mpDecrease = 0.;
+		real mpCap = 0.;
+
+		static method create() -> RegenerationData {
+			RegenerationData this = RegenerationData.allocate();
+			return this;
+		}
+
+		method destroy() {
+			this.deallocate();
+		}
+	}
+
+	function onInit() {
+		EventRegisterAction(EVENT_HP_REGENERATION_MODIFIER, function() {
+			RegenerationData property = Unit(GetRegenModifierUnit()).regeneration;
+			AddRegenModifierFlat(property.hpFlat);
+			AddRegenModifierPenalty(property.hpPenalty);
+			AddRegenModifierIncrease(property.hpIncrease);
+			AddRegenModifierDecrease(property.hpDecrease);
+			AddRegenModifierCap(property.hpCap);
+		});
+		EventRegisterAction(EVENT_MP_REGENERATION_MODIFIER, function() {
+			RegenerationData property = Unit(GetRegenModifierUnit()).regeneration;
+			AddRegenModifierFlat(property.mpFlat);
+			AddRegenModifierPenalty(property.mpPenalty);
+			AddRegenModifierIncrease(property.mpIncrease);
+			AddRegenModifierDecrease(property.mpDecrease);
+			AddRegenModifierCap(property.mpCap);
+		});
+		EventRegisterAction(EVENT_CLEAR_HASH, function() {
+			UnitData this = UnitData.load(GetTriggerHandleId());
+			if (IsSet(this)) this.destroy();
+		});
+	}
+
+}

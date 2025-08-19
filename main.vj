@@ -1,143 +1,125 @@
 //! nocjass
 //! zinc
 
-	// config/origin
+	// config
 
-	//! import vjass    "../mars-addon-code/config/origin/header.vj"
-	//! import zinc     "../mars-addon-code/config/origin/constants.zn"
+	//! import vjass    "../mars-addon-code/src/config/origin/header.vj"
+	//! import zinc     "../mars-addon-code/src/config/origin/constants.zn"
 
 	// engine
 
-		// hashtable
+	//! import vjass    "../mars-addon-code/src/engine/components/TechUtils.vj"
+    //! import vjass    "../mars-addon-code/src/engine/components/UnitUnstuck.vj"
+//  //! import vjass    "../mars-addon-code/src/engine/libraries/AntiMH.vj"
+    //! import vjass    "../mars-addon-code/src/engine/libraries/Armor.vj"
+    //! import vjass    "../mars-addon-code/src/engine/libraries/CoordUtils.vj"
+    //! import vjass    "../mars-addon-code/src/engine/libraries/Math.vj"
+    //! import vjass    "../mars-addon-code/src/engine/libraries/NegateDamage.vj"
+    //! import vjass    "../mars-addon-code/src/engine/libraries/SetUnitMaxState.vj"
+    //! import vjass    "../mars-addon-code/src/engine/libraries/SmartLoop.vj"
+    //! import vjass    "../mars-addon-code/src/engine/libraries/UnitDamaged.vj"
+    //! import zinc     "../mars-addon-code/src/engine/components/AreaSpells.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Attachment.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/AttackSpeed.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Auras.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Buffs.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Combat.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Conditions.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Crystal.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Damage.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/DamageAPI.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/DynamicProjectiles.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Events.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Fatigue.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Gold.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/HealLifestealRestore.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Heroes.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Illusions.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/JumpToPoint.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Lightning.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Modifiers.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/MoveSpeed.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/MultiModifiers.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Pickup.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Regeneration.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/SpellGetters.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/StaticProjectiles.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Stuns.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/SummativeText.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/Talent.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/TexttagUtils.zn"
+    //! import zinc     "../mars-addon-code/src/engine/components/UnitData.zn"
+    //! import zinc     "../mars-addon-code/src/engine/hashtable/HashCleaner.zn"
+    //! import zinc     "../mars-addon-code/src/engine/hashtable/HashId.zn"
+    //! import zinc     "../mars-addon-code/src/engine/libraries/Debug.zn"
+    //! import zinc     "../mars-addon-code/src/engine/libraries/Parabolas.zn"
+    //! import zinc     "../mars-addon-code/src/engine/libraries/Points.zn"
+    //! import zinc     "../mars-addon-code/src/engine/libraries/Rectangle.zn"
+    //! import zinc     "../mars-addon-code/src/engine/libraries/Vector.zn"
+    //! import zinc     "../mars-addon-code/src/engine/libraries/VectorAPI.zn"
 
-		//! import zinc     "../mars-addon-code/engine/hashtable/HashCleaner.zn"
-		//! import zinc     "../mars-addon-code/engine/hashtable/HashId.zn"
+	// auras
 
-		// libraries
+	//! import zinc     "../mars-addon-code/src/mars/common/auras/AurasActions.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/auras/AurasFilters.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/auras/AurasTypes.zn"
 
-//		//! import vjass    "../mars-addon-code/engine/libraries/AntiMH.vj"
-		//! import vjass    "../mars-addon-code/engine/libraries/Armor.vj"
-		//! import vjass    "../mars-addon-code/engine/libraries/CoordUtils.vj"
-		//! import vjass    "../mars-addon-code/engine/libraries/Math.vj"
-		//! import vjass    "../mars-addon-code/engine/libraries/NegateDamage.vj"
-		//! import vjass    "../mars-addon-code/engine/libraries/SetUnitMaxState.vj"
-		//! import vjass    "../mars-addon-code/engine/libraries/SmartLoop.vj"
-		//! import vjass    "../mars-addon-code/engine/libraries/TechUtils.vj"
-		//! import vjass    "../mars-addon-code/engine/libraries/UnitDamaged.vj"
-		//! import vjass    "../mars-addon-code/engine/libraries/UnitUnstuck.vj"
-		//! import zinc     "../mars-addon-code/engine/libraries/Attachment.zn"
-		//! import zinc     "../mars-addon-code/engine/libraries/Conditions.zn"
-		//! import zinc     "../mars-addon-code/engine/libraries/Debug.zn"
-		//! import zinc     "../mars-addon-code/engine/libraries/JumpToPoint.zn"
-		//! import zinc     "../mars-addon-code/engine/libraries/Lightning.zn"
-		//! import zinc     "../mars-addon-code/engine/libraries/Parabolas.zn"
-		//! import zinc     "../mars-addon-code/engine/libraries/Points.zn"
-		//! import zinc     "../mars-addon-code/engine/libraries/Rectangle.zn"
-		//! import zinc     "../mars-addon-code/engine/libraries/SummativeText.zn"
-		//! import zinc     "../mars-addon-code/engine/libraries/TexttagUtils.zn"
-		//! import zinc     "../mars-addon-code/engine/libraries/Vector.zn"
-		//! import zinc     "../mars-addon-code/engine/libraries/VectorAPI.zn"
+	// buffs
 
-		// systems
+	//! import zinc     "../mars-addon-code/src/mars/common/buffs/BuffActions.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/buffs/BuffFilters.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/buffs/BuffTypes.zn"
 
-		//! import zinc     "../mars-addon-code/engine/systems/AreaSpells.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/AttackSpeed.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Auras.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Buffs.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Combat.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Crystal.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Damage.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/DamageAPI.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/DynamicProjectiles.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Events.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Fatigue.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Gold.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/HealLifestealRestore.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Heroes.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Illusions.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Modifiers.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/MoveSpeed.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/MultiModifiers.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Pickup.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Regeneration.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/SpellGetters.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/StaticProjectiles.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Stuns.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/Talent.zn"
-		//! import zinc     "../mars-addon-code/engine/systems/UnitData.zn"
+	// modifiers
 
-	//
+	//! import zinc     "../mars-addon-code/src/mars/common/modifiers/DodgeStaticModifiers.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/modifiers/HLRStaticModifiers.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/modifiers/ModifiersList.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/modifiers/MultiModifiersList.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/modifiers/PostStaticModifiers.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/modifiers/PrecedingStaticModifiers.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/modifiers/UniqueStaticModifiers.zn"
 
-	// mars
+	// others
 
-		// common
+	//! import zinc     "../mars-addon-code/src/mars/common/others/ChainHeal.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/others/ChainLightning.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/others/Chakram.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/others/CliffMiss.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/others/Doubles.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/others/Filters.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/others/Hammer.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/others/MassLightning.zn"
+	//! import zinc     "../mars-addon-code/src/mars/common/others/RectangleSplash.zn"
 
-			// auras
+	// heroes
 
-			//! import zinc     "../mars-addon-code/mars/common/auras/AurasActions.zn"
-			//! import zinc     "../mars-addon-code/mars/common/auras/AurasFilters.zn"
-			//! import zinc     "../mars-addon-code/mars/common/auras/AurasTypes.zn"
 
-			// buffs
+	//! import vjass    "../mars-addon-code/src/mars/heroes/Hope.vj"
+	//! import vjass    "../mars-addon-code/src/mars/heroes/Nomi.vj"
+	//! import vjass    "../mars-addon-code/src/mars/heroes/Orion.vj"
+	//! import vjass    "../mars-addon-code/src/mars/heroes/Wisp.vj"
+	//! import vjass    "../mars-addon-code/src/mars/heroes/Wormy.vj"
+	//! import zinc     "../mars-addon-code/src/mars/heroes/Anna.zn"
+	//! import zinc     "../mars-addon-code/src/mars/heroes/Arthas/ArthasDome.zn"
+	//! import zinc     "../mars-addon-code/src/mars/heroes/Arthas/ArthasJump.zn"
+	//! import zinc     "../mars-addon-code/src/mars/heroes/Forg.zn"
+	//! import zinc     "../mars-addon-code/src/mars/heroes/Fox.zn"
+	//! import zinc     "../mars-addon-code/src/mars/heroes/Gordon.zn"
+	//! import zinc     "../mars-addon-code/src/mars/heroes/Hort.zn"
+	//! import zinc     "../mars-addon-code/src/mars/heroes/James.zn"
+	//! import zinc     "../mars-addon-code/src/mars/heroes/Stanley/StanleyMissiles.zn"
+	//! import zinc     "../mars-addon-code/src/mars/heroes/Stanley/StanleyPiro.zn"
+	//! import zinc     "../mars-addon-code/src/mars/heroes/Witcher.zn"
+//	//! import zinc     "../mars-addon-code/src/mars/heroes/DebugSpell.zn"
+	// items
 
-			//! import zinc     "../mars-addon-code/mars/common/buffs/BuffActions.zn"
-			//! import zinc     "../mars-addon-code/mars/common/buffs/BuffFilters.zn"
-			//! import zinc     "../mars-addon-code/mars/common/buffs/BuffTypes.zn"
+	//! import zinc     "../mars-addon-code/src/mars/items/HiruzenSpear.zn"
 
-			// modifiers
+	// keys
 
-			//! import zinc     "../mars-addon-code/mars/common/modifiers/DodgeStaticModifiers.zn"
-			//! import zinc     "../mars-addon-code/mars/common/modifiers/HLRStaticModifiers.zn"
-			//! import zinc     "../mars-addon-code/mars/common/modifiers/ModifiersList.zn"
-			//! import zinc     "../mars-addon-code/mars/common/modifiers/MultiModifiersList.zn"
-			//! import zinc     "../mars-addon-code/mars/common/modifiers/PostStaticModifiers.zn"
-			//! import zinc     "../mars-addon-code/mars/common/modifiers/PrecedingStaticModifiers.zn"
-			//! import zinc     "../mars-addon-code/mars/common/modifiers/UniqueStaticModifiers.zn"
-
-			// others
-
-			//! import zinc     "../mars-addon-code/mars/common/others/ChainHeal.zn"
-			//! import zinc     "../mars-addon-code/mars/common/others/ChainLightning.zn"
-			//! import zinc     "../mars-addon-code/mars/common/others/Chakram.zn"
-			//! import zinc     "../mars-addon-code/mars/common/others/CliffMiss.zn"
-			//! import zinc     "../mars-addon-code/mars/common/others/Doubles.zn"
-			//! import zinc     "../mars-addon-code/mars/common/others/Filters.zn"
-			//! import zinc     "../mars-addon-code/mars/common/others/Hammer.zn"
-			//! import zinc     "../mars-addon-code/mars/common/others/MassLightning.zn"
-			//! import zinc     "../mars-addon-code/mars/common/others/RectangleSplash.zn"
-
-		//
-
-		// heroes
-
-		//! import vjass    "../mars-addon-code/mars/heroes/Hope.vj"
-		//! import vjass    "../mars-addon-code/mars/heroes/Nomi.vj"
-		//! import vjass    "../mars-addon-code/mars/heroes/Orion.vj"
-		//! import vjass    "../mars-addon-code/mars/heroes/Wisp.vj"
-		//! import vjass    "../mars-addon-code/mars/heroes/Wormy.vj"
-		//! import zinc     "../mars-addon-code/mars/heroes/Anna.zn"
-		//! import zinc     "../mars-addon-code/mars/heroes/Arthas/ArthasDome.zn"
-		//! import zinc     "../mars-addon-code/mars/heroes/Arthas/ArthasJump.zn"
-		//! import zinc     "../mars-addon-code/mars/heroes/Forg.zn"
-		//! import zinc     "../mars-addon-code/mars/heroes/Fox.zn"
-		//! import zinc     "../mars-addon-code/mars/heroes/Gordon.zn"
-		//! import zinc     "../mars-addon-code/mars/heroes/Hort.zn"
-		//! import zinc     "../mars-addon-code/mars/heroes/James.zn"
-		//! import zinc     "../mars-addon-code/mars/heroes/Stanley/StanleyMissiles.zn"
-		//! import zinc     "../mars-addon-code/mars/heroes/Stanley/StanleyPiro.zn"
-		//! import zinc     "../mars-addon-code/mars/heroes/Witcher.zn"
-//	  	//! import zinc     "../mars-addon-code/mars/heroes/DebugSpell.zn"
-
-		// items
-
-		//! import zinc     "../mars-addon-code/mars/items/HiruzenSpear.zn"
-
-		// keys
-
-		//! import zinc     "../mars-addon-code/mars/keys/HashIdGUI.zn"
-		//! import zinc     "../mars-addon-code/mars/keys/SpellsTypes.zn"
-
-	//
+	//! import zinc     "../mars-addon-code/src/mars/keys/HashIdGUI.zn"
+	//! import zinc     "../mars-addon-code/src/mars/keys/SpellsTypes.zn"
 
 //! endzinc
 //! endnocjass

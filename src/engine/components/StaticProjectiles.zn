@@ -1,0 +1,258 @@
+library StaticProjectiles requires TechUtils, Parabolas {
+
+	// Constants
+	constant real FOCUS_LOST_DISTANCE = 200.;
+	constant real HIT_DISTANCE = 25.;
+
+	//! @gui
+	public struct StaticProjectile {
+		integer object;
+		unit owner;
+		unit target;
+		unit projectile;
+		integer actionsId;
+		real speed;
+		real offsetZ;
+		real startOffsetZ;
+		boolean canFocusLost;
+		string func;
+		Point2D current;
+		Point2D end;
+		Parabola parabola;
+		boolean isFocused;
+
+		timer tm;
+		static integer CK_HID = 0;
+		static real INTERVAL = 1./40.;
+
+		static method create(
+			integer object,
+			unit owner,
+			unit target,
+			unit projectile,
+			integer actionsId,
+			string func,
+			real speed,
+			real maxHeight,
+			real offsetZ,
+			boolean canFocusLost
+		) -> StaticProjectile {
+			StaticProjectile this = StaticProjectile.allocate();
+			this.current = Point2D.createAtWidget(owner);
+			this.end = Point2D.createAtWidget(target);
+			this.parabola = Parabola.create(Point2D.clone(current), Point2D.clone(end), maxHeight/(1200/current.distTo(end)));
+
+			this.object = object;
+			this.owner = owner;
+			this.target = target;
+			this.projectile = projectile;
+			this.speed = speed;
+			this.offsetZ = offsetZ;
+			this.actionsId = actionsId;
+			this.func = func;
+			this.canFocusLost = canFocusLost;
+
+			this.startOffsetZ = GetUnitZ(owner) - current.getTerrainZ();
+			this.isFocused = true;
+			MakeUnitFly(projectile);
+			SetUnitPathing(projectile, false);
+
+			this.tm = CreateTimer();
+			SaveInteger(HT, GetHandleId(this.tm), CK_HID, this);
+			TimerStart(this.tm, 0, false, function StaticProjectile.callback);
+
+			return this;
+		}
+
+		static method createAt(
+			integer object,
+			unit owner,
+			real x,
+			real y,
+			unit projectile,
+			integer actionsId,
+			string func,
+			real speed,
+			real maxHeight,
+			real offsetZ
+		) -> StaticProjectile {
+			StaticProjectile this = StaticProjectile.allocate();
+			this.current = Point2D.createAtWidget(owner);
+			this.end = Point2D.createAt(x, y);
+			if (maxHeight > 0) {
+				this.parabola = Parabola.create(Point2D.clone(current), Point2D.clone(end), maxHeight/(1200/current.distTo(end)));
+			} else {
+				this.parabola = 0;
+			}
+			
+
+			this.object = object;
+			this.owner = owner;
+			this.target = null;
+			this.projectile = projectile;
+			this.speed = speed;
+			this.offsetZ = offsetZ;
+			this.actionsId = actionsId;
+			this.func = func;
+
+			this.startOffsetZ = GetUnitZ(owner) - current.getTerrainZ();
+			this.isFocused = false;
+			MakeUnitFly(projectile);
+			SetUnitPathing(projectile, false);
+
+			this.tm = CreateTimer();
+			SaveInteger(HT, GetHandleId(this.tm), CK_HID, this);
+			TimerStart(this.tm, 0, false, function StaticProjectile.callback);
+
+			return this;
+		}
+
+		method destroy() {
+			KillUnit(projectile);
+			owner = null;
+			target = null;
+			projectile = null;
+
+			current.destroy();
+			end.destroy();
+			if (IsSet(parabola)) parabola.destroy();
+
+			FlushChildHashtable(HT, GetHandleId(tm));
+			PauseTimer(tm);
+			DestroyTimer(tm);
+			tm = null;
+
+			this.deallocate();
+		}
+
+		static method callback() {
+			StaticProjectile this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+			real angle;
+			real endOffsetZ = 0;
+			
+			TimerStart(tm, INTERVAL, false, function StaticProjectile.callback);
+
+			if (isFocused && canFocusLost && end.distToWidget(target) >= FOCUS_LOST_DISTANCE)
+				isFocused = false;
+			
+			if (isFocused) {
+				end.setAtWidget(target);
+				endOffsetZ = GetUnitZ(target) - end.getTerrainZ();
+				if (IsSet(parabola)) parabola.setEnd(end);
+			}
+
+			angle = current.angleTo(end);
+			current.movePolar(speed * INTERVAL, angle);
+		
+			SetUnitFacing(projectile, angle);
+			SetUnitX(projectile, current.x);
+			SetUnitY(projectile, current.y);
+			if (IsSet(parabola)) SetUnitZ(projectile, parabola.calculateZ(current, offsetZ + startOffsetZ, offsetZ + endOffsetZ));
+
+			if (current.distTo(end) <= HIT_DISTANCE) {
+				SPELL_OWNER_UNIT_GET = owner;
+				SPELL_TARGET_UNIT_GET = target;
+				SPELL_IS_FOCUSED_GET = isFocused;
+				SPELL_ACTIONS_ID_GET = actionsId;
+				SPELL_OBJECT_GET = object;
+				SPELL_X_GET = end.x;
+				SPELL_Y_GET = end.y;
+				if (actionsId != 0) {
+					ExecuteFunc("Trig_" + TRIG_EVENT_SPELLS + "_Actions");
+				} else {
+					ExecuteFunc(func);
+				}
+				SPELL_OWNER_UNIT_GET = null;
+				SPELL_TARGET_UNIT_GET = null;
+				SPELL_IS_FOCUSED_GET = false;
+				SPELL_ACTIONS_ID_GET = 0;
+				SPELL_OBJECT_GET = 0;
+				SPELL_X_GET = 0;
+				SPELL_Y_GET = 0;
+		
+				this.destroy();
+			}
+			
+		}
+	}
+	
+	//! @gui [Projectile], TriggerActions, TriggerCalls
+	public function CreateStaticProjectile(
+		unit owner,
+		unit target,
+		unit projectile,
+		integer actionsId,
+		real speed,
+		real maxHeight,
+		real offsetZ,
+		boolean canFocusLost
+	) -> StaticProjectile {
+		return StaticProjectile.create(
+			0,
+			owner,
+			target,
+			projectile,
+			actionsId,
+			"",
+			speed,
+			maxHeight,
+			offsetZ,
+			canFocusLost
+		);
+	}
+
+	//! @gui [Projectile], TriggerActions, TriggerCalls
+	public function CreateStaticProjectileFunc(
+		integer object,
+		unit owner,
+		unit target,
+		unit projectile,
+		string func,
+		real speed,
+		real maxHeight,
+		real offsetZ,
+		boolean canFocusLost
+	) -> StaticProjectile {
+		return StaticProjectile.create(
+			object,
+			owner,
+			target,
+			projectile,
+			0,
+			func,
+			speed,
+			maxHeight,
+			offsetZ,
+			canFocusLost
+		);
+	}
+
+	//! @gui [Projectile], TriggerActions, TriggerCalls
+	public function CreateStaticProjectileAtFunc(
+		integer object,
+		unit owner,
+		real x,
+		real y,
+		unit projectile,
+		string func,
+		real speed,
+		real maxHeight,
+		real offsetZ
+	) -> StaticProjectile {
+		return StaticProjectile.createAt(
+			object,
+			owner,
+			x,
+			y,
+			projectile,
+			0,
+			func,
+			speed,
+			maxHeight,
+			offsetZ
+		);
+	}
+
+}
+
+// stable version

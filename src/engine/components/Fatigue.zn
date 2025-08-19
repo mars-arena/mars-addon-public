@@ -1,0 +1,132 @@
+library Fatigue requires Combat, Events, HashCleaner {
+
+// Settings
+
+	public constant real FATIGUE_MAX = 1.0;
+	constant real FATIGUE_GAIN_RATE = 0.05;
+	constant real FATIGUE_LOSS_RATE = 0.1;
+	constant real FATIGUE_INTERVAL = 0.5;
+
+// Event API
+
+	// Событие при изменении уровня усталости юнита
+	//
+	// GetFatigueUnit() -> unit
+	//! @gui
+	public Event EVENT_FATIGUE_CHANGE;
+
+	unit FatigueUnit;
+
+	//! @gui [ResponseFatigue], TriggerCalls
+	public function GetFatigueUnit() -> unit { debug DebugEvent.a(EVENT_FATIGUE_CHANGE).run(); return FatigueUnit; }
+
+// API
+
+	// Возвращает текущий уровень усталости юнита
+	// @arg unit whichUnit - целевой юнит
+	// @return real - уровень усталости (0.0 ... FATIGUE_MAX)
+	//! @gui [Unit], TriggerCalls
+	public function GetUnitFatigue(unit whichUnit) -> real {
+		Fatigue this = Fatigue.load(GetHandleId(whichUnit)); 
+		if (!IsSet(this)) 
+			return 0.0;
+		return this.fatigue;
+	}
+
+	// Принудительно устанавливает уровень усталости юнита
+	// Значение будет ограничено от 0.0 до FATIGUE_MAX
+	// @arg unit whichUnit - целевой юнит
+	// @arg real fatigue - желаемый уровень усталости
+	//! @gui [Unit], TriggerActions
+	public function SetUnitFatigue(unit whichUnit, real fatigue) {
+		Fatigue.get(whichUnit).setFatigue(fatigue);
+	}
+
+	// Проверяет, достиг ли юнит максимального уровня усталости
+	// @arg unit whichUnit - целевой юнит
+	// @return boolean - true, если усталость >= FATIGUE_MAX
+	//! @gui [Unit], TriggerCalls
+	public function IsUnitFatigued(unit whichUnit) -> boolean {
+		return GetUnitFatigue(whichUnit) >= FATIGUE_MAX;
+	}
+
+// System
+
+	function onInit() {
+		EVENT_FATIGUE_CHANGE = CreateEvent("EVENT_FATIGUE_CHANGE");
+		EventRegisterAction(EVENT_COMBAT, function() {
+			if (IsCombatEntering()) {
+				Fatigue.get(GetCombatUnit());
+			}
+		});
+
+		EventRegisterAction(EVENT_CLEAR_HASH, function() {
+			Fatigue this = Fatigue.load(GetTriggerHandleId());
+			if (IsSet(this)) this.destroy();
+		});
+	}
+
+	struct Fatigue {
+		unit whichUnit;
+		real fatigue;
+
+		timer tm;
+
+		static key HASH_ID;
+		static real INTERVAL = FATIGUE_INTERVAL;
+
+		static method create(unit whichUnit) -> Fatigue {
+			Fatigue this = Fatigue.allocate();
+			this.fatigue = 0.0;
+
+			this.whichUnit = whichUnit;
+			SaveInteger(HT, GetHandleId(whichUnit), HASH_ID, this);
+
+			this.tm = CreateTimer();
+			SaveHandleDataInt(tm, this);
+			TimerStart(tm, INTERVAL, true, function Fatigue.callback);
+
+			return this;
+		}
+
+		static method load(integer hashId) -> Fatigue {
+			return LoadInteger(HT, hashId, HASH_ID);
+		}
+
+		static method get(unit whichUnit) -> Fatigue {
+			Fatigue this = Fatigue.load(GetHandleId(whichUnit));
+			if (!IsSet(this))
+				this = Fatigue.create(whichUnit);
+			return this;
+		}
+
+		method destroy() {
+			FlushTimer(tm); tm = null;
+			whichUnit = null;
+			this.deallocate();
+		}
+
+		method setFatigue(real value) {
+			real oldFatigue = fatigue;
+			fatigue = MaxReal(0.0, MinReal(FATIGUE_MAX, value));
+
+			if (fatigue != oldFatigue) {
+				DebugXY("fat" + R2S(fatigue), GetUnitX(whichUnit), GetUnitY(whichUnit));
+				FatigueUnit = whichUnit;
+				ExecuteEvent(EVENT_FATIGUE_CHANGE);
+			}
+		}
+
+		static method callback() {
+			Fatigue this = LoadHandleDataInt(GetExpiredTimer());
+			real newFatigue = fatigue;
+			if (IsUnitInCombat(whichUnit)) {
+				newFatigue += FATIGUE_GAIN_RATE;
+			} else {
+				newFatigue -= FATIGUE_LOSS_RATE;
+			}
+			setFatigue(newFatigue);
+		}
+
+	}
+}

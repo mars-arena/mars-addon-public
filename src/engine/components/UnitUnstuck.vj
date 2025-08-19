@@ -1,0 +1,51 @@
+library UnitUnstuck uses JumpToPoint
+
+	globals
+		private constant integer DUMMY_PATHABLE_ID = 'hkni'
+		private unit DummyPathable
+	endglobals
+
+	// Проверяет, застрял ли юнит, и пытается его "вытолкнуть" на ближайшую проходимую точку
+	// Проводит круговой обход по растущим радиусам вокруг юнита и телепортирует его в первую подходящую проходимую точку
+	//! @gui [Unit], TriggerActions
+	function CheckAndFreeUnit takes unit u returns nothing
+		local real x = GetUnitX(u)
+		local real y = GetUnitY(u)
+		local real r = 50
+		local real angle
+		local Point2D point = Point2D.create()
+		local integer i = 0
+		local boolean isUnstuck = false
+
+		// Проверяем, застрял ли юнит
+		loop
+			exitwhen not IsTerrainPathable(x, y, PATHING_TYPE_WALKABILITY) or r > 2000 or isUnstuck
+			// Генерируем угол
+			set angle = bj_DEGTORAD * I2R(i)
+
+			// Вычисляем новые координаты
+			call point.setAt(x + r * Cos(angle), y + r * Sin(angle))
+
+			// Если новое место проходимо, перемещаем юнита и устанавливаем флаг
+			if not IsTerrainPathable(point.x, point.y, PATHING_TYPE_WALKABILITY) then
+				set DummyPathable = CreateUnit(Player(15), DUMMY_PATHABLE_ID, point.x, point.y, 270)
+				call KillUnit(DummyPathable)
+				call ShowUnit(DummyPathable, false)
+				call JumpUnitToPoint(u, Point2D.createAtWidget(DummyPathable))
+				set isUnstuck = true
+			endif
+
+			// Если новое место не проходимо, увеличиваем угол и продолжаем цикл
+			set i = i + 10
+
+			// Если весь угол проверен, увеличиваем радиус и сбрасываем угол
+			if i >= 360 then
+				set r = r + 50
+				set i = 0
+			endif
+		endloop
+
+		call point.destroy()
+	endfunction
+
+endlibrary

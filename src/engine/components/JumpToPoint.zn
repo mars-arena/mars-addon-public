@@ -1,0 +1,105 @@
+library JumpToPoint requires Stuns, Parabolas {
+
+	constant real APSIS = 220.;
+	constant real MAX_DIST = 600.;
+	constant real SPEED_MULTIPLIER = 2.5;
+	constant real DELAY = 0.12; 	// нужнен только для красоты, можно и без него, но выглядит странно
+	constant string ANIMATION = "Spell Jump";
+
+	struct JumpToPoint {
+		unit caster;
+		Point2D current;
+		Point2D end;
+		Parabola parabola;
+		real speed;
+		real offsetZ;
+
+		timer tm;
+
+		static real INTERVAL = 1./40.;
+
+		static method create(unit caster, Point2D end) -> JumpToPoint {
+			JumpToPoint this = JumpToPoint.allocate();
+			this.caster = caster;
+			this.current = Point2D.createAtWidget(caster);
+			this.end = end;
+			this.parabola = Parabola.create(Point2D.clone(current), Point2D.clone(end), APSIS / (MAX_DIST / current.distTo(end)));
+			this.speed = GetUnitMoveSpeed(caster) * SPEED_MULTIPLIER;
+			this.offsetZ = GetUnitFlyHeight(caster);
+
+			SetUnitFacing(caster, current.angleTo(end));
+
+			StunUnit(caster, caster, LOST_CONTROL_STUN, 1000);
+
+			IssueImmediateOrder(caster, "stop");
+
+			this.tm = CreateTimer();
+			SaveHandleDataInt(tm, this);
+
+			TempTimer = CreateTimer();
+			SaveHandleDataInt(TempTimer, this);
+			
+			TimerStart(TempTimer, DELAY, false, function() {
+				JumpToPoint this = LoadHandleDataInt(GetExpiredTimer());
+				FlushTimer(GetExpiredTimer());
+				SetUnitAnimation(caster, ANIMATION);
+				MakeUnitFly(caster);
+				SetUnitPathing(caster, false);
+				TimerStart(tm, 0, false, function JumpToPoint.callback);
+			});
+
+			return this;
+		}
+
+		method destroy() {
+			RemoveUnitStunByType(caster, LOST_CONTROL_STUN);
+			SetUnitAnimation(caster, "stand");
+			SetUnitPathing(caster, true);
+			SetUnitZ(caster, offsetZ);
+
+			caster = null;
+
+			FlushTimer(tm); tm = null;
+
+			current.destroy();
+			end.destroy();
+			parabola.destroy();
+
+			this.deallocate();
+		}
+
+		static method callback() {
+			JumpToPoint this = LoadHandleDataInt(GetExpiredTimer());
+
+			TimerStart(tm, INTERVAL, false, function JumpToPoint.callback);
+
+			current.moveTowards(end, speed * INTERVAL);
+
+			SetUnitX(caster, current.x);
+			SetUnitY(caster, current.y);
+			SetUnitZ(caster, parabola.calculateZ(current, offsetZ, offsetZ));
+
+			if (current.distTo(end) <= 25.) {
+				this.destroy();
+			}
+		}
+	}
+
+	//! gui [Unit], TriggerActions
+	// Перемещает юнита в указанную позицию с помощью прыжка
+	// @arg unit caster юнит, который будет прыгать
+	// @arg real x позиция по X, куда будет прыгать юнит
+	// @arg real y позиция по Y, куда будет прыгать юнит
+	public function JumpUnitToXY(unit caster, real x, real y) {
+		JumpToPoint.create(caster, Point2D.createAt(x, y));
+	}
+
+	// Перемещает юнита в указанную точку с помощью прыжка
+	// @arg unit caster юнит, который будет прыгать
+	// @arg Point2D end новая позиция, куда будет прыгать юнит
+	public function JumpUnitToPoint(unit caster, Point2D end) {
+		JumpToPoint.create(caster, end);
+	}
+	//! endgui
+
+}

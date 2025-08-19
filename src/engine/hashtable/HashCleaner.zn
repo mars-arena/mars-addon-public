@@ -1,0 +1,69 @@
+library HashCleaner requires TechUtils {
+
+	// Событие при очистке хэш-таблицы для юнита
+	//
+	// GetTriggerHandleId() -> integer
+	//! @gui
+	public Event EVENT_CLEAR_HASH;
+
+	integer TriggerHandleId;
+
+	//! @gui [ResponseHash], TriggerCalls
+	public function GetTriggerHandleId() -> integer { debug DebugEvent.a(EVENT_CLEAR_HASH).run(); return TriggerHandleId; }
+	
+	struct HashCleaner {
+		unit u;
+
+		integer handleId;
+		integer time;
+		timer tm;
+	
+		static method create(unit u) -> HashCleaner {
+			HashCleaner this = HashCleaner.allocate();
+			this.u = u;
+			this.handleId = GetHandleId(u);
+
+			if (IsUnitDummy(u)) {
+				this.flush();
+				return 0;
+			}
+
+			this.tm = CreateTimer();
+			SaveHandleDataInt(tm, this);
+			TimerStart(this.tm, 1, true, function HashCleaner.callback);
+
+			return this;
+		}
+
+		method destroy() {
+			FlushTimer(tm); tm = null;
+			u = null;
+			this.deallocate();
+		}
+
+		method flush() {
+			TriggerHandleId = handleId;
+			ExecuteEvent(EVENT_CLEAR_HASH);
+			FlushChildHashtable(HT, handleId);
+			FlushChildHashtable(udg_HT_GUI, handleId);
+			this.destroy();
+		}
+
+		static method callback() {
+			HashCleaner this = LoadHandleDataInt(GetExpiredTimer());
+			if (!IsSet(GetUnitTypeId(u))) {
+				this.flush();
+			} else if (UnitAlive(u)) {
+				this.destroy();
+			}
+		}
+	}
+
+	function onInit() {
+		EVENT_CLEAR_HASH = CreateEvent("EVENT_CLEAR_HASH");
+		EventRegisterAction(GetHandleId(EVENT_PLAYER_UNIT_DEATH), function() {
+			HashCleaner.create(GetTriggerUnit());
+		});
+	}
+
+}

@@ -1,0 +1,253 @@
+library AreaSpells requires SpellGetters {
+
+// TODO:
+// Переделать на ивенты
+
+// Settings
+
+	// @const максимальный размер колизии
+	constant real MAX_COLLISION_SIZE = 100;
+
+// API
+
+	// Прикрепляет эффект к заклинанию.
+	// Следующий вызов заменит эффект.
+	//
+	// @arg effect `stunned` эффект.
+	// @arg AreaSpell `whichSpell` заклинание.
+	//! @gui [Effect], TriggerActions
+	public function AttachEffectToAreaSpell(effect whichEffect, AreaSpell whichSpell) {
+		whichSpell.eff = whichEffect;
+	}
+
+	// Добавляет заклинание области к юниту.
+	//
+	// @arg unit `ownerUnit` юнит, владеющий заклинанием.
+	// @arg unit `dummyUnit` юнит, применяющий заклинание (может быть таким же как и  `unit ownerUnit`).
+	// @arg integer `actionsId` идентификатор действий заклинания.
+	// @arg real `duration` длительность действия заклинания.
+	// @arg boolean `pierceDeath` работает ли заклинание сквозь смерть `unit dummyUnit`.
+	// @arg boolexpr `filter` функция-фильтр.
+	// @arg real `rangeStart` начальный радиус области действия заклинания.
+	// @arg real `rangeEnd` конечный радиус области действия заклинания.
+	// @arg real `interval` интервал регистрации юнитов в области.
+	// @return object `AreaSpell` - возвращает объект заклинания области.
+	//! @gui [Unit], TriggerActions, TriggerCalls
+	public function AddAreaSpellToUnit(
+		unit ownerUnit,
+		unit dummyUnit,
+		integer actionsId,
+		real duration,
+		boolean pierceDeath,
+		boolexpr filter,
+		real rangeStart,
+		real rangeEnd,
+		real interval
+	) -> AreaSpell {
+		return AreaSpell.create( ownerUnit, dummyUnit, actionsId, duration, pierceDeath, filter, rangeStart, rangeEnd, interval);
+	}
+
+// System
+
+	//! @gui
+	public struct AreaSpell {
+		unit ownerUnit;
+		unit dummyUnit;
+		integer actionsId;
+		real duration;
+		boolean pierceDeath;
+		boolexpr filter;
+		real rangeStart;
+		real rangeEnd;
+		real interval;
+
+		integer intervalNum;
+		real x;
+		real y;
+		real rangeCurrent;
+		real spellCompletion;
+
+		effect eff;
+
+		timer tmRegistration;
+		group grEnter;
+		group grOut;
+		boolean on;
+
+		static integer CK_HID = 0;
+		static group grSelection = CreateGroup();
+
+		static method create(
+			unit ownerUnit,
+			unit dummyUnit,
+			integer actionsId,
+			real duration,
+			boolean pierceDeath,
+			boolexpr filter,
+			real rangeStart,
+			real rangeEnd,
+			real interval
+		) -> AreaSpell {
+			AreaSpell this = AreaSpell.allocate();
+
+			this.ownerUnit = ownerUnit;
+			this.dummyUnit = dummyUnit;
+			this.actionsId = actionsId;
+			this.duration = duration;
+			this.pierceDeath = pierceDeath;
+			this.filter = filter;
+			this.rangeStart = rangeStart;
+			this.rangeEnd = rangeEnd;
+			this.interval = interval;
+
+			this.intervalNum = 0;
+			this.x = GetUnitX(dummyUnit);
+			this.y = GetUnitY(dummyUnit);
+			this.rangeCurrent = rangeStart;
+			this.spellCompletion = 0.;
+
+			this.eff = null;
+
+			this.tmRegistration = CreateTimer();
+			this.grEnter = CreateGroup();
+			this.grOut = CreateGroup();
+			this.on = false;
+
+			SaveInteger(HT, GetHandleId(this.tmRegistration), CK_HID, this);
+			TimerStart(this.tmRegistration, 0., false, function AreaSpell.registration);
+
+			return this;
+		}
+
+		method destroy() {
+			unit target;
+			target = FirstOfGroup(grEnter);
+			while (target != null) {
+				this.out(target);
+				GroupRemoveUnit(grEnter, target);
+				target = FirstOfGroup(grEnter);
+			}
+
+			ownerUnit = null;
+			dummyUnit = null;
+
+			filter = null;
+
+			DestroyGroup(grEnter);
+			grEnter = null;
+
+			DestroyGroup(grOut);
+			grOut = null;
+
+			FlushChildHashtable(HT, GetHandleId(tmRegistration));
+			PauseTimer(tmRegistration);
+			DestroyTimer(tmRegistration);
+			tmRegistration = null;
+
+			DestroyEffect(eff);
+			eff = null;
+
+			this.deallocate();
+			target = null;
+		}
+
+		method out(unit target) {
+			SPELL_OWNER_UNIT_GET = ownerUnit;
+			SPELL_DUMMY_UNIT_GET = dummyUnit;
+			SPELL_TARGET_UNIT_GET = target;
+			SPELL_IS_ENTERED_GET = false;
+			SPELL_IS_OUT_GET = true;
+			SPELL_ACTIONS_ID_GET = actionsId;
+			SPELL_COMPLETION_GET = spellCompletion;
+			ExecuteFunc("Trig_" + TRIG_EVENT_SPELLS + "_Actions");
+			SPELL_OWNER_UNIT_GET = null;
+			SPELL_DUMMY_UNIT_GET = null;
+			SPELL_TARGET_UNIT_GET = null;
+			SPELL_IS_ENTERED_GET = false;
+			SPELL_IS_OUT_GET = false;
+			SPELL_ACTIONS_ID_GET = 0;
+			SPELL_COMPLETION_GET = 0;
+		}
+
+		method enter(unit target) {
+			SPELL_OWNER_UNIT_GET = ownerUnit;
+			SPELL_DUMMY_UNIT_GET = dummyUnit;
+			SPELL_TARGET_UNIT_GET = target;
+			SPELL_IS_ENTERED_GET = true;
+			SPELL_IS_OUT_GET = false;
+			SPELL_ACTIONS_ID_GET = actionsId;
+			SPELL_COMPLETION_GET = spellCompletion;
+			ExecuteFunc("Trig_" + TRIG_EVENT_SPELLS + "_Actions");
+			SPELL_OWNER_UNIT_GET = null;
+			SPELL_DUMMY_UNIT_GET = null;
+			SPELL_TARGET_UNIT_GET = null;
+			SPELL_IS_ENTERED_GET = false;
+			SPELL_IS_OUT_GET = false;
+			SPELL_ACTIONS_ID_GET = 0;
+			SPELL_COMPLETION_GET = 0;
+		}
+
+		static method registration() {
+			AreaSpell this = LoadInteger(HT, GetHandleId(GetExpiredTimer()), CK_HID);
+			unit target;
+
+			x = GetUnitX(dummyUnit);
+			y = GetUnitY(dummyUnit);
+			spellCompletion = intervalNum * interval / duration;
+			rangeCurrent = rangeStart + (rangeEnd - rangeStart) * spellCompletion;
+
+			if (!pierceDeath && !UnitAlive(dummyUnit)) {
+				this.destroy();
+				return;
+			}
+
+			GroupClear(grSelection);
+			SPELL_OWNER_UNIT_GET = ownerUnit;
+			SPELL_DUMMY_UNIT_GET = dummyUnit;
+			SPELL_COMPLETION_GET = spellCompletion;
+			SPELL_ACTIONS_ID_GET = actionsId;
+			GroupEnumUnitsInRange(grSelection, x, y, rangeCurrent + MAX_COLLISION_SIZE, filter);
+			SPELL_OWNER_UNIT_GET = null;
+			SPELL_DUMMY_UNIT_GET = null;
+			SPELL_COMPLETION_GET = 0;
+			SPELL_ACTIONS_ID_GET = 0;
+
+			This = this;
+			ForGroup(grEnter, function() {
+				AreaSpell this = This;
+				unit entered = GetEnumUnit();
+				if (!IsUnitInRangeXY(entered, x, y, rangeCurrent) || !IsUnitInGroup(entered, grSelection)) {
+					GroupRemoveUnit(grEnter, entered);
+					GroupAddUnit(grOut, entered);
+					this.out(entered);
+				}
+				entered = null;
+			});
+
+			target = FirstOfGroup(grSelection);
+			while (target != null) {
+				if (!IsUnitInGroup(target, grEnter) && IsUnitInRangeXY(target, x, y, rangeCurrent) && !IsUnitInGroup(target, grOut)) {
+					GroupAddUnit(grEnter, target);
+					this.enter(target);
+				}
+				GroupRemoveUnit(grSelection, target);
+				target = FirstOfGroup(grSelection);
+			}
+
+			if (spellCompletion >= 1.0) {
+				this.destroy();
+			}
+
+			intervalNum += 1;
+
+			if (!on) {
+				on = true;
+				TimerStart(tmRegistration, interval, true, function AreaSpell.registration);
+			}
+
+			target = null;
+		}
+
+	}
+
+}

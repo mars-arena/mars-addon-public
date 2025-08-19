@@ -1,0 +1,74 @@
+native GetPlayerUnitTypeCount takes player p, integer unitid returns integer
+
+native GetUnitGoldCost takes integer unitid returns integer
+native GetUnitWoodCost takes integer unitid returns integer
+native GetUnitBuildTime takes integer unitid returns integer
+
+native UnitAlive takes unit id returns boolean
+
+// GetUnitGoldCost, GetUnitWoodCost и GetUnitBuildTime критуют, если передать равкод, содержащий буквы верхнего регистра.
+
+globals
+	unit TempUnit // НЕ ИСПОЛЬЗОВАТЬ ВНУТРИ ИВЕНТОВ
+	real TempX
+	real TempY
+	timer TempTimer
+	group TempGroup // НЕ ИСПОЛЬЗОВАТЬ ВНУТРИ ИВЕНТОВ
+	trigger TempTrigger
+	
+	integer Index
+
+	integer This
+	integer AbilityID
+
+	unit FilterUnit
+	unit TriggerUnit
+	unit EnumUnit
+	unit ReturnedUnit
+	unit FilteredUnit
+
+	boolean WantDelay = false
+
+	// deprecated
+	integer SplashType = 0
+	real SplashChance = 0
+	real SplashPercent = 0
+	real SplashRadius = 0
+	real SplashAngle = 0
+	integer dummyEffId = 'h00O'
+	integer dummyId = 'h00N'
+	integer dummyAtcId = 'o00Z'
+	integer IntTemp
+	group GroupTemp = CreateGroup()
+	group bGroup = CreateGroup()
+	group retGroup
+	group tGroup
+	unit bUnit
+	unit bUnit01
+	unit bUnit02
+	unit bUnit03
+	real bReal
+	real bReal01
+	real bReal02
+	real bReal03
+	real bReal04
+	real bX
+	real bY
+	integer bInt
+	integer bInt01
+	integer bInt02
+	integer iS
+	integer iE
+	boolexpr bFilter
+	region bRegion = CreateRegion()
+	item bItem
+	timer bTimer
+	unit CasterUnit
+	unit OwnerUnit
+	unit TargetUnit
+	real Value
+	integer ActionsId
+	integer BuffId
+	timer BuffStack
+	real TIMER_PERIOD = 0.03125
+endglobals

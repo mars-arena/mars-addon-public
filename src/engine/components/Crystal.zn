@@ -1,0 +1,189 @@
+library Crystals requires Events {
+
+// Settings
+
+	constant real BASE_CAPTURE_DURATION = 10.;
+	constant real RANGE = 200.;
+
+	constant real DEFAULT_SPEED_MULTIPLIER = BASE_CAPTURE_DURATION / 18.;
+	constant real DEFAULT_SPEED = 0.5;
+	constant real HERO_ADD_SPEED = 0.5;
+	constant real UNIT_ADD_SPEED = 0.1;
+	constant real ROLLBACK_SPEED = 0.5;
+
+	constant real INTERVAL = 1./32.;
+
+	Crystal CenterCrystal = 0;
+
+// Event API
+
+	player CAPTURING_PLAYER_GET;
+	//! @gui [ResponseCrystal], TriggerCalls
+	public function GetCapturingPlayer() -> player {return GetTeamMasterPlayer(CAPTURING_PLAYER_GET);}
+
+	struct Crystal {
+		unit ring;
+		unit crystal;
+
+		group grEntered;
+		trigger trgEnter;
+		timer tm;
+
+		player capturingPlayer = null;
+		player dominatingPlayer = null;
+		integer countPlayers = 0;
+		real captureProgress = 0.0;
+		real captureRate = INTERVAL / BASE_CAPTURE_DURATION;
+		real captureSpeed = 0;
+		real captureSpeedMultiplier = 0;
+
+		static method create(unit ring) -> Crystal {
+			Crystal this = Crystal.allocate();
+
+			this.crystal = null;
+			this.ring = ring;
+			SetUnitAnimation(ring, "spell");
+			SetUnitTimeScale(ring, captureSpeed);
+            this.grEntered = CreateGroup();
+
+			for (0 <= Index < bj_MAX_PLAYER_SLOTS) {
+				UnitShareVision(ring, Player(Index), true);
+			}
+
+			this.trgEnter = CreateTrigger();
+			SaveHandleDataInt(trgEnter, this);
+			TriggerRegisterUnitInRange(trgEnter, ring, RANGE, null);
+			TriggerAddAction(trgEnter, function() {
+				Crystal this = LoadHandleDataInt(GetTriggeringTrigger());
+				GroupAddUnit(grEntered, GetTriggerUnit());
+			});
+
+			this.tm = CreateTimer();
+			SaveHandleDataInt(tm, this);
+			TimerStart(tm, INTERVAL, true, function Crystal.action);
+
+			return this;
+		}
+
+		method destroy() {
+			// TO DO sneeds goods
+			this.deallocate();
+		}
+
+		static method action() {
+			Crystal this = LoadHandleDataInt(GetExpiredTimer());
+			if (crystal == null || !UnitAlive(crystal)) {
+				return;
+			}
+
+			This = this;
+
+			countPlayers = 0;
+			dominatingPlayer = null;
+			captureSpeedMultiplier = DEFAULT_SPEED;
+
+			ForGroup(this.grEntered, function() {
+				Crystal this = This;
+				unit EnumUnit = GetEnumUnit();
+
+				if (!IsUnitInRange(EnumUnit, ring, RANGE)) {
+					GroupRemoveUnit(grEntered, EnumUnit);
+				} else if (UnitAlive(EnumUnit) &&
+					!IsUnitType(EnumUnit, UNIT_TYPE_STRUCTURE) &&
+					!IsUnitType(EnumUnit, UNIT_TYPE_MECHANICAL) &&
+					!IsUnitType(EnumUnit, UNIT_TYPE_TAUREN)
+				) {
+					if (countPlayers < 2 && IsUnitType(EnumUnit, UNIT_TYPE_HERO)) {
+						if (dominatingPlayer == null) {
+							dominatingPlayer = GetTeamMasterPlayer(GetOwningPlayer(EnumUnit));
+							countPlayers = 1;
+						} else {
+							if (dominatingPlayer != GetTeamMasterPlayer(GetOwningPlayer(EnumUnit))) {
+								countPlayers = 2;
+							}
+						}
+					}
+					if (IsUnitType(EnumUnit, UNIT_TYPE_HERO)) {
+						captureSpeedMultiplier += HERO_ADD_SPEED;
+					} else {
+						captureSpeedMultiplier += UNIT_ADD_SPEED;
+					}
+				}
+
+			});
+
+			// Логика захвата
+			// count = 0 -> никого внутри, захват не меняется
+			// count = 1 -> один игрок внутри singlePlayer
+			// count = 2 -> несколько игроков внутри
+
+			if (countPlayers == 1) {
+
+				if (capturingPlayer == null) {
+					capturingPlayer = dominatingPlayer;
+				}
+
+				if (capturingPlayer == dominatingPlayer) {
+					
+					captureSpeed = 1.;
+					if (captureProgress >= 1.) {
+						captureSpeed = 0.;
+						// захватил
+						CAPTURING_PLAYER_GET = capturingPlayer;
+						KillUnit(crystal);
+						CAPTURING_PLAYER_GET = null;
+
+						SetUnitAnimation(ring, "spell");
+						captureProgress = 0.;
+						capturingPlayer = null;
+					}
+				} else {
+					captureSpeed = -1.;
+					if (captureProgress <= 0.) {
+						captureSpeed = 0.;
+						// отхватил
+						SetUnitAnimation(ring, "spell");
+						capturingPlayer = null;
+					}
+				}
+			} else if (countPlayers == 0) {
+				captureSpeedMultiplier = ROLLBACK_SPEED;
+				captureSpeed = -1.;
+				if (captureProgress <= 0.) {
+					captureSpeed = 0.;
+					// отхватил
+					SetUnitAnimation(ring, "spell");
+					capturingPlayer = null;
+				}
+			} else if (countPlayers == 2) {
+				captureSpeed = 0.;
+			}
+
+			if (IsMapPaused()) {
+				captureSpeed = 0.;
+			}
+
+			captureProgress += captureRate * captureSpeed * captureSpeedMultiplier * DEFAULT_SPEED_MULTIPLIER;
+
+			SetUnitColor(ring, GetPlayerColor(capturingPlayer));
+			SetUnitTimeScale(ring, captureSpeed * captureSpeedMultiplier * DEFAULT_SPEED_MULTIPLIER);
+
+			//Debug("CS=" + I2S(R2I(captureSpeedMultiplier*100.)) + "% CP=" + I2S(R2I(captureProgress*100.)) + "%");
+		}
+	}
+
+	// Устанавливает основной объект "crystal" (визуальный юнит внутри кольца)
+	// Используется для отслеживания и убийства при захвате
+	// @arg unit crystal - юнит, представляющий кристалл
+	public function SetCrystal(unit crystal) {
+		CenterCrystal.crystal = crystal;
+	}
+
+	// Инициализирует центральный кристалл захвата по переданному кольцу
+	// Создаёт структуру, регистрирует триггер на вход, запускает таймер логики
+	// @arg unit ring - юнит-кольцо (вокруг кристалла), определяющее зону захвата
+	public function InitCrystal(unit ring) {
+		CenterCrystal = Crystal.create(ring);
+	}
+
+}
